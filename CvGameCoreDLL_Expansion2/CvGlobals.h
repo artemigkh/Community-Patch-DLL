@@ -1,4 +1,4 @@
-﻿/*	-------------------------------------------------------------------------------------------------------
+/*	-------------------------------------------------------------------------------------------------------
 	© 1991-2012 Take-Two Interactive Software and its subsidiaries.  Developed by Firaxis Games.  
 	Sid Meier's Civilization V, Civ, Civilization, 2K Games, Firaxis Games, Take-Two Interactive Software 
 	and their respective logos are all trademarks of Take-Two interactive Software, Inc.  
@@ -1875,6 +1875,7 @@ public:
 	GD_INT_MEMBER(BARBARIAN_CAMP_FIRST_TURN_PERCENT_OF_TARGET_TO_ADD);
 	GD_INT_MEMBER(BARBARIAN_CAMP_ODDS_OF_NEW_CAMP_SPAWNING);
 	GD_INT_MEMBER(BARBARIAN_CAMP_MINIMUM_DISTANCE_CAPITAL);
+	GD_INT_MEMBER(BARBARIAN_CAMP_MINIMUM_ISLAND_SIZE);
 	GD_INT_MEMBER(BARBARIAN_CAMP_MINIMUM_DISTANCE_ANOTHER_CAMP);
 	GD_INT_MEMBER(BARBARIAN_CAMP_COASTAL_SPAWN_ROLL);
 	GD_INT_MEMBER(BARBARIAN_NAVAL_UNIT_START_TURN_SPAWN);

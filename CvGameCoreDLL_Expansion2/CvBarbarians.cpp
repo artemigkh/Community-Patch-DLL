@@ -571,8 +571,8 @@ void CvBarbarians::DoCamps()
 			if (pLoopPlot->isOwned() || pLoopPlot->isAdjacentOwned())
 				continue;
 
-			// No camps on 1-tile islands
-			if(pLoopPlot->getArea()==-1 || kMap.getArea(pLoopPlot->getArea())->getNumTiles() == 1)
+			// No camps on n-tile islands
+			if (pLoopPlot->getArea() == -1 || kMap.getArea(pLoopPlot->getArea())->getNumTiles() <= GD_INT_GET(BARBARIAN_CAMP_MINIMUM_ISLAND_SIZE))
 				continue;
 
 			// No camps on resources or improvements
@@ -588,8 +588,8 @@ void CvBarbarians::DoCamps()
 				bMinors = false;
 
 			// No new camps on plots in sight of a player
-			// if (pLoopPlot->isVisibleToAnyTeam(bMinors))
-			//	continue;
+			 if (pLoopPlot->isVisibleToAnyTeam(bMinors))
+				continue;
 
 			iNumNotVisiblePlots++;
 

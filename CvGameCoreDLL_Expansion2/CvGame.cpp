@@ -8918,57 +8918,6 @@ void CvGame::doTurn()
 	}
 
 	LogGameState();
-  // temp
-  CvString rowOutput2;
-  CvString strTemp2;
-
-  CvString strLogName2 = "";
-  strLogName2 = strLogName2.format("mapState_%03d.csv", getElapsedGameTurns());
-  FILogFile* pLog2 = LOGFILEMGR.GetLog(strLogName2, FILogFile::kDontTimeStamp);
-
-
-  CvMap& kMap = GC.getMap();
-
-  rowOutput2 = "x,y,land,majorCiv,minorCiv,barbCamp";
-  pLog2->Msg(rowOutput2);
-  ImprovementTypes eCamp = (ImprovementTypes)GD_INT_GET(BARBARIAN_CAMP_IMPROVEMENT);
-
-  for (int i = 0; i < kMap.numPlots(); i++)
-  {
-    CvPlot* pLoopPlot = kMap.plotByIndexUnchecked(i);
-    if (pLoopPlot) {
-      bool majorCiv = false;
-      bool minorCiv = false;
-      bool barbCamp = false;
-
-      if (pLoopPlot->isOwned()) {
-        CvPlayer& player = GET_PLAYER(pLoopPlot->getOwner());
-        if (player.isMajorCiv()) {
-          majorCiv = true;
-        }
-        else if (player.isMinorCiv()) {
-          minorCiv = true;
-        }
-      }
-
-      if (pLoopPlot->getImprovementType() == eCamp)
-      {
-        barbCamp = true;
-      }
-
-      strTemp2.Format(
-        "%d,%d,%d,%d,%d,%d",
-        pLoopPlot->getX(),
-        pLoopPlot->getY(),
-        !pLoopPlot->isWater(),
-        majorCiv,
-        minorCiv,
-        barbCamp
-      );
-
-      pLog2->Msg(strTemp2);
-    }
-  }
 
 	//autosave after doing a turn
 	if (isNetworkMultiPlayer())
