@@ -184,14 +184,15 @@ bool CvWorldBuilderMapLoader::Preload(const wchar_t* wszFilename, bool bScenario
 	// Re-initialize map info
 	new(&sg_kMapInfo)CvWorldBuilderMapLoaderMapInfo();
 
-	if(sg_kSave.Load(wszFilename, sg_kMapTypeDesc))
+	OutputDebugStringA("Loading without clearing in CvWorldBuilderMapLoader");
+	if(sg_kSave.Load(wszFilename, sg_kMapTypeDesc, true))
 	{
 		const uint uiPlotCount = sg_kSave.GetPlotCount();
 
 		if(!bScenario)
 		{
 			// Clear out all of the scenario data (except improvements)
-			sg_kSave.ClearScenarioData(true);
+			// sg_kSave.ClearScenarioData(true);
 
 			// Remove all improvements that aren't goodies
 			for(uint i = 0; i < uiPlotCount; ++i)
@@ -1267,11 +1268,12 @@ bool CvWorldBuilderMapLoader::Load(const wchar_t* wszFilename)
 
 bool CvWorldBuilderMapLoader::Save(const wchar_t* wszFilename, const char* szMapName)
 {
+	OutputDebugStringA("Saving in CvWorldBuilderMapLoader");
 	InitTypeDesc();
 
 	CvMap& kMap = GC.getMap();
 	sg_kSave.Resize(kMap.getGridWidth(), kMap.getGridHeight());
-	sg_kSave.ClearScenarioData();
+	// sg_kSave.ClearScenarioData();
 
 	// Set map name
 	if(szMapName == NULL)
@@ -1390,9 +1392,7 @@ bool CvWorldBuilderMapLoader::Save(const wchar_t* wszFilename, const char* szMap
 		}
 
 		kPlotData.SetContinentType(pkPlot->GetContinentType());
-	}
-
-	return sg_kSave.Save(wszFilename, sg_kMapTypeDesc, false);
+	}	return sg_kSave.Save(wszFilename, sg_kMapTypeDesc, true);
 }
 
 int CvWorldBuilderMapLoader::LoadModData(lua_State* L)

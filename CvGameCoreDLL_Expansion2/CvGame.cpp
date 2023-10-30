@@ -13018,8 +13018,189 @@ void CvGame::BuildCannotPerformActionHelpText(CvString* toolTipSink, const char*
 }
 
 //	--------------------------------------------------------------------------------
+// Intended to be combined with the saved .civ5mapfile
+// #TODO get github links in here
+void CvGame::LogMapState() const
+{
+	CUSTOMLOG("Logging map state");
+
+	CvString strMapName;
+	strMapName = strMapName.format("C:\\Users\\Artem\\Documents\\My Games\\Sid Meier's Civilization 5\\Maps\\Civ5MapmapState_Turn%03d.Civ5Map", GC.getGame().getElapsedGameTurns());
+
+	const char* sz_strMapName = strMapName.c_str();
+	std::vector<wchar_t> vec;
+	size_t len = strlen(sz_strMapName);
+	vec.resize(len + 1);
+	mbstowcs(&vec[0], sz_strMapName, len);
+	const wchar_t* wsz = &vec[0];
+
+	CvWorldBuilderMapLoader::Save(wsz, NULL);
+
+	// Basically the problem is I can't get these few fields populated as a 
+	// scenario as that tool expects a scenario file and not a savefile. so
+	// for the info it's missing which I hacked into sort of existing by not
+	// deleting the default scenario info and saving it with a modified function of CvWorldBuilderMapLoader.cpp .
+	// so I'm just going to manually construct a json string with this info to merge 
+	// with the map json later in a script and it will work just fine :)
+	CvString strLogName;
+	strLogName = strLogName.format("mapStateLog_Turn%03d.json", GC.getGame().getElapsedGameTurns());
+	FILogFile* pLog = LOGFILEMGR.GetLog(strLogName, FILogFile::kDontTimeStamp);
+	CvString outputJson = "{\"MapData\": {";
+	CvString strTemp;
+
+	// MapTileImprovements Section - cities and owners
+	outputJson += "\"MapTileImprovements\":[\n";
+	for (int i = 0; i < GC.getMap().numPlots(); i++)
+	{
+		CvPlot* pPlot = GC.getMap().plotByIndexUnchecked(i);
+		
+		int cityId = -1;
+		CvString cityName = "";
+		int owner = 255;
+		int routeType = 255;
+
+		if (pPlot->isCity())
+		{
+			cityId = pPlot->getPlotCity()->GetID();
+			cityName = pPlot->getPlotCity()->getName();
+			owner = pPlot->getPlotCity()->getOwner();
+		}
+		else if (pPlot->getOwner() != NO_PLAYER)
+		{
+			owner = pPlot->getOwner();
+		}
+
+		switch (pPlot->getRouteType())
+		{
+		case ROUTE_ROAD:
+			routeType = 0;
+			break;
+		case ROUTE_RAILROAD:
+			routeType = 1;
+			break;
+		default:
+			routeType = 255;
+		}
+
+		strTemp.Format("{\"X\":%d,\"Y\":%d,\"CityId\":%d,\"CityName\":\"%s\",\"Owner\":%d,\"RouteType\":%d}",
+			pPlot->getX(),
+			pPlot->getY(),
+			cityId,
+			cityName.GetCString(),
+			owner,
+			routeType
+		);
+		outputJson += strTemp;
+
+		if (i != GC.getMap().numPlots() - 1)
+		{
+			outputJson += ",\n";
+		}
+	}
+	// Close MapTileImprovements Block
+	outputJson += "],";
+
+
+	// Civ5PlayerData Section
+	outputJson += "\"Civ5PlayerData\":[\n";
+
+	for (int iL = 0; iL < MAX_CIV_PLAYERS; iL++)
+	{
+		PlayerColorTypes pc = GET_PLAYER((PlayerTypes)iL).getPlayerColor();
+
+		if (pc <= 0)
+		{
+			continue;
+		}
+
+		PlayerTypes eLoopPlayer = (PlayerTypes)iL;
+		const CvCivilizationInfo& thisCivilization = GET_PLAYER((PlayerTypes)iL).getCivilizationInfo();
+
+		strTemp.Format("{\"Index\":%d,\"CivType\":\"%s\",\"TeamColor\":\"%d\"}",
+			iL,
+			thisCivilization.GetType(),
+			pc
+		);
+		outputJson += strTemp;
+
+		if (iL != MAX_CIV_PLAYERS - 1)
+		{
+			outputJson += ",\n";
+		}
+	}
+
+	// Close Civ5PlayerData Block
+	outputJson += "],";
+
+	std::map<int, int> CityOwnerIndexMap;
+	// CivColorOverrides Section
+	outputJson += "\"CivColorOverrides\":[\n";
+
+
+	for (int iL = 0; iL < MAX_CIV_PLAYERS; iL++)
+	{
+		PlayerColorTypes pc = GET_PLAYER((PlayerTypes)iL).getPlayerColor();
+
+		if (pc <= 0)
+		{
+			continue;
+		}
+		CityOwnerIndexMap[iL] = pc;
+
+		PlayerTypes eLoopPlayer = (PlayerTypes)iL;
+		const CvCivilizationInfo& thisCivilization = GET_PLAYER((PlayerTypes)iL).getCivilizationInfo();
+
+		CvPlayerColorInfo* eLoopPlayerColorInfo = GC.GetPlayerColorInfo(pc);
+
+		// This still requires post-processing but getting this text is a pain
+		strTemp.Format("{\"CivKey\":\"%d\",\"OuterColor\":{\"Model\":\"constant\",\"ColorConstant\":\"\"},\"InnerColor\":{\"Model\":\"constant\",\"ColorConstant\":\"\"}}",
+			pc
+		);
+		outputJson += strTemp;
+
+
+		if (iL != MAX_CIV_PLAYERS - 1)
+		{
+			outputJson += ",\n";
+		}
+	}
+
+
+
+	// Close CivColorOverrides Block
+	outputJson += "],";
+
+	// File format seems to want this weird CityOwnerIndexMap thing so ok
+
+	outputJson += "\"CityOwnerIndexMap\":{\n";
+	for (map<int, int>::iterator it = CityOwnerIndexMap.begin(); it != CityOwnerIndexMap.end(); it++) {
+		int a = it->first;
+		int b = it->second;
+
+		strTemp.Format("\"%d\":%d", a, b);
+		outputJson += strTemp;
+
+		it++;
+		if (it != CityOwnerIndexMap.end())
+		{
+			outputJson += ",\n";
+		}
+		it--;
+
+	}
+
+	outputJson = outputJson + "}}}";
+	pLog->Msg(outputJson);
+}
+
+//	--------------------------------------------------------------------------------
 void CvGame::LogGameState(bool bLogHeaders) const
 {
+	// TODO: better way of toggling this as this operation is probably expensive
+	if (GC.getLogging() && GC.getAILogging())
+	{
+		LogMapState();
+	}
 	if(GC.getLogging() && GC.getAILogging())
 	{
 		CvString strOutput;

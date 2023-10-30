@@ -118,8 +118,17 @@ bool CvDllDatabaseUtility::PrefetchCollection(std::vector<T*>& kCollection, cons
 
 	if(DB.SelectWhere(kResults, tableName, "ID > -1 ORDER BY ID"))
 	{
+		CUSTOMLOG("%d columns for table %s", kResults.ColumnCount(), tableName);
+		for (int i = 0; i < kResults.ColumnCount(); i++) {
+			CUSTOMLOG(kResults.ColumnName(i));
+		}
+
 		while(kResults.Step())
 		{
+			for (int i = 0; i < kResults.ColumnCount(); i++) {
+				CUSTOMLOG("%s: %s", kResults.ColumnName(i), kResults.GetText(i));
+			}
+
 			size_t Id = kResults.GetInt("ID");
 			CvAssertMsg(index <= Id, "This should never happen!")
 
