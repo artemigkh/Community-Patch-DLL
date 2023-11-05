@@ -756,8 +756,8 @@ public:
 
     
 	void LogMapState() const;
+	void LogGameState(bool bLogHeaders = false) const;
 
-    void LogGameState(bool bLogHeaders = false) const;
 	void unitIsMoving() const;
 
 	void BuildProdModHelpText(CvString* toolTipSink, const char* strTextKey, int iMod, const char* strExtraKey = "") const;

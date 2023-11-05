@@ -13024,17 +13024,22 @@ void CvGame::LogMapState() const
 {
 	CUSTOMLOG("Logging map state");
 
-	CvString strMapName;
-	strMapName = strMapName.format("C:\\Users\\Artem\\Documents\\My Games\\Sid Meier's Civilization 5\\Maps\\Civ5MapmapState_Turn%03d.Civ5Map", GC.getGame().getElapsedGameTurns());
+	// Only need to save the terrain once
+	if (GC.getGame().getElapsedGameTurns() < 1)
+	{
+		CvString strMapName;
+		strMapName = strMapName.format("Maps\\Civ5MapmapState_Turn%03d.Civ5Map", GC.getGame().getElapsedGameTurns());
 
-	const char* sz_strMapName = strMapName.c_str();
-	std::vector<wchar_t> vec;
-	size_t len = strlen(sz_strMapName);
-	vec.resize(len + 1);
-	mbstowcs(&vec[0], sz_strMapName, len);
-	const wchar_t* wsz = &vec[0];
+		const char* sz_strMapName = strMapName.c_str();
+		std::vector<wchar_t> vec;
+		size_t len = strlen(sz_strMapName);
+		vec.resize(len + 1);
+		mbstowcs(&vec[0], sz_strMapName, len);
+		const wchar_t* wsz = &vec[0];
 
-	CvWorldBuilderMapLoader::Save(wsz, NULL);
+		CvWorldBuilderMapLoader::Save(wsz, NULL);
+	}
+
 
 	// Basically the problem is I can't get these few fields populated as a 
 	// scenario as that tool expects a scenario file and not a savefile. so
@@ -13171,25 +13176,7 @@ void CvGame::LogMapState() const
 	outputJson += "],";
 
 	// File format seems to want this weird CityOwnerIndexMap thing so ok
-
-	outputJson += "\"CityOwnerIndexMap\":{\n";
-	for (map<int, int>::iterator it = CityOwnerIndexMap.begin(); it != CityOwnerIndexMap.end(); it++) {
-		int a = it->first;
-		int b = it->second;
-
-		strTemp.Format("\"%d\":%d", a, b);
-		outputJson += strTemp;
-
-		it++;
-		if (it != CityOwnerIndexMap.end())
-		{
-			outputJson += ",\n";
-		}
-		it--;
-
-	}
-
-	outputJson = outputJson + "}}}";
+	outputJson += "\"CityOwnerIndexMap\":{}}}";
 	pLog->Msg(outputJson);
 }
 
