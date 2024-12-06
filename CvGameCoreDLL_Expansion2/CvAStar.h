@@ -68,7 +68,7 @@ public:
 	virtual bool IsInitialized(int iXstart, int iYstart, int iXdest, int iYdest);
 
 	// Generates a path
-	bool FindPathWithCurrentConfiguration(int iXstart, int iYstart, int iXdest, int iYdest, const SPathFinderUserData& data);
+	bool FindPathWithCurrentConfiguration(int iXstart, int iYstart, int iXdest, int iYdest);
 
 	// Verifies if the given path is still valid
 	bool VerifyPath(const SPath& path);
@@ -356,7 +356,7 @@ int ArmyStepValidWater(const CvAStarNode* parent, const CvAStarNode* node, const
 int ArmyStepValidMixed(const CvAStarNode* parent, const CvAStarNode* node, const SPathFinderUserData& data, const CvAStar* finder);
 
 //helper functions
-bool IsPlotConnectedToPlot(PlayerTypes ePlayer, CvPlot* pFromPlot, CvPlot* pToPlot, RouteTypes eRestrictRoute = ROUTE_ANY, bool bAllowHarbors = true, bool bAssumeOpenBorders = false, SPath* pPathOut = NULL);
+bool IsPlotConnectedToPlot(PlayerTypes ePlayer, CvPlot* pFromPlot, CvPlot* pToPlot, RouteTypes eRestrictRoute = ROUTE_ANY, bool bAllowHarbors = true, bool bUseRivers = true, bool bAssumeOpenBorders = false, SPath* pPathOut = NULL);
 
 namespace PathHelpers
 {

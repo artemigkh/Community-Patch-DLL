@@ -55,9 +55,6 @@ public:
 	int GetGoldMaintenance() const;
 	int GetCultureBombRadius() const;
 
-	int GetYieldAdjacentSameType(YieldTypes eYield) const;
-	int GetYieldAdjacentTwoSameType(YieldTypes eYield) const;
-
 #if defined(MOD_GLOBAL_STACKING_RULES)
 	int GetAdditionalUnits() const;
 #endif
@@ -108,6 +105,8 @@ public:
 	bool IsAllowsAirliftTo() const;
 #endif
 
+	bool IsBlockTileSteal() const;
+
 	bool IsHillsMakesValid() const;
 #if defined(MOD_GLOBAL_ALPINE_PASSES)
 	bool IsMountainsMakesValid() const;
@@ -142,8 +141,9 @@ public:
 	bool IsEmbassy() const;
 #if defined(MOD_BALANCE_CORE)
 	int GetObsoleteTech() const;
-	bool IsAdjacentLake() const;
+	bool IsNoAdjacentCity() const;
 	bool IsAdjacentCity() const;
+	bool IsAdjacentLake() const;
 	int GetGrantsVision() const;
 #endif
 	bool IsNoTwoAdjacent() const;
@@ -155,6 +155,8 @@ public:
 	bool ConnectsAllResources() const;
 
 	CivilizationTypes GetRequiredCivilization() const;
+
+	int GetGreatPersonRateModifier() const;
 
 	const char* GetArtDefineTag() const;
 	void SetArtDefineTag(const char* szVal);
@@ -183,8 +185,6 @@ public:
 	int* GetCoastalLandYieldChangeArray();
 	int GetHillsYieldChange(int i) const;
 	int* GetHillsYieldChangeArray();
-	int GetNoFreshWaterYieldChange(int i) const;
-	int* GetNoFreshWaterYieldChangeArray();				// For Moose - CvWidgetData XXX
 	int GetFreshWaterYieldChange(int i) const;
 	int* GetFreshWaterYieldChangeArray();				// For Moose - CvWidgetData XXX
 	int GetAdjacentCityYieldChange(int i) const;
@@ -196,12 +196,10 @@ public:
 	bool GetFeatureMakesValid(int i) const;
 	bool GetImprovementMakesValid(int i) const;
 
-	int GetAdjacentSameTypeYield(int i) const;
-	int* GetAdjacentSameTypeYieldArray();
-	int GetAdjacentTwoSameTypeYield(int i) const;
-	int* GetAdjacentTwoSameTypeYieldArray();
-	int GetAdjacentImprovementYieldChanges(int i, int j) const;
-	int* GetAdjacentImprovementYieldChangesArray(int i);
+	fraction GetYieldPerXAdjacentImprovement(YieldTypes eYield, ImprovementTypes eImprovement) const;
+	bool IsYieldPerXAdjacentImprovement(YieldTypes eYield = NO_YIELD) const;
+	fraction GetYieldPerXAdjacentTerrain(YieldTypes eYield, TerrainTypes eTerrain) const;
+	bool IsYieldPerXAdjacentTerrain(YieldTypes eYield = NO_YIELD) const;
 	int GetAdjacentResourceYieldChanges(int i, int j) const;
 	int* GetAdjacentResourceYieldChangesArray (int i);
 	int GetAdjacentTerrainYieldChanges(int i, int j) const;
@@ -220,14 +218,21 @@ public:
 	int* GetTechFreshWaterYieldChangesArray(int i);
 	int GetRouteYieldChanges(int i, int j) const;
 	int* GetRouteYieldChangesArray(int i);				// For Moose - CvWidgetData XXX
+	int GetAccomplishmentYieldChanges(int i, int j) const;
+	int* GetAccomplishmentYieldChangesArray(int i);
 
 	int  GetImprovementResourceYield(int i, int j) const;
 	bool IsImprovementResourceMakesValid(int i) const;
 	bool IsImprovementResourceTrade(int i) const;
 	bool IsConnectsResource(int i) const;
 
+	ResourceTypes SpawnsAdjacentResource() const;
+
 	int  GetImprovementResourceDiscoverRand(int i) const;
 	int  GetFlavorValue(int i) const;
+
+	int GetDomainProductionModifier(int i) const;
+	int GetDomainFreeExperience(int i) const;
 
 	//---------------------------------------PROTECTED MEMBER VARIABLES---------------------------------
 protected:
@@ -282,6 +287,8 @@ protected:
 	bool m_bAllowsAirliftTo;
 #endif
 
+	bool m_bBlockTileSteal;
+
 	bool m_bHillsMakesValid;
 #if defined(MOD_GLOBAL_ALPINE_PASSES)
 	bool m_bMountainsMakesValid;
@@ -316,8 +323,9 @@ protected:
 	bool m_bIsEmbassy;
 #if defined(MOD_BALANCE_CORE)
 	int m_iGetObsoleteTech;
-	bool m_bAdjacentLake;
+	bool m_bNoAdjacentCity;
 	bool m_bAdjacentCity;
+	bool m_bAdjacentLake;
 	int m_iGrantsVision;
 #endif
 	bool m_bNoTwoAdjacent;
@@ -331,6 +339,8 @@ protected:
 	CvString m_strArtDefineTag;
 	ImprovementUsageTypes m_eImprovementUsageType;
 	CivilizationTypes m_eRequiredCivilization;
+
+	int m_iGreatPersonRateModifier;
 
 	int m_iWorldSoundscapeScriptId;
 
@@ -350,13 +360,14 @@ protected:
 	int* m_piAdjacentMountainYieldChange;
 	int* m_piFlavorValue;
 
+	int* m_piDomainProductionModifier;
+	int* m_piDomainFreeExperience;
+
 	bool* m_pbTerrainMakesValid;
 	bool* m_pbFeatureMakesValid;
 	bool* m_pbImprovementMakesValid;
-
-	int* m_piAdjacentSameTypeYield;
-	int* m_piAdjacentTwoSameTypeYield;
-	int** m_ppiAdjacentImprovementYieldChanges;
+	map<YieldTypes, map<ImprovementTypes, fraction>> m_YieldPerXAdjacentImprovement;
+	map<YieldTypes, map<TerrainTypes, fraction>> m_YieldPerXAdjacentTerrain;
 	int** m_ppiAdjacentTerrainYieldChanges;
 	int** m_ppiAdjacentResourceYieldChanges;
 	int** m_ppiAdjacentFeatureYieldChanges;
@@ -366,8 +377,11 @@ protected:
 	int** m_ppiTechNoFreshWaterYieldChanges;
 	int** m_ppiTechFreshWaterYieldChanges;
 	int** m_ppiRouteYieldChanges;
+	int** m_ppiAccomplishmentYieldChanges;
 
 	CvImprovementResourceInfo* m_paImprovementResource;
+
+	ResourceTypes m_eSpawnsAdjacentResource;
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

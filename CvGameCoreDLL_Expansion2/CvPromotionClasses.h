@@ -336,8 +336,10 @@ public:
 	std::pair<int, bool> GetInstantYields(int i) const;
 #endif
 
-	bool GetTerrainIgnoreCost(int i) const;
-	bool GetFeatureIgnoreCost(int i) const;
+	bool GetIgnoreTerrainCostIn(int i) const;
+	bool GetIgnoreTerrainCostFrom(int i) const;
+	bool GetIgnoreFeatureCostIn(int i) const;
+	bool GetIgnoreFeatureCostFrom(int i) const;
 	bool GetTerrainDoubleMove(int i) const;
 	bool GetFeatureDoubleMove(int i) const;
 #if defined(MOD_PROMOTIONS_HALF_MOVE)
@@ -459,11 +461,11 @@ protected:
 	int m_iGoldenAgeValueFromKills;
 	int m_iExtraWithdrawal;
 #if defined(MOD_BALANCE_CORE_JFD)
-	int m_iPlagueChance;
-	int m_iPlaguePromotion;
+	int m_iPlagueChance; // OBSOLETE: to be removed in VP5.0
+	int m_iPlaguePromotion; // OBSOLETE: to be removed in VP5.0
 	int m_iPlagueID;
 	int m_iPlaguePriority;
-	int m_iPlagueIDImmunity;
+	int m_iPlagueIDImmunity; // OBSOLETE: to be removed in VP5.0
 #endif
 	int m_iEmbarkExtraVisibility;
 	int m_iEmbarkDefenseModifier;
@@ -480,7 +482,7 @@ protected:
 	int m_iGoodyHutYieldBonus;
 	int m_iDiploMissionInfluence;
 	bool m_bGainsXPFromScouting;
-	bool m_bGainsXPFromPillaging;
+	bool m_bGainsXPFromPillaging; // OBSOLETE: to be removed in VP5.0
 	bool m_bGainsXPFromSpotting;
 	bool m_bCannotBeCaptured;
 	int m_iNegatesPromotion;
@@ -605,7 +607,7 @@ protected:
 	int m_iStackedGreatGeneralExperience;
 	int m_iPillageBonusStrength;
 	int m_iReligiousPressureModifier;
-	int m_iAdjacentCityDefesneMod;
+	int m_iAdjacentCityDefenseMod;
 	int m_iNearbyEnemyDamage;
 	int m_iMilitaryProductionModifier;
 	int m_iGeneralGoldenAgeExpPercent;
@@ -659,8 +661,10 @@ protected:
 	int* m_piTerrainPassableTech;
 	int* m_piFeaturePassableTech;
 
-	bool* m_pbTerrainIgnoreCost;
-	bool* m_pbFeatureIgnoreCost;
+	bool* m_pbIgnoreTerrainCostIn;
+	bool* m_pbIgnoreTerrainCostFrom;
+	bool* m_pbIgnoreFeatureCostIn;
+	bool* m_pbIgnoreFeatureCostFrom;
 	bool* m_pbTerrainDoubleMove;
 	bool* m_pbFeatureDoubleMove;
 #if defined(MOD_PROMOTIONS_HALF_MOVE)

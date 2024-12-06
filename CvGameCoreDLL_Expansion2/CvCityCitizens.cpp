@@ -760,8 +760,7 @@ int CvCityCitizens::GetSpecialistGPPRate(SpecialistTypes eSpecialist, SPrecomput
 		CvSpecialistInfo* pSpecialistInfo = GC.getSpecialistInfo(eSpecialist);
 		UnitClassTypes eUnitClass = (UnitClassTypes)pSpecialistInfo->getGreatPeopleUnitClass();
 		int iGPPRate = (pSpecialistInfo->getGreatPeopleRateChange() + m_pCity->GetEventGPPFromSpecialists()) * 100;
-		int iGPPRateMod = 0;
-		iGPPRateMod += m_pCity->getGreatPeopleRateModifier() + GetPlayer()->getGreatPeopleRateModifier() + m_pCity->GetSpecialistRateModifier(eSpecialist);
+		int iGPPRateMod = m_pCity->getGreatPeopleRateModifier() + GetPlayer()->getGreatPeopleRateModifier() + m_pCity->GetSpecialistRateModifierFromBuildings(eSpecialist);
 
 		// Player and Golden Age mods to this specific class
 		if (eUnitClass == GC.getInfoTypeForString("UNITCLASS_SCIENTIST"))
@@ -809,40 +808,7 @@ int CvCityCitizens::GetSpecialistGPPRate(SpecialistTypes eSpecialist, SPrecomput
 		if (eGreatPerson != NO_GREATPERSON)
 		{
 			iGPPRateMod += GetPlayer()->getSpecificGreatPersonRateModifierFromMonopoly(eGreatPerson);
-			if (GetPlayer()->isGoldenAge())
-			{
-				iGPPRateMod += GetPlayer()->getGoldenAgeGreatPersonRateModifier(eGreatPerson);
-				iGPPRateMod += GetPlayer()->GetPlayerTraits()->GetGoldenAgeGreatPersonRateModifier(eGreatPerson);
-
-				const CvReligion* pReligion = m_pCity->GetCityReligions()->GetMajorityReligion();
-				BeliefTypes eSecondaryPantheon = NO_BELIEF;
-				if (pReligion)
-				{
-					iGPPRateMod += pReligion->m_Beliefs.GetGoldenAgeGreatPersonRateModifier(eGreatPerson, m_pCity->getOwner(), m_pCity, true);
-					eSecondaryPantheon = GetCity()->GetCityReligions()->GetSecondaryReligionPantheonBelief();
-					if (eSecondaryPantheon != NO_BELIEF)
-					{
-						iGPPRateMod += GC.GetGameBeliefs()->GetEntry(eSecondaryPantheon)->GetGoldenAgeGreatPersonRateModifier(eGreatPerson);
-					}
-				}
-
-				// Mod for civs keeping their pantheon belief forever
-				if (MOD_RELIGION_PERMANENT_PANTHEON)
-				{
-					if (GC.getGame().GetGameReligions()->HasCreatedPantheon(GetOwner()))
-					{
-						const CvReligion* pPantheon = GC.getGame().GetGameReligions()->GetReligion(RELIGION_PANTHEON, GetOwner());
-						BeliefTypes ePantheonBelief = GC.getGame().GetGameReligions()->GetBeliefInPantheon(GetOwner());
-						if (pPantheon != NULL && ePantheonBelief != NO_BELIEF && ePantheonBelief != eSecondaryPantheon)
-						{
-							if (pReligion == NULL || (pReligion != NULL && !pReligion->m_Beliefs.IsPantheonBeliefInReligion(ePantheonBelief, pReligion->m_eReligion, GetOwner()))) // check that the our religion does not have our belief, to prevent double counting
-							{
-								iGPPRateMod += GC.GetGameBeliefs()->GetEntry(ePantheonBelief)->GetGoldenAgeGreatPersonRateModifier(eGreatPerson);
-							}
-						}
-					}
-				}
-			}
+			iGPPRateMod += GetCity()->GetReligionGreatPersonRateModifier(eGreatPerson);
 			int iNumPuppets = GetPlayer()->GetNumPuppetCities();
 			if (iNumPuppets > 0)
 			{
@@ -955,7 +921,8 @@ int CvCityCitizens::GetBaseValuePerYield(YieldTypes eYield, SPrecomputedExpensiv
 	switch (eYield)
 	{
 	case YIELD_FOOD:
-		if (bAssumeStarving)
+		// in small cities, treat being under the growth threshold like starvation, unless we focus on a yield other than food
+		if (bAssumeStarving || (bAssumeBelowGrowthThreshold && m_pCity->getPopulation() <= 3 && (eFocus == NO_CITY_AI_FOCUS_TYPE || eFocus == CITY_AI_FOCUS_TYPE_FOOD || eFocus == CITY_AI_FOCUS_TYPE_GOLD_GROWTH || eFocus == CITY_AI_FOCUS_TYPE_PROD_GROWTH)))
 			iYieldMod =  /*500*/ GD_INT_GET(AI_CITIZEN_VALUE_FOOD_STARVING);
 		else if (bAssumeBelowGrowthThreshold || eFocus == CITY_AI_FOCUS_TYPE_FOOD || (pkProcessInfo && pkProcessInfo->getProductionToYieldModifier(eYield) > 0))
 			iYieldMod =  /*32*/ GD_INT_GET(AI_CITIZEN_VALUE_FOOD_NEED_GROWTH);
@@ -1118,6 +1085,20 @@ int CvCityCitizens::ScoreYieldChangeQuick(YieldAndGPPList yieldChanges, SPrecomp
 		YieldTypes eYield = (YieldTypes)iI;
 		int iYield100 = yieldChanges.yield[iI];
 
+		// Inca exception: if we're already under the non-specialist food consumption threshold, we can safely remove even more food ...
+		if (m_pCity->IsNoStarvationNonSpecialist() && eYield == YIELD_FOOD && iYield100 < 0 && cache.iFoodConsumptionTimes100 <= cache.iFoodConsumptionAssumeNoReductionNonSpecialistsTimes100)
+		{
+			// ... unless we're adding a specialist
+			int iNumSpecialistAdded = 0;
+			for (int iI = 0; iI < (int)yieldChanges.iNumSpecialists.size(); iI++)
+			{
+				iNumSpecialistAdded += yieldChanges.iNumSpecialists[iI];
+			}
+			if (iNumSpecialistAdded <= 0)
+				continue;
+
+		}
+
 		if (iYield100 != 0)
 		{
 			int iYieldMod = GetBaseValuePerYield(eYield, cache, bAssumeStarving, bAssumeBelowGrowthThreshold, bAssumeInDebt);
@@ -1276,6 +1257,13 @@ int CvCityCitizens::ScoreYieldChange(YieldAndGPPList yieldChanges, SPrecomputedE
 			int iNetFoodNow = cache.iFoodRateTimes100 - cache.iFoodConsumptionTimes100;
 			// food consumption also depends on how many specialists are worked
 			int iNetFoodThen = iNetFoodNow + iYield100 - iNumSpecialistsAdded * (m_pCity->foodConsumptionSpecialistTimes100() - m_pCity->foodConsumptionNonSpecialistTimes100());
+			if (m_pCity->IsNoStarvationNonSpecialist())
+			{
+				// if non-specialists can't cause starvation, the calculation is more complicated. we have to recalculate current and future food consumption by non-specialists manually
+				// iNetFoodThen = iNetFoodNow + (Change in Food Rate) - (Change in Food Consumption)
+				// with (Change in Food Consumption) = (Future Food Consumption Non-Specialists) - (Current Food Consumption Non-Specialists) + (Change in Food Consumption Specialists)
+				iNetFoodThen = iNetFoodNow + iYield100 - (min(cache.iFoodRateTimes100 + iYield100, cache.iFoodConsumptionAssumeNoReductionNonSpecialistsTimes100 - iNumSpecialistsAdded * m_pCity->foodConsumptionNonSpecialistTimes100()) - min(cache.iFoodRateTimes100, cache.iFoodConsumptionAssumeNoReductionNonSpecialistsTimes100) + iNumSpecialistsAdded * m_pCity->foodConsumptionSpecialistTimes100());
+			}
 
 			// special case of building a settler: all excess food is converted into production
 			if (m_pCity->isFoodProduction())
@@ -1333,7 +1321,7 @@ int CvCityCitizens::ScoreYieldChange(YieldAndGPPList yieldChanges, SPrecomputedE
 			// for the scoring, we split the difference in excess food in the different parts and value them accordingly
 			// the code below is a more efficient calculation of the following:
 			// for (i = iLower; i < iHigher; i++) { if (i < 0) {iFoodValue += iValuePerFoodStarving} ; if (0 <= i < GrowthThreshold) {iFoodValue += iValueBelowThreshold} ; if(i > iGrowthThreshold) {...} }
-			
+
 			// how much of the difference (iHigher - iLower) corresponds to food in the "starving" area?
 			// case 1) if both iHigher and iLower < 0   -> iHigher - iLower
 			// case 2) if iLower < 0 and iHigher > 0    -> 0 - iLower
@@ -2060,7 +2048,7 @@ void CvCityCitizens::OptimizeWorkedPlots(bool bLogging)
 	const int iNumOptionsSpecialists = 5;
 
 	//failsafe against switching back and forth, don't try this too often
-	while (iCount < m_pCity->getPopulation() / 2)
+	while (iCount < max(5, m_pCity->getPopulation() / 2))
 	{
 		//now the real check. unassigning a tile might cause the valuation of the other tiles to change, so we have to consider combinations
 		int iNetFood100 = m_pCity->getYieldRateTimes100(YIELD_FOOD, false) - m_pCity->foodConsumptionTimes100();
@@ -2545,6 +2533,8 @@ void CvCityCitizens::DoAlterWorkingPlot(int iIndex)
 					return;
 
 				pPlot->setOwningCityOverride(GetCity());
+				// check if the city governor wants to work the new tile
+				DoReallocateCitizens(true);
 			}
 		}
 	}
@@ -2857,7 +2847,7 @@ int CvCityCitizens::GetSpecialistRate(SpecialistTypes eSpecialist)
 				// Player mod
 				iMod += GetPlayer()->getGreatPeopleRateModifier();
 
-				iMod += GetCity()->GetSpecialistRateModifier(eSpecialist);
+				iMod += GetCity()->GetSpecialistRateModifierFromBuildings(eSpecialist);
 
 				// Player and Golden Age mods to this specific class
 				if ((UnitClassTypes)pkSpecialistInfo->getGreatPeopleUnitClass() == GC.getInfoTypeForString("UNITCLASS_SCIENTIST"))
@@ -3711,6 +3701,7 @@ SPrecomputedExpensiveNumbers::SPrecomputedExpensiveNumbers() :
 	iOtherUnhappiness(0),
 	iFoodRateTimes100(0),
 	iFoodConsumptionTimes100(0),
+	iFoodConsumptionAssumeNoReductionNonSpecialistsTimes100(0),
 	iFoodCorpMod(0),
 	bWantArt(false),
 	bWantScience(false),
@@ -3726,6 +3717,7 @@ void SPrecomputedExpensiveNumbers::update(CvCity* pCity, bool bInsideLoop)
 	iGrowthMod = pCity->getGrowthMods();
 	iFoodRateTimes100 = pCity->getYieldRateTimes100(YIELD_FOOD, false);
 	iFoodConsumptionTimes100 = pCity->foodConsumptionTimes100();
+	iFoodConsumptionAssumeNoReductionNonSpecialistsTimes100 = pCity->foodConsumptionTimes100(false, 0, true);
 
 	if (MOD_BALANCE_VP)
 	{

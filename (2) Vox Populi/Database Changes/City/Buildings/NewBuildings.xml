@@ -708,8 +708,9 @@
 			<Strategy>TXT_KEY_BUILDING_FORTRESS_STRATEGY</Strategy>
 			<PrereqTech>TECH_NAVIGATION</PrereqTech>
 			<ArtDefineTag>CASTLE</ArtDefineTag>
-			<CityIndirectFire>1</CityIndirectFire>
-			<CitySupplyModifier>10</CitySupplyModifier>
+			<CityIndirectFire>true</CityIndirectFire>
+			<CitySupplyFlat>1</CitySupplyFlat>
+			<CitySupplyModifier>5</CitySupplyModifier>
 			<HealRateChange>5</HealRateChange>
 			<EmpireSizeModifierReduction>-5</EmpireSizeModifierReduction>
 			<IconAtlas>COMMUNITY_ATLAS</IconAtlas>
@@ -726,7 +727,7 @@
 			<PrereqTech>TECH_BALLISTICS</PrereqTech>
 			<Water>true</Water>
 			<DeepWaterTileDamage>5</DeepWaterTileDamage>
-			<BorderObstacleWater>1</BorderObstacleWater>
+			<BorderObstacleWater>true</BorderObstacleWater>
 			<IconAtlas>COMMUNITY_ATLAS</IconAtlas>
 			<PortraitIndex>18</PortraitIndex>
 		</Row>
@@ -1518,7 +1519,7 @@
 			<Description>TXT_KEY_BUILDING_CAPITAL_ENGINEER</Description>
 			<Help>TXT_KEY_BUILDING_CAPITAL_ENGINEER_HELP</Help>
 			<Civilopedia>TXT_KEY_BUILDING_CAPITAL_ENGINEER_PEDIA</Civilopedia>
-			<CitySupplyModifier>20</CitySupplyModifier>
+			<CitySupplyModifierGlobal>10</CitySupplyModifierGlobal>
 			<CapitalOnly>true</CapitalOnly>
 			<SpecialistType>SPECIALIST_ENGINEER</SpecialistType>
 			<SpecialistCount>1</SpecialistCount>

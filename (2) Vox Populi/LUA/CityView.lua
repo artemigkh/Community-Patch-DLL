@@ -1249,7 +1249,7 @@ function OnCityViewUpdate()
 					local iCount = pCity:GetSpecialistCount( pSpecialistInfo.ID );
 					local iGPPChange = (pSpecialistInfo.GreatPeopleRateChange + pCity:GetEventGPPFromSpecialists()) * iCount * 100;
 					for building in GameInfo.Buildings{SpecialistType = pSpecialistInfo.Type} do
-				        local buildingID = building.ID;
+						local buildingID = building.ID;
 						if (pCity:IsHasBuilding(buildingID)) then
 							iGPPChange = iGPPChange + building.GreatPeopleRateChange * 100;
 						end
@@ -1271,6 +1271,14 @@ function OnCityViewUpdate()
 						-- CBP
 						iCityMod = iCityMod + pCity:GetSpecialistCityModifier(pSpecialistInfo.ID);
 						local iMonopolyMod = pPlayer:GetMonopolyGreatPersonRateModifier(pSpecialistInfo.ID);
+						local iImprovementsMod = pCity:GetImprovementGreatPersonRateModifier();
+						if iImprovementsMod ~= 0 then
+							iCityMod = iCityMod - iImprovementsMod
+						end
+						local iReligionsMod = pCity:GetReligionGreatPersonRateModifier(pSpecialistInfo.ID);
+						if iReligionsMod ~= 0 then
+							iCityMod = iCityMod - iReligionsMod
+						end
 						--END
 						local iGoldenAgeMod = 0;
 						local bGoldenAge = (pPlayer:GetGoldenAgeTurns() > 0);
@@ -1351,7 +1359,7 @@ function OnCityViewUpdate()
 						-- Player mod actually includes policy mod and World Congress mod, so separate them for tooltip
 						iPlayerMod = iPlayerMod - iPolicyMod - iWorldCongressMod;
 						
-						local iMod = iPlayerMod + iPolicyMod + iWorldCongressMod + iCityMod + iGoldenAgeMod + iMonopolyMod;
+						local iMod = iPlayerMod + iPolicyMod + iWorldCongressMod + iCityMod + iGoldenAgeMod + iMonopolyMod + iImprovementsMod + iReligionsMod;
 						iGPPChange = (iGPPChange * (100 + iMod)) / 100;
 -- Vox Populi
 						local iProgress100 = pCity:GetSpecialistGreatPersonProgressTimes100(iSpecialistIndex);
@@ -1371,8 +1379,14 @@ function OnCityViewUpdate()
 						if (iCityMod > 0) then
 							strToolTipText = strToolTipText .. "[NEWLINE]" .. Locale.ConvertTextKey("TXT_KEY_CITY_GP_MOD", iCityMod);
 						end
+						if (iReligionsMod > 0) then
+							strToolTipText = strToolTipText .. "[NEWLINE]" .. Locale.ConvertTextKey("TXT_KEY_RELIGIONS_GP_MOD", iReligionsMod);
+						end
 						if (iGoldenAgeMod > 0) then
 							strToolTipText = strToolTipText .. "[NEWLINE]" .. Locale.ConvertTextKey("TXT_KEY_GOLDENAGE_GP_MOD", iGoldenAgeMod);
+						end
+						if (iImprovementsMod > 0) then
+							strToolTipText = strToolTipText .. "[NEWLINE]" .. Locale.ConvertTextKey("TXT_KEY_IMPROVEMENTS_GP_MOD", iImprovementsMod);
 						end
 						if (iWorldCongressMod ~= 0) then
 							if (iWorldCongressMod < 0) then
@@ -1528,7 +1542,7 @@ function OnCityViewUpdate()
 		for building in GameInfo.Buildings() do
 			local thisBuildingClass = GameInfo.BuildingClasses[building.BuildingClass];
 			if thisBuildingClass.MaxGlobalInstances <= 0 and thisBuildingClass.MaxTeamInstances <= 0 then
-				if not (building.IsCorporation == 1) then
+				if not building.IsCorporation then
 					local buildingID= building.ID;
 					if pCity:GetNumSpecialistsAllowedByBuilding(buildingID) > 0 then
 						if (pCity:IsHasBuilding(buildingID)) then
@@ -1594,7 +1608,7 @@ function OnCityViewUpdate()
 			local thisBuildingClass = GameInfo.BuildingClasses[building.BuildingClass];
 			if thisBuildingClass.MaxGlobalInstances > 0 or (thisBuildingClass.MaxPlayerInstances == 1 and building.SpecialistCount == 0) or thisBuildingClass.MaxTeamInstances > 0 then
 				local buildingID= building.ID;
-				if not (building.IsCorporation == 1) then
+				if not building.IsCorporation then
 					if (pCity:IsHasBuilding(buildingID)) then
 						numWondersInThisCity = numWondersInThisCity + 1;
 						if(pCity:GetNumSpecialistsAllowedByBuilding(buildingID) > 0) then
@@ -1653,7 +1667,7 @@ function OnCityViewUpdate()
 			if thisBuildingClass.MaxGlobalInstances <= 0 and thisBuildingClass.MaxPlayerInstances ~= 1 and thisBuildingClass.MaxTeamInstances <= 0 then
 				local thisBuilding = GameInfo.Buildings[building.ID];
 				if thisBuilding.GreatWorkCount > 0 then
-					if not (building.IsCorporation == 1) then
+					if not building.IsCorporation then
 						if (pCity:IsHasBuilding(building.ID)) then
 							numGreatWorkBuildingsInThisCity = numGreatWorkBuildingsInThisCity + 1;
 							local element = {};
@@ -1696,11 +1710,10 @@ function OnCityViewUpdate()
 		sortedList = {};
 		thisId = 1;
 		for building in GameInfo.Buildings() do
-			local thisBuildingClass = GameInfo.BuildingClasses[building.BuildingClass];
-			if (building.IsCorporation == 1) then
+			if building.IsCorporation then
 				local buildingID= building.ID;
 				if (pCity:IsHasBuilding(buildingID)) then
-					numCorpsInThisCity = numCorpsInThisCity + 1;				
+					numCorpsInThisCity = numCorpsInThisCity + 1;
 					local element = {};
 					local name = Locale.ConvertTextKey( building.Description )
 					element.name = name;
@@ -1741,10 +1754,10 @@ function OnCityViewUpdate()
 		for building in GameInfo.Buildings() do
 			local thisBuildingClass = GameInfo.BuildingClasses[building.BuildingClass];
 			if thisBuildingClass.MaxGlobalInstances <= 0 and thisBuildingClass.MaxPlayerInstances ~= 1 and thisBuildingClass.MaxTeamInstances <= 0 then
-				if not (building.IsCorporation == 1) then
+				if not building.IsCorporation then
 					local buildingID= building.ID;
 					if pCity:GetNumSpecialistsAllowedByBuilding(buildingID) <= 0 then
-						if (pCity:IsHasBuilding(buildingID) and GameInfo.Buildings[buildingID].GreatWorkCount == 0 and GameInfo.Buildings[buildingID].IsDummy == 0) then
+						if (pCity:IsHasBuilding(buildingID) and GameInfo.Buildings[buildingID].GreatWorkCount == 0 and not GameInfo.Buildings[buildingID].IsDummy) then
 							numBuildingsInThisCity = numBuildingsInThisCity + 1;
 							local element = {};
 							local name = Locale.ConvertTextKey( building.Description )
@@ -2281,7 +2294,7 @@ function OnEnterCityScreen()
 	
 	local pCity = UI.GetHeadSelectedCity();
 	
-	if (pCity ~= nil) then
+	if (pCity ~= nil and not pCity:IsPuppet()) then
 		Network.SendUpdateCityCitizens(pCity:GetID());
 	end
 

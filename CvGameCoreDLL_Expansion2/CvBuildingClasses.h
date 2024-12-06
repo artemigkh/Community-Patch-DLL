@@ -142,6 +142,7 @@ public:
 	int GrantsRandomResourceTerritory() const;
 	bool IsPuppetPurchaseOverride() const;
 	bool IsAllowsPuppetPurchase() const;
+	bool IsNoStarvationNonSpecialist() const;
 	int GetCooldown() const;
 	bool IsTradeRouteInvulnerable() const;
 	int GetTRSpeedBoost() const;
@@ -182,12 +183,17 @@ public:
 	int GetGlobalCultureRateModifier() const;
 	int GetGreatPeopleRateModifier() const;
 	int GetGlobalGreatPeopleRateModifier() const;
+	int GetGPRateModifierPerMarriage() const;
+	int GetGPRateModifierPerLocalTheme() const;
+	int GetGPPOnCitizenBirth() const;
 	int GetGreatGeneralRateModifier() const;
 	int GetGreatPersonExpendGold() const;
 	int GetUnitUpgradeCostMod() const;
 	int GetGoldenAgeModifier() const;
 	int GetFreeExperience() const;
 	int GetGlobalFreeExperience() const;
+	int GetGlobalHappinessPerMajorWar() const;
+	int GetGlobalMilitaryProductionModPerMajorWar() const;
 	int GetFoodKept() const;
 	bool IsAirlift() const;
 	int GetAirModifier() const;
@@ -433,7 +439,13 @@ public:
 	int* GetYieldFromVictoryGlobalArray() const;
 
 	int GetYieldFromVictoryGlobalEraScaling(int i) const;
-	int* GetYieldFromVictoryGlobalArrayEraScaling() const;
+	int* GetYieldFromVictoryGlobalEraScalingArray() const;
+
+	int GetYieldFromVictoryGlobalInGoldenAge(int i) const;
+	int* GetYieldFromVictoryGlobalInGoldenAgeArray() const;
+
+	int GetYieldFromVictoryGlobalInGoldenAgeEraScaling(int i) const;
+	int* GetYieldFromVictoryGlobalInGoldenAgeEraScalingArray() const;
 
 	int GetYieldFromVictoryGlobalPlayer(int i) const;
 	int* GetYieldFromVictoryGlobalPlayerArray() const;
@@ -446,6 +458,15 @@ public:
 
 	int GetYieldFromPillageGlobalPlayer(int i) const;
 	int* GetYieldFromPillageGlobalPlayerArray() const;
+
+	int GetYieldFromGoldenAgeStart(int i) const;
+	int* GetYieldFromGoldenAgeStartArray() const;
+
+	int GetYieldChangePerGoldenAge(int i) const;
+	int* GetYieldChangePerGoldenAgeArray() const;
+
+	int GetYieldChangePerGoldenAgeCap(int i) const;
+	int* GetYieldChangePerGoldenAgeCapArray() const;
 
 	int GetGoldenAgeYieldMod(int i) const;
 	int* GetGoldenAgeYieldModArray() const;
@@ -489,6 +510,9 @@ public:
 	int GetYieldFromPurchase(int i) const;
 	int* GetYieldFromPurchaseArray() const;
 
+	int GetYieldFromPurchaseGlobal(int i) const;
+	int* GetYieldFromPurchaseGlobalArray() const;
+
 	int GetYieldFromFaithPurchase(int i) const;
 	int* GetYieldFromFaithPurchaseArray() const;
 
@@ -529,6 +553,8 @@ public:
 #endif
 	int GetYieldChangePerReligion(int i) const;
 	int* GetYieldChangePerReligionArray() const;
+	set<int> GetUnitClassTrainingAllowed() const;
+	set<std::pair<int, bool>> GetResourceClaim() const;
 	int GetYieldModifier(int i) const;
 	int* GetYieldModifierArray() const;
 	int GetAreaYieldModifier(int i) const;
@@ -543,6 +569,8 @@ public:
 	int* GetRiverPlotYieldChangeArray() const;
 	int GetLakePlotYieldChange(int i) const;
 	int* GetLakePlotYieldChangeArray() const;
+	int GetLakePlotYieldChangeGlobal(int i) const;
+	int* GetLakePlotYieldChangeGlobalArray() const;
 	int GetSeaResourceYieldChange(int i) const;
 	int* GetSeaResourceYieldChangeArray() const;
 	int GetSpecialistCount(int i) const;
@@ -684,6 +712,7 @@ private:
 	int m_iGrantsRandomResourceTerritory;
 	bool m_bPuppetPurchaseOverride;
 	bool m_bAllowsPuppetPurchase;
+	bool m_bNoStarvationNonSpecialist;
 	int m_iGetCooldown;
 	bool m_bTradeRouteInvulnerable;
 	int m_iTRSpeedBoost;
@@ -722,12 +751,17 @@ private:
 	int m_iGlobalCultureRateModifier;
 	int m_iGreatPeopleRateModifier;
 	int m_iGlobalGreatPeopleRateModifier;
+	int m_iGPRateModifierPerMarriage;
+	int m_iGPRateModifierPerLocalTheme;
+	int m_iGPPOnCitizenBirth;
 	int m_iGreatGeneralRateModifier;
 	int m_iGreatPersonExpendGold;
 	int m_iUnitUpgradeCostMod;
 	int m_iGoldenAgeModifier;
 	int m_iFreeExperience;
 	int m_iGlobalFreeExperience;
+	int m_iGlobalHappinessPerMajorWar;
+	int m_iGlobalMilitaryProductionModPerMajorWar;
 	int m_iFoodKept;
 	bool m_bAirlift;
 	int m_iAirModifier;
@@ -971,6 +1005,7 @@ private:
 	int* m_piSeaPlotYieldChange;
 	int* m_piRiverPlotYieldChange;
 	int* m_piLakePlotYieldChange;
+	int* m_piLakePlotYieldChangeGlobal;
 	int* m_piSeaResourceYieldChange;
 	int* m_piGrowthExtraYield;
 	int m_iNeedBuildingThisCity;
@@ -981,10 +1016,15 @@ private:
 	int* m_piYieldFromVictory;
 	int* m_piYieldFromVictoryGlobal;
 	int* m_piYieldFromVictoryGlobalEraScaling;
+	int* m_piYieldFromVictoryGlobalInGoldenAge;
+	int* m_piYieldFromVictoryGlobalInGoldenAgeEraScaling;
 	int* m_piYieldFromVictoryGlobalPlayer;
 	int* m_piYieldFromPillage;
 	int* m_piYieldFromPillageGlobal;
 	int* m_piYieldFromPillageGlobalPlayer;
+	int* m_piYieldFromGoldenAgeStart;
+	int* m_piYieldChangePerGoldenAge;
+	int* m_piYieldChangePerGoldenAgeCap;
 	int* m_piGoldenAgeYieldMod;
 	int* m_piYieldFromWLTKD;
 	int* m_piYieldFromGPExpend;
@@ -1005,6 +1045,7 @@ private:
 	int* m_piYieldFromUnitLevelUp;
 	int* m_piYieldFromCombatExperienceTimes100;
 	int* m_piYieldFromPurchase;
+	int* m_piYieldFromPurchaseGlobal;
 	int* m_piYieldFromFaithPurchase;
 	int* m_piYieldFromInternalTREnd;
 	int* m_piYieldFromInternal;
@@ -1015,6 +1056,8 @@ private:
 #if defined(MOD_BALANCE_CORE)
 	std::map<int, int> m_piYieldChangePerPopInEmpire;
 #endif
+	set<int> m_siUnitClassTrainingAllowed;
+	set<std::pair<int,bool>> m_sibResourceClaim;
 	int* m_piYieldChangePerReligion;
 	int* m_piYieldModifier;
 	int* m_piAreaYieldModifier;

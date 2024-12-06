@@ -206,6 +206,19 @@ int CvUnitProductionAI::CheckUnitBuildSanity(UnitTypes eUnit, bool bForOperation
 		return SR_STRATEGY;
 	}
 
+	// can we build an upgraded version of this unit in any of our cities?
+	if (!kPlayer.GetUnitClassTrainingAllowedAnywhere().empty())
+	{
+		const set<UnitClassTypes>& sUnitClassTrainingAllowed = kPlayer.GetUnitClassTrainingAllowedAnywhere();
+		for (set<UnitClassTypes>::const_iterator it = sUnitClassTrainingAllowed.begin(); it != sUnitClassTrainingAllowed.end(); ++it)
+		{
+			if (pkUnitEntry->GetUpgradeUnitClass(*it))
+			{
+				return SR_STRATEGY;
+			}
+		}
+	}
+
 	if (!bDesperate && !bFree)
 	{
 		if (bCombat && !pkUnitEntry->IsNoMaintenance() && !pkUnitEntry->IsTrade())
@@ -1118,7 +1131,7 @@ int CvUnitProductionAI::CheckUnitBuildSanity(UnitTypes eUnit, bool bForOperation
 				for(int iI = 0; iI < NUM_YIELD_TYPES; iI++)
 				{
 					//Simplification - errata yields not worth considering.
-					if ((YieldTypes)iI > YIELD_GOLDEN_AGE_POINTS && !MOD_BALANCE_CORE_JFD)
+					if ((YieldTypes)iI > YIELD_CULTURE_LOCAL && !MOD_BALANCE_CORE_JFD)
 						break;
 
 					const YieldTypes eYield = static_cast<YieldTypes>(iI);

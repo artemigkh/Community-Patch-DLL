@@ -10772,14 +10772,35 @@ int CvGame::GetCultureMedian() const
 	return m_iCultureMedian;
 }
 
-
 void CvGame::initSpyThreshold()
 {
 	if (!MOD_BALANCE_CORE_SPIES)
 		return;
 
-	int iThreshold = 100 * /* 20 */ GD_INT_GET(BALANCE_SPY_TO_PLAYER_RATIO) / (GetNumMinorCivsEver(true) + /* 2 */ GD_INT_GET(BALANCE_SPY_POINT_MAJOR_PLAYER_MULTIPLIER) * GetNumMajorCivsEver(true));
-	m_iSpyThreshold = range(iThreshold, /* 33 */ GD_INT_GET(BALANCE_SPY_POINT_THRESHOLD_MIN), /* 100 */ GD_INT_GET(BALANCE_SPY_POINT_THRESHOLD_MAX));
+	int iSpyRatio = /*20*/ GD_INT_GET(BALANCE_SPY_TO_PLAYER_RATIO);
+	int iMajorMultiplier = /*2*/ GD_INT_GET(BALANCE_SPY_POINT_MAJOR_PLAYER_MULTIPLIER);
+	int iMinThreshold = /*33*/ GD_INT_GET(BALANCE_SPY_POINT_THRESHOLD_MIN);
+	int iMaxThreshold = /*100*/ GD_INT_GET(BALANCE_SPY_POINT_THRESHOLD_MAX);
+
+	// Avoid division by zero
+	int iNumMinors = max(1, GetNumMinorCivsEver(true));
+	int iNumMajors = max(1, GetNumMajorCivsEver(true));
+
+#if defined(VPDEBUG)
+	CUSTOMLOG("Spy Threshold Config: Ratio=%d, MajorMult=%d, Min=%d, Max=%d",
+		iSpyRatio, iMajorMultiplier, iMinThreshold, iMaxThreshold);
+	CUSTOMLOG("Spy Threshold Civs: Minors=%d, Majors=%d", iNumMinors, iNumMajors);
+#endif
+
+	// iThreshold = (100 * 20) / (numMinors + 2 * numMajors)
+	int iThreshold = 100 * iSpyRatio / (iNumMinors + iMajorMultiplier * iNumMajors);
+
+	// Clamp the result between 33 and 100
+	m_iSpyThreshold = range(iThreshold, iMinThreshold, iMaxThreshold);
+
+#if defined(VPDEBUG)
+	CUSTOMLOG("Spy Threshold Result: %d", m_iSpyThreshold);
+#endif
 }
 
 int CvGame::GetSpyThreshold() const
@@ -10787,8 +10808,8 @@ int CvGame::GetSpyThreshold() const
 	// failsafe: if initSpyThreshold has not been called yet for some reason, calculate the threshold based on the number of players ever alive
 	if (m_iSpyThreshold == 0)
 	{
-		int iTempThreshold = 100 * /* 20 */ GD_INT_GET(BALANCE_SPY_TO_PLAYER_RATIO) / (GetNumMinorCivsEver(false) + /* 2 */ GD_INT_GET(BALANCE_SPY_POINT_MAJOR_PLAYER_MULTIPLIER) * GetNumMajorCivsEver(false));
-		iTempThreshold = range(iTempThreshold, /* 33 */ GD_INT_GET(BALANCE_SPY_POINT_THRESHOLD_MIN), /* 100 */ GD_INT_GET(BALANCE_SPY_POINT_THRESHOLD_MAX));
+		int iTempThreshold = 100 * /*20*/ GD_INT_GET(BALANCE_SPY_TO_PLAYER_RATIO) / (GetNumMinorCivsEver(false) + /*2*/ GD_INT_GET(BALANCE_SPY_POINT_MAJOR_PLAYER_MULTIPLIER) * GetNumMajorCivsEver(false));
+		iTempThreshold = range(iTempThreshold, /*33*/ GD_INT_GET(BALANCE_SPY_POINT_THRESHOLD_MIN), /*100*/ GD_INT_GET(BALANCE_SPY_POINT_THRESHOLD_MAX));
 		return iTempThreshold;
 	}
 
@@ -12578,7 +12599,6 @@ void CvGame::LogGameState(bool bLogHeaders) const
 		int iCompetitor = 0;
 		int iEnemy = 0;
 		int iUnforgivable = 0;
-		int iNoOpinion = 0;
 
 		int iMajorWar = 0;
 		int iMajorHostile = 0;
@@ -12587,13 +12607,11 @@ void CvGame::LogGameState(bool bLogHeaders) const
 		int iMajorAfraid = 0;
 		int iMajorFriendly = 0;
 		int iMajorNeutral = 0;
-		int iMajorNoApproach = 0;
 
 		int iMinorIgnore = 0;
 		int iMinorProtective = 0;
 		int iMinorConquest = 0;
 		int iMinorBully = 0;
-		int iMinorNoApproach = 0;
 
 		// Loop through all Players
 		for (int iPlayerLoop = 0; iPlayerLoop < MAX_MAJOR_CIVS; iPlayerLoop++)
@@ -12655,9 +12673,6 @@ void CvGame::LogGameState(bool bLogHeaders) const
 							case CIV_OPINION_UNFORGIVABLE:
 								iUnforgivable++;
 								break;
-							case NO_CIV_OPINION:
-								iNoOpinion++;
-								break;
 							}
 
 							switch (pPlayer->GetDiplomacyAI()->GetCivApproach(eLoopPlayer2))
@@ -12683,9 +12698,6 @@ void CvGame::LogGameState(bool bLogHeaders) const
 							case CIV_APPROACH_FRIENDLY:
 								iMajorFriendly++;
 								break;
-							case NO_CIV_APPROACH:
-								iMajorNoApproach++;
-								break;
 							}
 						}
 						// Minor
@@ -12704,9 +12716,6 @@ void CvGame::LogGameState(bool bLogHeaders) const
 								break;
 							case CIV_APPROACH_FRIENDLY:
 								iMinorProtective++;
-								break;
-							case NO_CIV_APPROACH:
-								iMajorNoApproach++;
 								break;
 							case CIV_APPROACH_DECEPTIVE:
 							case CIV_APPROACH_GUARDED:
@@ -12753,7 +12762,6 @@ void CvGame::LogGameState(bool bLogHeaders) const
 			strOutput += ", Competitor";
 			strOutput += ", Enemy";
 			strOutput += ", Unforgivable";
-			strOutput += ", No Opinion";
 		}
 		else
 		{
@@ -12771,8 +12779,6 @@ void CvGame::LogGameState(bool bLogHeaders) const
 			strOutput += ", " + strTemp;
 			strTemp.Format("%d", iUnforgivable);
 			strOutput += ", " + strTemp;
-			strTemp.Format("%d", iNoOpinion);
-			strOutput += ", " + strTemp;
 		}
 
 		// Major Approaches
@@ -12785,7 +12791,6 @@ void CvGame::LogGameState(bool bLogHeaders) const
 			strOutput += ", Afraid";
 			strOutput += ", Friendly";
 			strOutput += ", Neutral";
-			strOutput += ", No Approach (Major)";
 		}
 		else
 		{
@@ -12803,8 +12808,6 @@ void CvGame::LogGameState(bool bLogHeaders) const
 			strOutput += ", " + strTemp;
 			strTemp.Format("%d", iMajorNeutral);
 			strOutput += ", " + strTemp;
-			strTemp.Format("%d", iMajorNoApproach);
-			strOutput += ", " + strTemp;
 		}
 
 		// Minor Approaches
@@ -12814,7 +12817,6 @@ void CvGame::LogGameState(bool bLogHeaders) const
 			strOutput += ", Protective";
 			strOutput += ", Conquest";
 			strOutput += ", Bully";
-			strOutput += ", No Approach (Minor)";
 		}
 		else
 		{
@@ -12825,8 +12827,6 @@ void CvGame::LogGameState(bool bLogHeaders) const
 			strTemp.Format("%d", iMinorConquest);
 			strOutput += ", " + strTemp;
 			strTemp.Format("%d", iMinorBully);
-			strOutput += ", " + strTemp;
-			strTemp.Format("%d", iMinorNoApproach);
 			strOutput += ", " + strTemp;
 		}
 

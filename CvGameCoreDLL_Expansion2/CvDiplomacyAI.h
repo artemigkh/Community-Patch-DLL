@@ -70,6 +70,7 @@ public:
 	~CvDiplomacyAI(void);
 	void Init(CvPlayer* pPlayer);
 	void Uninit();
+	inline void SetTeam(TeamTypes eTeam) { m_eTeam = eTeam; }
 	template<typename DiplomacyAI, typename Visitor>
 	static void Serialize(DiplomacyAI& diplomacyAI, Visitor& visitor);
 	void Read(FDataStream& kStream);
@@ -81,8 +82,8 @@ public:
 	// Pointers
 	// ************************************
 
-	CvPlayer* GetPlayer();
-	const CvPlayer* GetPlayer() const;
+	inline CvPlayer* GetPlayer() { return m_pPlayer; }
+	inline const CvPlayer* GetPlayer() const { return m_pPlayer; }
 
 	// ************************************
 	// Helper Functions
@@ -109,10 +110,10 @@ public:
 	bool IsNuclearGandhi(bool bPotentially = false) const;
 
 	// ************************************
-	// Personality Values
+	// Personality Flavors
 	// ************************************
 
-	int GetRandomPersonalityWeight(int iOriginalValue, const CvSeeder& seed);
+	int RandomizePersonalityFlavor(int iOriginalValue, const CvSeeder& seed);
 	void DoInitializePersonality(bool bFirstInit);
 	void SelectDefaultVictoryPursuits();
 
@@ -124,6 +125,8 @@ public:
 	int GetWarmongerHate() const;
 	int GetDoFWillingness() const;
 	int GetDenounceWillingness() const;
+	int GetWorkWithWillingness() const;
+	int GetWorkAgainstWillingness() const;
 	int GetLoyalty() const;
 	int GetForgiveness() const;
 	int GetNeediness() const;
@@ -205,11 +208,11 @@ public:
 	bool IsEndgameAggressiveTo(PlayerTypes ePlayer) const;
 	void SetEndgameAggressiveTo(PlayerTypes ePlayer, bool bValue);
 
-	bool IsPlayerRecklessExpander(PlayerTypes ePlayer) const;
-	void SetPlayerRecklessExpander(PlayerTypes ePlayer, bool bValue);
+	bool IsRecklessExpander(PlayerTypes ePlayer) const;
+	void SetRecklessExpander(PlayerTypes ePlayer, bool bValue);
 
-	bool IsPlayerWonderSpammer(PlayerTypes ePlayer) const;
-	void SetPlayerWonderSpammer(PlayerTypes ePlayer, bool bValue);
+	bool IsWonderSpammer(PlayerTypes ePlayer) const;
+	void SetWonderSpammer(PlayerTypes ePlayer, bool bValue);
 
 	// ------------------------------------
 	// Victory Progress
@@ -246,8 +249,8 @@ public:
 	CivApproachTypes GetCivStrategicApproach(PlayerTypes ePlayer) const;
 	void SetCivStrategicApproach(PlayerTypes ePlayer, CivApproachTypes eApproach);
 
-	CivApproachTypes GetCachedSurfaceApproach(PlayerTypes ePlayer) const;
-	void SetCachedSurfaceApproach(PlayerTypes ePlayer, CivApproachTypes eApproach);
+	int GetCachedSurfaceApproach(PlayerTypes ePlayer) const;
+	void SetCachedSurfaceApproach(PlayerTypes ePlayer, int iApproach);
 
 	CivApproachTypes GetSurfaceApproach(PlayerTypes ePlayer) const;
 	int GetSurfaceApproachDealModifier(PlayerTypes ePlayer, bool bFromMe) const;
@@ -385,6 +388,7 @@ public:
 	void ChangeCommonFoeValue(PlayerTypes ePlayer, int iChange);
 
 	int GetMaxRecentAssistValue() const;
+	int GetMaxRecentFailedAssistValue() const;
 	int GetRecentAssistValue(PlayerTypes ePlayer) const;
 	void SetRecentAssistValue(PlayerTypes ePlayer, int iValue);
 	void ChangeRecentAssistValue(PlayerTypes ePlayer, int iChange, bool bDecay = false);
@@ -741,12 +745,16 @@ public:
 	bool IsPlayerLiberatedHolyCity(PlayerTypes ePlayer) const;
 	void SetPlayerLiberatedHolyCity(PlayerTypes ePlayer, bool bValue);
 
-	bool IsPlayerCapturedCapital(PlayerTypes ePlayer, bool bEver = false) const;
+	bool IsPlayerCapturedCapital(PlayerTypes ePlayer) const;
 	void SetPlayerCapturedCapital(PlayerTypes ePlayer, bool bValue);
+	bool IsPlayerEverCapturedCapital(PlayerTypes ePlayer) const;
+	void SetPlayerEverCapturedCapital(PlayerTypes ePlayer, bool bValue);
 	bool IsCapitalCapturedBy(PlayerTypes ePlayer, bool bCurrently = false, bool bTeammates = true, bool bCheckEver = false) const;
 
-	bool IsPlayerCapturedHolyCity(PlayerTypes ePlayer, bool bEver = false) const;
+	bool IsPlayerCapturedHolyCity(PlayerTypes ePlayer) const;
 	void SetPlayerCapturedHolyCity(PlayerTypes ePlayer, bool bValue);
+	bool IsPlayerEverCapturedHolyCity(PlayerTypes ePlayer) const;
+	void SetPlayerEverCapturedHolyCity(PlayerTypes ePlayer, bool bValue);
 	bool IsHolyCityCapturedBy(PlayerTypes ePlayer, bool bCurrently = false, bool bTeammates = true, bool bCheckEver = false) const;
 
 	bool IsLiberator(PlayerTypes ePlayer, bool bIgnoreReturns = false, bool bOnlyMajorCities = false) const;
@@ -767,6 +775,10 @@ public:
 	int GetNumCitiesLiberatedBy(PlayerTypes ePlayer) const;
 	void SetNumCitiesLiberatedBy(PlayerTypes ePlayer, int iValue);
 	void ChangeNumCitiesLiberatedBy(PlayerTypes ePlayer, int iChange);
+
+	int GetNumCitiesEverLiberatedBy(PlayerTypes ePlayer) const;
+	void SetNumCitiesEverLiberatedBy(PlayerTypes ePlayer, int iValue);
+	void ChangeNumCitiesEverLiberatedBy(PlayerTypes ePlayer, int iChange);
 
 	int GetNumCiviliansReturnedToMe(PlayerTypes ePlayer) const;
 	void SetNumCiviliansReturnedToMe(PlayerTypes ePlayer, int iValue);
@@ -1022,14 +1034,10 @@ public:
 	bool IsHelpRequestTooSoon(PlayerTypes ePlayer) const;
 
 	int GetMaxVassalProtectValue() const;
+	int GetMaxVassalFailedProtectValue() const;
 	int GetVassalProtectValue(PlayerTypes ePlayer) const;
 	void SetVassalProtectValue(PlayerTypes ePlayer, int iValue);
-	void ChangeVassalProtectValue(PlayerTypes ePlayer, int iChange);
-
-	int GetMaxVassalFailedProtectValue() const;
-	int GetVassalFailedProtectValue(PlayerTypes ePlayer) const;
-	void SetVassalFailedProtectValue(PlayerTypes ePlayer, int iValue);
-	void ChangeVassalFailedProtectValue(PlayerTypes ePlayer, int iChange);
+	void ChangeVassalProtectValue(PlayerTypes ePlayer, int iChange, bool bDecay = false);
 
 	bool IsMasterLiberatedMeFromVassalage(PlayerTypes ePlayer) const;
 	void SetMasterLiberatedMeFromVassalage(PlayerTypes ePlayer, bool bValue);
@@ -1043,7 +1051,7 @@ public:
 	bool BrokeVassalAgreement(PlayerTypes ePlayer) const;
 	void SetBrokeVassalAgreement(PlayerTypes ePlayer, bool bValue);
 
-	int GetPlayerBrokenVassalAgreementTurn(PlayerTypes ePlayer) const;
+	int GetBrokeVassalAgreementTurn(PlayerTypes ePlayer) const;
 	void SetBrokeVassalAgreementTurn(PlayerTypes ePlayer, int iTurn);
 
 	bool IsVassalTaxRaised(PlayerTypes ePlayer) const;
@@ -1067,6 +1075,12 @@ public:
 	// ************************************
 
 	void DoTurn(DiplomacyMode eDiploMode, PlayerTypes ePlayer=NO_PLAYER);
+
+	// ------------------------------------
+	// Test Backstabber Flag
+	// ------------------------------------
+
+	void TestBackstabberFlag();
 
 	// ------------------------------------
 	// Conquest Stats
@@ -1144,8 +1158,8 @@ public:
 
 	void TestBackstabbingPenalties();
 
-	void DoTestUntrustworthyFriends();
-	bool DoTestOnePlayerUntrustworthyFriend(PlayerTypes ePlayer);
+	void TestUntrustworthyFriends();
+	bool TestOnePlayerUntrustworthyFriend(PlayerTypes ePlayer);
 
 	// ------------------------------------
 	// War Sanity Checks
@@ -1159,7 +1173,6 @@ public:
 	bool DoUpdateOnePlayerSaneDiplomaticTarget(PlayerTypes ePlayer, bool bImpulse);
 	bool CanBackstab(PlayerTypes ePlayer) const;
 	bool IsWillingToAttackFriend(PlayerTypes ePlayer, bool bDirect, bool bImpulse);
-	bool WouldBeUpsetIfAttackedFriend(PlayerTypes ePlayer, PlayerTypes eBackstabPlayer) const;
 
 	// ------------------------------------
 	// Opinion
@@ -1172,7 +1185,6 @@ public:
 	void DoUpdateHumanTradePriority(PlayerTypes ePlayer, int iOpinionWeight); // <= JdH
 #endif
 
-	//void DoUpdateOpinionTowardsUsGuesses();
 	//void DoUpdateApproachTowardsUsGuesses();
 
 	// ------------------------------------
@@ -1216,7 +1228,7 @@ public:
 
 	// Minor Civ Approach
 	void DoUpdateMinorCivApproaches();
-	void SelectBestApproachTowardsMinorCiv(PlayerTypes ePlayer, std::map<PlayerTypes, CivApproachTypes>& oldApproaches);
+	void SelectBestApproachTowardsMinorCiv(PlayerTypes ePlayer);
 
 	// ------------------------------------
 	// Peace Treaty Willingness
@@ -1747,7 +1759,6 @@ public:
 	int GetVassalDenouncementScore(PlayerTypes ePlayer) const;
 	int GetVassalTaxScore(PlayerTypes ePlayer);
 	int GetVassalProtectScore(PlayerTypes ePlayer) const;
-	int GetVassalFailedProtectScore(PlayerTypes ePlayer) const;
 	int GetVassalTradeRouteScore(PlayerTypes ePlayer);
 	int GetVassalOpenBordersScore(PlayerTypes ePlayer) const;
 	int GetVassalReligionScore(PlayerTypes ePlayer);
@@ -1796,34 +1807,31 @@ public:
 	void LogOpenEmbassy(PlayerTypes ePlayer);
 	void LogCloseEmbassy(PlayerTypes ePlayer);
 private:
-	/// Helper function to return this player's ID more conveniently
-	inline PlayerTypes GetID() const
-	{
-		return m_pPlayer->GetID();
-	}
-	/// Helper function to return the Team ID this AI's player is associated with more conveniently
-	inline TeamTypes GetTeam() const
-	{
-		return m_pPlayer->getTeam();
-	}
+	/// Helper functions to return the Player and Team IDs more conveniently
+	inline PlayerTypes GetID() const { return (PlayerTypes)m_eID; }
+	inline TeamTypes GetTeam() const { return (TeamTypes)m_eTeam; }
+	inline bool NotMe(PlayerTypes eOtherPlayer) const { return eOtherPlayer != (PlayerTypes)m_eID; }
+	inline bool NotTeam(PlayerTypes eOtherPlayer) const { return GET_PLAYER(eOtherPlayer).getTeam() != (TeamTypes)m_eTeam; }
 
 	// Estimations of other players' tendencies
-	int GetEstimatePlayerVictoryCompetitiveness(PlayerTypes ePlayer) const;
-	int GetEstimatePlayerWonderCompetitiveness(PlayerTypes ePlayer) const;
-	int GetEstimatePlayerMinorCivCompetitiveness(PlayerTypes ePlayer) const;
-	int GetEstimatePlayerBoldness(PlayerTypes ePlayer) const;
-	int GetEstimatePlayerDiploBalance(PlayerTypes ePlayer) const;
-	int GetEstimatePlayerWarmongerHate(PlayerTypes ePlayer) const;
-	int GetEstimatePlayerDoFWillingness(PlayerTypes ePlayer) const;
-	int GetEstimatePlayerDenounceWillingness(PlayerTypes ePlayer) const;
-	int GetEstimatePlayerLoyalty(PlayerTypes ePlayer) const;
-	int GetEstimatePlayerForgiveness(PlayerTypes ePlayer) const;
-	int GetEstimatePlayerNeediness(PlayerTypes ePlayer) const;
-	int GetEstimatePlayerMeanness(PlayerTypes ePlayer) const;
-	int GetEstimatePlayerChattiness(PlayerTypes ePlayer) const;
-	int GetEstimatePlayerMajorCivApproachBias(PlayerTypes ePlayer, CivApproachTypes eApproach) const;
-	int GetEstimatePlayerMinorCivApproachBias(PlayerTypes ePlayer, CivApproachTypes eApproach) const;
-	int GetEstimatePlayerFlavorValue(PlayerTypes ePlayer, FlavorTypes eFlavor) const;
+	int EstimateVictoryCompetitiveness(PlayerTypes ePlayer) const;
+	int EstimateWonderCompetitiveness(PlayerTypes ePlayer) const;
+	int EstimateMinorCivCompetitiveness(PlayerTypes ePlayer) const;
+	int EstimateBoldness(PlayerTypes ePlayer) const;
+	int EstimateDiploBalance(PlayerTypes ePlayer) const;
+	int EstimateWarmongerHate(PlayerTypes ePlayer) const;
+	int EstimateDoFWillingness(PlayerTypes ePlayer) const;
+	int EstimateDenounceWillingness(PlayerTypes ePlayer) const;
+	int EstimateWorkWithWillingness(PlayerTypes ePlayer) const;
+	int EstimateWorkAgainstWillingness(PlayerTypes ePlayer) const;
+	int EstimateLoyalty(PlayerTypes ePlayer) const;
+	int EstimateForgiveness(PlayerTypes ePlayer) const;
+	int EstimateNeediness(PlayerTypes ePlayer) const;
+	int EstimateMeanness(PlayerTypes ePlayer) const;
+	int EstimateChattiness(PlayerTypes ePlayer) const;
+	int EstimateMajorCivApproachBias(PlayerTypes ePlayer, CivApproachTypes eApproach) const;
+	int EstimateMinorCivApproachBias(PlayerTypes ePlayer, CivApproachTypes eApproach) const;
+	int EstimateFlavorValue(PlayerTypes ePlayer, FlavorTypes eFlavor) const;
 
 	bool IsValidUIDiplomacyTarget(PlayerTypes eTargetPlayer);
 
@@ -1872,11 +1880,13 @@ private:
 
 	void LogStatementToPlayer(PlayerTypes ePlayer, DiploStatementTypes eMessage);
 
-	CvPlayer* m_pPlayer;
-
 	// ************************************
 	// Memory Values
 	// ************************************
+
+	CvPlayer* m_pPlayer;
+	unsigned char m_eID;
+	unsigned char m_eTeam;
 
 	// Need a string member so that it doesn't go out of scope after translation
 	Localization::String m_strDiploText;
@@ -1890,13 +1900,18 @@ private:
 	unsigned char m_iWarmongerHate;
 	unsigned char m_iDoFWillingness;
 	unsigned char m_iDenounceWillingness;
+	unsigned char m_iWorkWithWillingness;
+	unsigned char m_iWorkAgainstWillingness;
 	unsigned char m_iLoyalty;
 	unsigned char m_iForgiveness;
 	unsigned char m_iNeediness;
 	unsigned char m_iMeanness;
 	unsigned char m_iChattiness;
 	unsigned char m_aiMajorCivApproachBiases[NUM_CIV_APPROACHES];
-	unsigned char m_aiMinorCivApproachBiases[NUM_CIV_APPROACHES];
+	unsigned char m_iMinorCivWarBias;
+	unsigned char m_iMinorCivHostileBias;
+	unsigned char m_iMinorCivNeutralBias;
+	unsigned char m_iMinorCivFriendlyBias;
 
 	// Key Players
 	PlayerTypes m_eMostValuableFriend;
@@ -2078,12 +2093,15 @@ private:
 	bool m_abLiberatedHolyCity[MAX_MAJOR_CIVS];
 	bool m_abCapturedCapital[MAX_MAJOR_CIVS];
 	bool m_abCapturedHolyCity[MAX_MAJOR_CIVS];
+	bool m_abEverCapturedCapital[MAX_MAJOR_CIVS];
+	bool m_abEverCapturedHolyCity[MAX_MAJOR_CIVS];
 	bool m_abResurrectorAttackedUs[MAX_MAJOR_CIVS];
 	bool m_abEverSanctionedUs[MAX_MAJOR_CIVS];
 	bool m_abEverUnsanctionedUs[MAX_MAJOR_CIVS];
 
 	// # of times/points counters
 	unsigned char m_aiNumCitiesLiberated[MAX_MAJOR_CIVS];
+	unsigned char m_aiNumCitiesEverLiberated[MAX_MAJOR_CIVS];
 	unsigned char m_aiNumCiviliansReturnedToMe[MAX_MAJOR_CIVS];
 	unsigned char m_aiNumTimesIntrigueSharedBy[MAX_MAJOR_CIVS];
 	unsigned char m_aiNumLandmarksBuiltForMe[MAX_MAJOR_CIVS];
@@ -2150,9 +2168,8 @@ private:
 	char m_aiHelpRequestTooSoonNumTurns[MAX_MAJOR_CIVS];
 	bool m_abOfferingGift[MAX_MAJOR_CIVS];
 	bool m_abOfferedGift[MAX_MAJOR_CIVS];
-	int m_aiBrokenVassalAgreementTurn[MAX_MAJOR_CIVS];
-	unsigned short m_aiPlayerVassalageFailedProtectValue[MAX_MAJOR_CIVS];
-	unsigned short m_aiPlayerVassalageProtectValue[MAX_MAJOR_CIVS];
+	int m_aiBrokeVassalAgreementTurn[MAX_MAJOR_CIVS];
+	short m_aiVassalProtectValue[MAX_MAJOR_CIVS];
 	int m_aiPlayerVassalagePeacefullyRevokedTurn[MAX_MAJOR_CIVS];
 	int m_aiPlayerVassalageForcefullyRevokedTurn[MAX_MAJOR_CIVS];
 	bool m_abMoveTroopsRequestAccepted[MAX_MAJOR_CIVS];
@@ -2189,6 +2206,8 @@ namespace CvDiplomacyAIHelpers
 	void ApplyLiberationBonuses(CvCity* pCity, PlayerTypes eLiberator, PlayerTypes eNewOwner);
 	int GetCityWarmongerValue(CvCity* pCity, PlayerTypes eConqueror, PlayerTypes eCityOwner, PlayerTypes eObserver);
 	int GetCityLiberationValue(CvCity* pCity, PlayerTypes eLiberator, PlayerTypes eNewOwner, PlayerTypes eObserver);
+	bool BackstabbedPlayer(PlayerTypes eBackstabber, PlayerTypes eVictim, bool bIncludeDoFEnd);
+	bool IgnoresBackstabbing(PlayerTypes eObserver, PlayerTypes eVictim, bool bCheckCurrent = false);
 }
 
 #endif //CIV5_AI_DIPLOMACY_H

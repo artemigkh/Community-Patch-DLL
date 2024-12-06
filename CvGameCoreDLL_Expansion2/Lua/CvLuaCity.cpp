@@ -239,6 +239,8 @@ void CvLuaCity::PushMethods(lua_State* L, int t)
 	Method(GetTotalGreatPeopleRateModifier);
 	Method(ChangeBaseGreatPeopleRate);
 	Method(GetGreatPeopleRateModifier);
+	Method(GetImprovementGreatPersonRateModifier);
+	Method(GetReligionGreatPersonRateModifier);
 
 	Method(GetBorderGrowthRateIncreaseTotal);
 	Method(GetJONSCultureStored);
@@ -576,6 +578,7 @@ void CvLuaCity::PushMethods(lua_State* L, int t)
 	Method(GetYieldPerTurnFromMinors);
 	Method(SetYieldPerTurnFromMinors);
 #endif
+	Method(GetBaseYieldRateFromNonSpecialists);
 	Method(GetBaseYieldRateFromCSAlliance);
 	Method(GetBuildingYieldChangeFromCorporationFranchises);
 	Method(GetYieldChangeFromCorporationFranchises);
@@ -2666,26 +2669,26 @@ int CvLuaCity::lGetPopulation(lua_State* L)
 	return BasicLuaMethod(L, &CvCity::getPopulation);
 }
 //------------------------------------------------------------------------------
-//void setPopulation(int iNewValue);
+//void setPopulation(int iNewValue, bool bReassignPop = true);
 int CvLuaCity::lSetPopulation(lua_State* L)
 {
 	CvCity* pkCity = GetInstance(L);
 	int iValue = lua_tointeger(L, 2);
-	int bReassignPop = lua_toboolean(L, 3);
-	CvAssertMsg(bReassignPop != 0, "It is super dangerous to set this to false.  Ken would love to see why you are doing this.");
+	bool bReassignPop = lua_isboolean(L, 3) ? lua_toboolean(L, 3) : true;
+	CvAssertMsg(bReassignPop, "It is super dangerous to set this to false.  Ken would love to see why you are doing this.");
 	pkCity->setPopulation(iValue, bReassignPop);
 
 	return 1;
 //	return BasicLuaMethod(L, &CvCity::setPopulation);
 }
 //------------------------------------------------------------------------------
-//void changePopulation(int iChange);
+//void changePopulation(int iChange, bool bReassignPop = true);
 int CvLuaCity::lChangePopulation(lua_State* L)
 {
 	CvCity* pkCity = GetInstance(L);
 	int iChange = lua_tointeger(L, 2);
-	int bReassignPop = lua_toboolean(L, 3);
-	CvAssertMsg(bReassignPop != 0, "It is super dangerous to set this to false.  Ken would love to see why you are doing this.");
+	bool bReassignPop = lua_isboolean(L, 3) ? lua_toboolean(L, 3) : true;
+	CvAssertMsg(bReassignPop, "It is super dangerous to set this to false.  Ken would love to see why you are doing this.");
 	pkCity->changePopulation(iChange, bReassignPop);
 
 	return 1;
@@ -2784,6 +2787,27 @@ int CvLuaCity::lChangeBaseGreatPeopleRate(lua_State* L)
 int CvLuaCity::lGetGreatPeopleRateModifier(lua_State* L)
 {
 	return BasicLuaMethod(L, &CvCity::getGreatPeopleRateModifier);
+}
+//int GetImprovementGreatPersonRateModifier();
+int CvLuaCity::lGetImprovementGreatPersonRateModifier(lua_State* L)
+{
+	return BasicLuaMethod(L, &CvCity::GetImprovementGreatPersonRateModifier);
+}
+//int GetReligionGreatPersonRateModifier();
+int CvLuaCity::lGetReligionGreatPersonRateModifier(lua_State* L)
+{
+	CvCity* pkCity = GetInstance(L);
+	int iResult = 0;
+
+	GreatPersonTypes eGreatPerson = GetGreatPersonFromSpecialist((SpecialistTypes)toValue<SpecialistTypes>(L, 2));
+
+	if (eGreatPerson != NO_GREATPERSON)
+	{
+		iResult += pkCity->GetReligionGreatPersonRateModifier(eGreatPerson);
+	}
+
+	lua_pushinteger(L, iResult);
+	return 1;
 }
 //------------------------------------------------------------------------------
 //int GetBorderGrowthRateIncreaseTotal() const;
@@ -4756,7 +4780,7 @@ int CvLuaCity::lGetTotalSpecialistCount(lua_State* L)
 int CvLuaCity::lGetSpecialistCityModifier(lua_State* L)
 {
 	CvCity* pkCity = GetInstance(L);
-	int iResult = pkCity->GetSpecialistRateModifier(toValue<SpecialistTypes>(L, 2));
+	int iResult = pkCity->GetSpecialistRateModifierFromBuildings(toValue<SpecialistTypes>(L, 2));
 
 	GreatPersonTypes eGreatPerson = GetGreatPersonFromSpecialist((SpecialistTypes)toValue<SpecialistTypes>(L, 2));
 
@@ -4770,42 +4794,7 @@ int CvLuaCity::lGetSpecialistCityModifier(lua_State* L)
 			iResult += (iNumPuppets * GET_PLAYER(pkCity->getOwner()).GetPlayerTraits()->GetPerPuppetGreatPersonRateModifier(eGreatPerson));
 		}
 
-		if (GET_PLAYER(pkCity->getOwner()).getGoldenAgeTurns() > 0)
-		{
-			ReligionTypes eMajority = pkCity->GetCityReligions()->GetReligiousMajority();
-			BeliefTypes eSecondaryPantheon = NO_BELIEF;
-			if (eMajority != NO_RELIGION)
-			{
-				const CvReligion* pReligion = GC.getGame().GetGameReligions()->GetReligion(eMajority, pkCity->getOwner());
-				if (pReligion)
-				{
-					iResult += pReligion->m_Beliefs.GetGoldenAgeGreatPersonRateModifier(eGreatPerson, pkCity->getOwner(), pkCity);
-					eSecondaryPantheon = pkCity->GetCityReligions()->GetSecondaryReligionPantheonBelief();
-					if (eSecondaryPantheon != NO_BELIEF)
-					{
-						iResult += GC.GetGameBeliefs()->GetEntry(eSecondaryPantheon)->GetGoldenAgeGreatPersonRateModifier(eGreatPerson);
-					}
-				}
-			}
-
-			// Mod for civs keeping their pantheon belief forever
-			if (MOD_RELIGION_PERMANENT_PANTHEON)
-			{
-				if (GC.getGame().GetGameReligions()->HasCreatedPantheon(pkCity->getOwner()))
-				{
-					const CvReligion* pPantheon = GC.getGame().GetGameReligions()->GetReligion(RELIGION_PANTHEON, pkCity->getOwner());
-					BeliefTypes ePantheonBelief = GC.getGame().GetGameReligions()->GetBeliefInPantheon(pkCity->getOwner());
-					if (pPantheon != NULL && ePantheonBelief != NO_BELIEF && ePantheonBelief != eSecondaryPantheon)
-					{
-						const CvReligion* pReligion = GC.getGame().GetGameReligions()->GetReligion(eMajority, pkCity->getOwner());
-						if (pReligion == NULL || (pReligion != NULL && !pReligion->m_Beliefs.IsPantheonBeliefInReligion(ePantheonBelief, eMajority, pkCity->getOwner()))) // check that the our religion does not have our belief, to prevent double counting
-						{
-							iResult += GC.GetGameBeliefs()->GetEntry(ePantheonBelief)->GetGoldenAgeGreatPersonRateModifier(eGreatPerson);
-						}
-					}
-				}
-			}
-		}
+		iResult += pkCity->GetReligionGreatPersonRateModifier(eGreatPerson);
 	}
 
 	lua_pushinteger(L, iResult);
@@ -5516,6 +5505,17 @@ int CvLuaCity::lGetReligionBuildingYieldRateModifier(lua_State* L)
 	return 1;
 }
 #endif
+
+int CvLuaCity::lGetBaseYieldRateFromNonSpecialists(lua_State* L)
+{
+	CvCity* pkCity = GetInstance(L);
+	const YieldTypes eIndex = (YieldTypes)lua_tointeger(L, 2);
+
+	int iNonSpecialist = GET_PLAYER(pkCity->getOwner()).getYieldFromNonSpecialistCitizens(eIndex);
+	int iBonusTimes100 = (iNonSpecialist * (pkCity->getPopulation() - pkCity->GetCityCitizens()->GetTotalSpecialistCount()));
+	lua_pushinteger(L, iBonusTimes100 / 100);
+	return 1;
+}
 
 int CvLuaCity::lGetBaseYieldRateFromCSAlliance(lua_State* L)
 {

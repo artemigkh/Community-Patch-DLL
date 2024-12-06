@@ -2303,8 +2303,18 @@ local function UpdateCityViewNow()
 					local gpChangePlayerMod = cityOwner:GetGreatPeopleRateModifier()
 					local gpChangeCityMod = city:GetGreatPeopleRateModifier()
 					-- CBP
-					gpChangeCityMod = gpChangeCityMod + city:GetSpecialistCityModifier(specialist.ID);
-					local gpChangeMonopolyMod = cityOwner:GetMonopolyGreatPersonRateModifier(specialist.ID);
+					gpChangeCityMod = gpChangeCityMod + city:GetSpecialistCityModifier(specialist.ID)
+					local gpChangeMonopolyMod = cityOwner:GetMonopolyGreatPersonRateModifier(specialist.ID)
+
+					-- City modifiers includes religion and improvement modifiers, separate them into new tooltip lines
+					local gpChangeImprovementsMod = city:GetImprovementGreatPersonRateModifier()
+					if gpChangeImprovementsMod ~= 0 then
+						gpChangeCityMod = gpChangeCityMod - gpChangeImprovementsMod
+					end
+					local gpChangeReligionsMod = city:GetReligionGreatPersonRateModifier(specialist.ID)
+					if gpChangeReligionsMod ~= 0 then
+						gpChangeCityMod = gpChangeCityMod - gpChangeReligionsMod
+					end
 					--END
 					local gpChangePolicyMod = 0
 					local gpChangeWorldCongressMod = 0
@@ -2399,7 +2409,7 @@ local function UpdateCityViewNow()
 
 					end
 
-					local gpChangeMod = gpChangePlayerMod + gpChangePolicyMod + gpChangeWorldCongressMod + gpChangeCityMod + gpChangeGoldenAgeMod + gpChangeMonopolyMod
+					local gpChangeMod = gpChangePlayerMod + gpChangePolicyMod + gpChangeWorldCongressMod + gpChangeCityMod + gpChangeGoldenAgeMod + gpChangeMonopolyMod + gpChangeImprovementsMod + gpChangeReligionsMod
 					gpChange = (gpChangeMod / 100 + 1) * gpChange
 
 					if gpProgress > 0 or gpChange > 0 then
@@ -2431,8 +2441,14 @@ local function UpdateCityViewNow()
 							if gpChangeCityMod ~= 0 then
 								tips:insert( L( "TXT_KEY_CITY_GP_MOD", gpChangeCityMod ) )
 							end
+							if gpChangeReligionsMod ~= 0 then
+								tips:insert( L( "TXT_KEY_RELIGIONS_GP_MOD", gpChangeReligionsMod ) )
+							end
 							if gpChangeGoldenAgeMod ~= 0 then
 								tips:insert( L( "TXT_KEY_GOLDENAGE_GP_MOD", gpChangeGoldenAgeMod ) )
+							end
+							if gpChangeImprovementsMod ~= 0 then
+								tips:insert( L( "TXT_KEY_IMPROVEMENTS_GP_MOD", gpChangeImprovementsMod ) )
 							end
 							if gpChangeWorldCongressMod ~= 0 then
 								if gpChangeWorldCongressMod < 0 then
@@ -2474,7 +2490,7 @@ local function UpdateCityViewNow()
 				local buildingClass = GameInfo.BuildingClasses[ building.BuildingClass ]
 				local buildings
 				local greatWorkCount = civ5bnw_mode and building.GreatWorkCount or 0
-				local corporation = building.IsCorporation > 0
+				local corporation = building.IsCorporation
 				local areSpecialistsAllowedByBuilding = city:GetNumSpecialistsAllowedByBuilding(buildingID) > 0
 
 				if (corporation) then
@@ -2491,7 +2507,7 @@ local function UpdateCityViewNow()
 					buildings = specialistBuildings
 				elseif greatWorkCount > 0 then
 					buildings = greatWorkBuildings
-				elseif greatWorkCount == 0 and building.IsDummy == 0 then		-- compatibility with Firaxis code exploit for invisibility
+				elseif greatWorkCount == 0 and not building.IsDummy then -- compatibility with Firaxis code exploit for invisibility
 					buildings = otherBuildings
 				end
 				if buildings then
@@ -2842,10 +2858,21 @@ end
 -- Citizen Focus
 local FocusButtonBehavior = {
 	[Mouse.eLClick] = function( focus )
-		local city = GetSelectedModifiableCity()
-		if city then
-			Network.SendSetCityAIFocus( city:GetID(), focus )
-			return Network.SendUpdateCityCitizens( city:GetID() )
+		if UI.ShiftKeyDown() then
+			-- Set focus for all cities
+			for cityX in g_activePlayer:Cities() do
+				if ( not cityX:IsPuppet() or ( bnw_mode and g_activePlayer:MayNotAnnex() )) then
+					Network.SendSetCityAIFocus( cityX:GetID(), focus )
+					Network.SendUpdateCityCitizens( cityX:GetID() )
+				end
+			end
+		else
+			-- Set focus for local city only
+			local city = GetSelectedModifiableCity()
+			if city then
+				Network.SendSetCityAIFocus( city:GetID(), focus )
+				return Network.SendUpdateCityCitizens( city:GetID() )
+			end
 		end
 	end,
 }
@@ -2990,10 +3017,10 @@ UpdateOptionsAndCityView()
 Events.SerialEventEnterCityScreen.Add(
 function()
 
---	local city = UI_GetHeadSelectedCity()
---	if city then
---		Network.SendUpdateCityCitizens( city:GetID() )
---	end
+	local city = UI_GetHeadSelectedCity()
+	if city and not city:IsPuppet() then
+		Network.SendUpdateCityCitizens( city:GetID() )
+	end
 
 	LuaEvents.TryQueueTutorial("CITY_SCREEN", true)
 

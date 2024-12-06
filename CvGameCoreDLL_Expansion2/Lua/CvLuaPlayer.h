@@ -1195,6 +1195,7 @@ protected:
 #endif
 	static int lIsTraitBonusReligiousBelief(lua_State* L);
 	static int lGetHappinessFromLuxury(lua_State* L);
+	static int lGetHappinessFromWarsWithMajors(lua_State* L);
 	static int lIsAbleToAnnexCityStates(lua_State* L);
 #if defined(MOD_BALANCE_CORE)
 	static int lIsDiplomaticMarriage(lua_State* L);
@@ -1392,7 +1393,6 @@ protected:
 	LUAAPIEXTN(GetVassalDemandScore, int);
 	LUAAPIEXTN(GetVassalTaxScore, int);
 	LUAAPIEXTN(GetVassalProtectScore, int);
-	LUAAPIEXTN(GetVassalFailedProtectScore, int);
 	LUAAPIEXTN(GetVassalTreatmentLevel, int);
 	LUAAPIEXTN(GetVassalTreatmentToolTip, CvString, iOtherPlayer);
 	LUAAPIEXTN(GetVassalIndependenceTooltipAsMaster, CvString, iOtherPlayer);
@@ -1519,6 +1519,10 @@ protected:
 
 	LUAAPIEXTN(IsGlobalQuest, bool, eQuest);
 	LUAAPIEXTN(IsPersonalQuest, bool, eQuest);
+
+	static int lIsAccomplishmentCompleted(lua_State* L);
+	static int lGetNumTimesAccomplishmentCompleted(lua_State* L);
+	static int lCompleteAccomplishment(lua_State* L);
 
 	static int lIsInstantYieldNotificationDisabled(lua_State* L);
 	static int lSetInstantYieldNotificationDisabled(lua_State* L);

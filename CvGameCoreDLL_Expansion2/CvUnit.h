@@ -284,7 +284,7 @@ public:
 
 	bool CanDoInterfaceMode(InterfaceModeTypes eInterfaceMode, bool bTestVisibility = false);
 
-	RouteTypes GetBestBuildRoute(CvPlot* pPlot, BuildTypes* peBestBuild = NULL) const;
+	RouteTypes GetBestBuildRouteForRoadTo(CvPlot* pPlot, BuildTypes* peBestBuild = NULL) const;
 	void PlayActionSound();
 
 	TeamTypes GetDeclareWarMove(const CvPlot& pPlot) const;
@@ -651,6 +651,7 @@ public:
 
 	bool canBuildRoute() const;
 	BuildTypes getBuildType() const;
+	bool IsWorking() const;
 	int workRate(bool bMax, BuildTypes eBuild = NO_BUILD) const;
 
 	bool isNoBadGoodies() const;
@@ -791,7 +792,9 @@ public:
 	void ChangeMilitaryProductionModifier(int iValue);
 	int getNearbyEnemyDamage() const;
 	void ChangeNearbyEnemyDamage(int iValue);
+	int GetAdjacentCityDefenseMod() const;
 	int GetGGGAXPPercent() const;
+	void ChangeAdjacentCityDefenseMod(int iValue);
 	void ChangeGGGAXPPercent(int iValue);
 	int getGiveCombatMod() const;
 	void ChangeGiveCombatMod(int iValue);
@@ -1649,17 +1652,25 @@ public:
 	int getScenarioData() const;
 	void setScenarioData(int iNewValue);
 
-	int getTerrainIgnoreCostCount(TerrainTypes eIndex) const;
-	inline bool isTerrainIgnoreCost(TerrainTypes eIndex) const { return getTerrainIgnoreCostCount(eIndex) > 0; }
-	void changeTerrainIgnoreCostCount(TerrainTypes eIndex, int iChange);
+	int getIgnoreTerrainCostInCount(TerrainTypes eIndex) const;
+	inline bool isIgnoreTerrainCostIn(TerrainTypes eIndex) const { return getIgnoreTerrainCostInCount(eIndex) > 0; }
+	void changeIgnoreTerrainCostInCount(TerrainTypes eIndex, int iChange);
+
+	int getIgnoreTerrainCostFromCount(TerrainTypes eIndex) const;
+	inline bool isIgnoreTerrainCostFrom(TerrainTypes eIndex) const { return getIgnoreTerrainCostFromCount(eIndex) > 0; }
+	void changeIgnoreTerrainCostFromCount(TerrainTypes eIndex, int iChange);
 
 	int getTerrainDoubleMoveCount(TerrainTypes eIndex) const;
 	inline bool isTerrainDoubleMove(TerrainTypes eIndex) const { return getTerrainDoubleMoveCount(eIndex) > 0; }
 	void changeTerrainDoubleMoveCount(TerrainTypes eIndex, int iChange);
 
-	int getFeatureIgnoreCostCount(FeatureTypes eIndex) const;
-	inline bool isFeatureIgnoreCost(FeatureTypes eIndex) const { return getFeatureIgnoreCostCount(eIndex) > 0; }
-	void changeFeatureIgnoreCostCount(FeatureTypes eIndex, int iChange);
+	int getIgnoreFeatureCostInCount(FeatureTypes eIndex) const;
+	inline bool isIgnoreFeatureCostIn(FeatureTypes eIndex) const { return getIgnoreFeatureCostInCount(eIndex) > 0; }
+	void changeIgnoreFeatureCostInCount(FeatureTypes eIndex, int iChange);
+
+	int getIgnoreFeatureCostFromCount(FeatureTypes eIndex) const;
+	inline bool isIgnoreFeatureCostFrom(FeatureTypes eIndex) const { return getIgnoreFeatureCostFromCount(eIndex) > 0; }
+	void changeIgnoreFeatureCostFromCount(FeatureTypes eIndex, int iChange);
 
 	int getFeatureDoubleMoveCount(FeatureTypes eIndex) const;
 	inline bool isFeatureDoubleMove(FeatureTypes eIndex) const { return getFeatureDoubleMoveCount(eIndex) > 0; }
@@ -1847,7 +1858,7 @@ public:
 	void PopMission();
 	void AutoMission();
 	void UpdateMission();
-	CvPlot* LastMissionPlot();
+	CvPlot* LastMissionPlot() const;
 	bool CanStartMission(int iMission, int iData1, int iData2, CvPlot* pPlot = NULL, bool bTestVisible = false);
 	int GetMissionTimer() const;
 	void SetMissionTimer(int iNewValue);
@@ -2185,6 +2196,7 @@ protected:
 	int m_iWonderProductionModifier;
 	int m_iUnitProductionModifier;
 	int m_iNearbyEnemyDamage;
+	int m_iAdjacentCityDefenseMod;
 	int m_iGGGAXPPercent;
 	int m_iGiveCombatMod;
 	int m_iGiveHPIfEnemyKilled;
@@ -2221,7 +2233,7 @@ protected:
 	int m_iNumTilesRevealedThisTurn;
 	bool m_bSpottedEnemy;
 	int m_iGainsXPFromScouting;
-	int m_iGainsXPFromPillaging;
+	int m_iGainsXPFromPillaging; // OBSOLETE: to be removed in VP5.0
 	int m_iGainsXPFromSpotting;
 	int m_iCaptureDefeatedEnemyChance;
 	int m_iBarbCombatBonus;
@@ -2340,9 +2352,12 @@ protected:
 	int m_iBuilderStrength;
 #endif
 
-	TerrainTypeCounter m_terrainIgnoreCostCount;
+	TerrainTypeCounter m_ignoreTerrainCostInCount;
+	TerrainTypeCounter m_ignoreTerrainCostFromCount;
+	FeatureTypeCounter m_ignoreFeatureCostInCount;
+	FeatureTypeCounter m_ignoreFeatureCostFromCount;
+
 	TerrainTypeCounter m_terrainDoubleMoveCount;
-	FeatureTypeCounter m_featureIgnoreCostCount;
 	FeatureTypeCounter m_featureDoubleMoveCount;
 
 	TerrainTypeCounter m_terrainHalfMoveCount;
@@ -2622,6 +2637,7 @@ SYNC_ARCHIVE_VAR(int, m_iStackedGreatGeneralExperience)
 SYNC_ARCHIVE_VAR(int, m_iWonderProductionModifier)
 SYNC_ARCHIVE_VAR(int, m_iUnitProductionModifier)
 SYNC_ARCHIVE_VAR(int, m_iNearbyEnemyDamage)
+SYNC_ARCHIVE_VAR(int, m_iAdjacentCityDefenseMod)
 SYNC_ARCHIVE_VAR(int, m_iGGGAXPPercent)
 SYNC_ARCHIVE_VAR(int, m_iGiveCombatMod)
 SYNC_ARCHIVE_VAR(int, m_iGiveHPIfEnemyKilled)
@@ -2735,9 +2751,11 @@ SYNC_ARCHIVE_VAR(GreatPeopleDirectiveTypes, m_eGreatPeopleDirectiveType)
 SYNC_ARCHIVE_VAR(CvString, m_strScriptData)
 SYNC_ARCHIVE_VAR(int, m_iScenarioData)
 SYNC_ARCHIVE_VAR(int, m_iBuilderStrength)
-SYNC_ARCHIVE_VAR(TerrainTypeCounter, m_terrainIgnoreCostCount)
+SYNC_ARCHIVE_VAR(TerrainTypeCounter, m_ignoreTerrainCostInCount)
+SYNC_ARCHIVE_VAR(TerrainTypeCounter, m_ignoreTerrainCostFromCount)
+SYNC_ARCHIVE_VAR(FeatureTypeCounter, m_ignoreFeatureCostInCount)
+SYNC_ARCHIVE_VAR(FeatureTypeCounter, m_ignoreFeatureCostFromCount)
 SYNC_ARCHIVE_VAR(TerrainTypeCounter, m_terrainDoubleMoveCount)
-SYNC_ARCHIVE_VAR(FeatureTypeCounter, m_featureIgnoreCostCount)
 SYNC_ARCHIVE_VAR(FeatureTypeCounter, m_featureDoubleMoveCount)
 SYNC_ARCHIVE_VAR(TerrainTypeCounter, m_terrainHalfMoveCount)
 SYNC_ARCHIVE_VAR(FeatureTypeCounter, m_featureHalfMoveCount)

@@ -28,10 +28,10 @@ UPDATE Defines SET Value = 10 WHERE Name = 'AI_DEFENSIVE_PACT_LIMIT_SCALER';
 -------------------------------------------------------------------------------------------------------------------
 
 -- Base city HP
-UPDATE Defines SET Value = 300 WHERE Name = 'MAX_CITY_HIT_POINTS';
+UPDATE Defines SET Value = 250 WHERE Name = 'MAX_CITY_HIT_POINTS';
 
 -- Extra city HP per population
-UPDATE Defines SET Value = 10 WHERE Name = 'CITY_STRENGTH_POPULATION_CHANGE';
+UPDATE Defines SET Value = 8 WHERE Name = 'CITY_STRENGTH_POPULATION_CHANGE';
 
 -- City's base healing amount. Can go higher if no enemy is nearby.
 UPDATE Defines SET Value = 8 WHERE Name = 'CITY_HIT_POINTS_HEALED_PER_TURN';
@@ -117,9 +117,6 @@ UPDATE Defines SET Value = 0 WHERE Name = 'PLOT_BUY_RESOURCE_COST';
 -- Population required for training settlers
 UPDATE Defines SET Value = 4 WHERE Name = 'CITY_MIN_SIZE_FOR_SETTLERS';
 
--- Backup min city range (if MinDistanceCities or MinDistanceCityStates are 0 in the Worlds table)
-UPDATE Defines SET Value = 3 WHERE Name = 'MIN_CITY_RANGE';
-
 -------------------------------------------------------------------------------------------------------------------
 -- World Wonders
 -------------------------------------------------------------------------------------------------------------------
@@ -150,14 +147,14 @@ UPDATE Defines SET Value = 100 WHERE Name = 'UNIT_SUPPLY_BASE_TECH_REDUCTION_PER
 
 -- Supply from city
 -- City supply /= (1 + Tech progress * UNIT_SUPPLY_CITIES_TECH_REDUCTION_MULTIPLIER / 100)
-UPDATE Defines SET Value = 83 WHERE Name = 'UNIT_SUPPLY_CITIES_TECH_REDUCTION_MULTIPLIER';
+UPDATE Defines SET Value = 100 WHERE Name = 'UNIT_SUPPLY_CITIES_TECH_REDUCTION_MULTIPLIER';
 
 -- Supply from population
 -- % provided by puppet city population
 UPDATE Defines SET Value = 50 WHERE Name = 'UNIT_SUPPLY_POPULATION_PUPPET_PERCENT';
 
 -- Population supply /= (1 + Tech progress * UNIT_SUPPLY_POPULATION_TECH_REDUCTION_MULTIPLIER / 100)
-UPDATE Defines SET Value = 700 WHERE Name = 'UNIT_SUPPLY_POPULATION_TECH_REDUCTION_MULTIPLIER';
+UPDATE Defines SET Value = 100 WHERE Name = 'UNIT_SUPPLY_POPULATION_TECH_REDUCTION_MULTIPLIER';
 
 -- Maximum XP from combat vs barbarian/CS
 UPDATE Defines SET Value = 45 WHERE Name = 'BARBARIAN_MAX_XP_VALUE';
@@ -202,6 +199,9 @@ UPDATE Defines SET Value = 100 WHERE Name = 'MINOR_CIV_HEAVY_TRIBUTE_THRESHOLD';
 -- Influence loss x100 if pledged CS is damaged
 UPDATE Defines SET Value = 300 WHERE Name = 'MINOR_FRIENDSHIP_DROP_PER_TURN_DAMAGED_CAPITAL_MULTIPLIER';
 
+-- Number of turns a pledge of protection is blocked after breaking it by bullying
+UPDATE Defines SET Value = 30 WHERE Name = 'PLEDGE_BROKEN_MINIMUM_TURNS_BULLYING';
+
 -- Resting influence boosts for liberation and building Landmarks
 UPDATE Defines SET Value = 100 WHERE Name = 'MINOR_LIBERATION_RESTING_INFLUENCE';
 UPDATE Defines SET Value = 10 WHERE Name = 'MINOR_LANDMARK_RESTING_INFLUENCE'; -- scales with era
@@ -226,10 +226,6 @@ UPDATE Defines SET Value = 50 WHERE Name = 'RETURN_CIVILIAN_FRIENDSHIP';
 
 -- Base influence gained per unit gifted, -1 for each unit the CS already has
 UPDATE Defines SET Value = 15 WHERE Name = 'FRIENDSHIP_PER_UNIT_GIFTED';
-
--- Below 3 values and bonuses from traits and policies stack additively
--- % change to quest rewards if pledged to protect
-UPDATE Defines SET Value = 15 WHERE Name = 'BALANCE_INFLUENCE_BOOST_PROTECTION_MINOR';
 
 -- Weights for how much the CS wants to give out each quest
 -- Personal Quests
@@ -426,6 +422,9 @@ UPDATE Defines SET Value = 10 WHERE Name = 'BARBARIAN_CAMP_FIRST_TURN_PERCENT_OF
 -- Unit: 0.1% of eligible tiles
 UPDATE Defines SET Value = 5 WHERE Name = 'BARBARIAN_CAMP_FIRST_TURN_PERCENT_PER_ERA';
 
+-- # of tiles required in a landmass for a camp to spawn.
+UPDATE Defines SET Value = 1 WHERE Name = 'BARBARIAN_CAMP_MINIMUM_ISLAND_SIZE';
+
 -- Barbarian camps start spawning on this turn
 UPDATE Defines SET Value = 2 WHERE Name = 'BARBARIAN_INITIAL_SPAWN_TURN';
 
@@ -442,8 +441,8 @@ UPDATE Defines SET Value = 2 WHERE Name = 'AI_TACTICAL_BARBARIAN_RELEASE_VARIATI
 UPDATE Defines SET Value = 20 WHERE Name = 'BARBARIAN_NAVAL_UNIT_START_TURN_SPAWN';
 
 -- Barbarian healing
-UPDATE Defines SET Value = 10 WHERE Name = 'BALANCE_BARBARIAN_HEAL_RATE' AND EXISTS (SELECT 1 FROM COMMUNITY WHERE Type = 'BARBARIAN_HEAL' AND Value = 1);
-UPDATE Defines SET Value = 15 WHERE Name = 'BALANCE_BARBARIAN_HEAL_RATE' AND EXISTS (SELECT 1 FROM COMMUNITY WHERE Type = 'BARBARIAN_HEAL' AND Value = 2);
+UPDATE Defines SET Value = 10 WHERE Name = 'BALANCE_BARBARIAN_HEAL_RATE' AND EXISTS (SELECT 1 FROM Community WHERE Type = 'BARBARIAN_HEAL' AND Value = 1);
+UPDATE Defines SET Value = 15 WHERE Name = 'BALANCE_BARBARIAN_HEAL_RATE' AND EXISTS (SELECT 1 FROM Community WHERE Type = 'BARBARIAN_HEAL' AND Value = 2);
 
 -------------------------------------------------------------------------------------------------------------------
 -- Trade Routes
@@ -523,14 +522,7 @@ UPDATE Defines SET Value = 0 WHERE Name = 'INDUSTRIAL_ROUTE_PRODUCTION_MOD';
 -------------------------------------------------------------------------------------------------------------------
 UPDATE Defines SET Value = 10 WHERE Name = 'BALANCE_SPY_RESPAWN_TIMER';
 UPDATE Defines SET Value = 30 WHERE Name = 'ESPIONAGE_INFLUENCE_GAINED_FOR_RIGGED_ELECTION';
-UPDATE Defines SET Value = 10 WHERE Name = 'ESPIONAGE_COUP_MULTIPLY_CONSTANT';
 UPDATE Defines SET Value = 1000 WHERE Name = 'ESPIONAGE_GATHERING_INTEL_COST_PERCENT';
-
--- Experience
-UPDATE Defines SET Value = 100 WHERE Name = 'ESPIONAGE_SPY_EXPERIENCE_DENOMINATOR';
-UPDATE Defines SET Value = 50 WHERE Name = 'ESPIONAGE_OFFENSIVE_SPY_EXPERIENCE';
-UPDATE Defines SET Value = 40 WHERE Name = 'ESPIONAGE_DEFENDING_SPY_EXPERIENCE';
-UPDATE Defines SET Value = 20 WHERE Name = 'ESPIONAGE_DIPLOMAT_SPY_EXPERIENCE';
 
 -------------------------------------------------------------------------------------------------------------------
 -- World Congress
@@ -568,10 +560,10 @@ UPDATE Defines SET Value = -2 WHERE Name = 'WAR_PROGRESS_PER_UNHAPPY';
 -- Post Defines
 -------------------------------------------------------------------------------------------------------------------
 INSERT INTO PostDefines
-	(Name, "Key", "Table")
+	(Name, Key, "Table")
 VALUES
 	('EMBASSY_IMPROVEMENT', 'IMPROVEMENT_EMBASSY', 'Improvements'),
 	('JUGGERNAUT_PROMOTION', 'PROMOTION_JUGGERNAUT', 'UnitPromotions'),
 	('MARCH_SKIRMISHER_PROMOTION', 'PROMOTION_SKIRMISHER_MARCH', 'UnitPromotions');
 
-UPDATE PostDefines SET "Key" = 'ERA_MODERN' WHERE Name = 'IDEOLOGY_START_ERA';
+UPDATE PostDefines SET Key = 'ERA_MODERN' WHERE Name = 'IDEOLOGY_START_ERA';

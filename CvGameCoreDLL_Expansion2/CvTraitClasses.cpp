@@ -1123,26 +1123,6 @@ TechTypes CvTraitEntry::GetCapitalFreeBuildingPrereqTech() const
 {
 	return m_eCapitalFreeBuildingPrereqTech;
 }
-int CvTraitEntry::YieldFromRouteMovement(int i) const
-{
-	return m_piYieldFromRouteMovement ? m_piYieldFromRouteMovement[i] : -1;
-}
-int CvTraitEntry::YieldFromOwnPantheon(int i) const
-{
-	return m_piYieldFromOwnPantheon ? m_piYieldFromOwnPantheon[i] : -1;
-}
-int CvTraitEntry::YieldFromHistoricEvent(int i) const
-{
-	return m_piYieldFromHistoricEvent ? m_piYieldFromHistoricEvent[i] : -1;
-}
-int CvTraitEntry::YieldFromXMilitaryUnits(int i) const
-{
-	return m_piYieldFromXMilitaryUnits ? m_piYieldFromXMilitaryUnits[i] : -1;
-}
-int CvTraitEntry::YieldFromLevelUp(int i) const
-{
-	return m_piYieldFromLevelUp ? m_piYieldFromLevelUp[i] : -1;
-}
 /// Accessor:: does this civ get a free great work when it conquers a city?
 bool CvTraitEntry::IsFreeGreatWorkOnConquest() const
 {
@@ -3174,7 +3154,7 @@ bool CvTraitEntry::CacheResults(Database::Results& kResults, CvDatabaseUtility& 
 #endif
 
 #if defined(MOD_TRAITS_TRADE_ROUTE_PRODUCTION_SIPHON)
-	//Populate m_iibTradeRouteProductionSiphon
+	//Populate m_biiTradeRouteProductionSiphon
 	{
 		std::string sqlKey = "Trait_TradeRouteProductionSiphon";
 		Database::Results* pResults = kUtility.GetResults(sqlKey);
@@ -6552,19 +6532,16 @@ bool CvPlayerTraits::AddUniqueLuxuriesAround(CvCity *pCity, int iNumResourceToGi
 	for(int iCityPlotLoop = 0; iCityPlotLoop < pCity->GetNumWorkablePlots(); iCityPlotLoop++)
 	{
 		pLoopPlot = iterateRingPlots(pCity->getX(), pCity->getY(), iCityPlotLoop);
-		if( pLoopPlot != NULL && pLoopPlot->getOwner() == m_pPlayer->GetID() && !pLoopPlot->isCity() && 
-			pLoopPlot->isValidMovePlot(pCity->getOwner()) && !pLoopPlot->isWater() && !pLoopPlot->IsNaturalWonder() && !pLoopPlot->isMountain() && (pLoopPlot->getFeatureType() == NO_FEATURE))
+		if (pLoopPlot != NULL && pLoopPlot->getOwner() == m_pPlayer->GetID() && pLoopPlot->CanSpawnResource(pCity->getOwner())
+			&& pLoopPlot->getFeatureType() == NO_FEATURE && pLoopPlot->getImprovementType() == NO_IMPROVEMENT)
 		{
-			if(pLoopPlot->getResourceType() == NO_RESOURCE && pLoopPlot->getImprovementType() == NO_IMPROVEMENT)
-			{
-				pLoopPlot->setResourceType(eResourceToGive, 1, false);
-				iNumResourceGiven++;
+			pLoopPlot->setResourceType(eResourceToGive, 1, false);
+			iNumResourceGiven++;
 
-				if(iNumResourceGiven >= iNumResourceToGive)
-				{
-					bResult = true;
-					break;
-				}
+			if (iNumResourceGiven >= iNumResourceToGive)
+			{
+				bResult = true;
+				break;
 			}
 		}
 	}
@@ -6575,22 +6552,18 @@ bool CvPlayerTraits::AddUniqueLuxuriesAround(CvCity *pCity, int iNumResourceToGi
 		for(int iCityPlotLoop = 0; iCityPlotLoop < pCity->GetNumWorkablePlots(); iCityPlotLoop++)
 		{
 			pLoopPlot = iterateRingPlots(pCity->getX(), pCity->getY(), iCityPlotLoop);
-			if( pLoopPlot != NULL && (pLoopPlot->getOwner() == NO_PLAYER) && pLoopPlot->isValidMovePlot(pCity->getOwner()) && 
-				!pLoopPlot->isWater() && !pLoopPlot->IsNaturalWonder() && pLoopPlot->getFeatureType() != FEATURE_OASIS)
+			if (pLoopPlot != NULL && pLoopPlot->getOwner() == NO_PLAYER && pLoopPlot->CanSpawnResource(pCity->getOwner()))
 			{
-				if(pLoopPlot->getResourceType() == NO_RESOURCE)
+				if (pLoopPlot->getImprovementType() != NO_IMPROVEMENT)
+					pLoopPlot->setImprovementType(NO_IMPROVEMENT);
+
+				pLoopPlot->setResourceType(eResourceToGive, 1, false);
+				iNumResourceGiven++;
+
+				if(iNumResourceGiven >= iNumResourceToGive)
 				{
-					if (pLoopPlot->getImprovementType() != NO_IMPROVEMENT)
-						pLoopPlot->setImprovementType(NO_IMPROVEMENT);
-
-					pLoopPlot->setResourceType(eResourceToGive, 1, false);
-					iNumResourceGiven++;
-
-					if(iNumResourceGiven >= iNumResourceToGive)
-					{
-						bResult = true;
-						break;
-					}
+					bResult = true;
+					break;
 				}
 			}
 		}
@@ -7274,6 +7247,45 @@ void CvPlayerTraits::SetUnitBaktun(UnitTypes eUnit)
 	choice.m_eUnitType = eUnit;
 	choice.m_iBaktunJustFinished = m_iBaktun;
 	m_aMayaBonusChoices.push_back(choice);
+
+	// Remember each choice as an accomplishment.
+	CvUnitEntry* pkUnitInfo = GC.getUnitInfo(eUnit);
+	UnitAITypes eUnitAI = pkUnitInfo->GetDefaultUnitAIType();
+	switch (eUnitAI)
+	{
+	case UNITAI_GENERAL:
+		m_pPlayer->CompleteAccomplishment(ACCOMPLISHMENT_LONGCOUNT_GENERAL);
+		break;
+	case UNITAI_ADMIRAL:
+		m_pPlayer->CompleteAccomplishment(ACCOMPLISHMENT_LONGCOUNT_ADMIRAL);
+		break;
+	case UNITAI_PROPHET:
+		m_pPlayer->CompleteAccomplishment(ACCOMPLISHMENT_LONGCOUNT_PROPHET);
+		break;
+	case UNITAI_WRITER:
+		m_pPlayer->CompleteAccomplishment(ACCOMPLISHMENT_LONGCOUNT_WRITER);
+		break;
+	case UNITAI_ARTIST:
+		m_pPlayer->CompleteAccomplishment(ACCOMPLISHMENT_LONGCOUNT_ARTIST);
+		break;
+	case UNITAI_MUSICIAN:
+		m_pPlayer->CompleteAccomplishment(ACCOMPLISHMENT_LONGCOUNT_MUSICIAN);
+		break;
+	case UNITAI_ENGINEER:
+		m_pPlayer->CompleteAccomplishment(ACCOMPLISHMENT_LONGCOUNT_ENGINEER);
+		break;
+	case UNITAI_MERCHANT:
+		m_pPlayer->CompleteAccomplishment(ACCOMPLISHMENT_LONGCOUNT_MERCHANT);
+		break;
+	case UNITAI_SCIENTIST:
+		m_pPlayer->CompleteAccomplishment(ACCOMPLISHMENT_LONGCOUNT_SCIENTIST);
+		break;
+	case UNITAI_DIPLOMAT:
+		m_pPlayer->CompleteAccomplishment(ACCOMPLISHMENT_LONGCOUNT_DIPLOMAT);
+		break;
+	default:
+		break;
+	}
 }
 
 /// Have Maya unlocked free choice of Great People?

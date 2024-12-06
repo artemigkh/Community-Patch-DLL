@@ -52,6 +52,7 @@ CvBuildingEntry::CvBuildingEntry(void):
 	m_iGrantsRandomResourceTerritory(0),
 	m_bPuppetPurchaseOverride(false),
 	m_bAllowsPuppetPurchase(false),
+	m_bNoStarvationNonSpecialist(false),
 	m_iGetCooldown(0),
 	m_bTradeRouteInvulnerable(false),
 	m_iTRSpeedBoost(0),
@@ -90,12 +91,17 @@ CvBuildingEntry::CvBuildingEntry(void):
 	m_iGlobalCultureRateModifier(0),
 	m_iGreatPeopleRateModifier(0),
 	m_iGlobalGreatPeopleRateModifier(0),
+	m_iGPRateModifierPerMarriage(0),
+	m_iGPRateModifierPerLocalTheme(0),
+	m_iGPPOnCitizenBirth(0),
 	m_iGreatGeneralRateModifier(0),
 	m_iGreatPersonExpendGold(0),
 	m_iUnitUpgradeCostMod(0),
 	m_iGoldenAgeModifier(0),
 	m_iFreeExperience(0),
 	m_iGlobalFreeExperience(0),
+	m_iGlobalHappinessPerMajorWar(0),
+	m_iGlobalMilitaryProductionModPerMajorWar(0),
 	m_iFoodKept(0),
 	m_bAirlift(false),
 	m_iAirModifier(0),
@@ -304,6 +310,7 @@ CvBuildingEntry::CvBuildingEntry(void):
 	m_piSeaPlotYieldChange(NULL),
 	m_piRiverPlotYieldChange(NULL),
 	m_piLakePlotYieldChange(NULL),
+	m_piLakePlotYieldChangeGlobal(NULL),
 	m_piSeaResourceYieldChange(NULL),
 	m_piGrowthExtraYield(NULL),
 #if defined(MOD_BALANCE_CORE_POLICIES)
@@ -313,11 +320,16 @@ CvBuildingEntry::CvBuildingEntry(void):
 	m_piYieldFromVictory(NULL),
 	m_piYieldFromVictoryGlobal(NULL),
 	m_piYieldFromVictoryGlobalEraScaling(NULL),
+	m_piYieldFromVictoryGlobalInGoldenAge(NULL),
+	m_piYieldFromVictoryGlobalInGoldenAgeEraScaling(NULL),
 	m_piYieldFromVictoryGlobalPlayer(NULL),
 	m_piYieldFromPillage(NULL),
 	m_piYieldFromPillageGlobal(NULL),
 	m_piYieldFromPillageGlobalPlayer(NULL),
 	m_iNeedBuildingThisCity(NO_BUILDING),
+	m_piYieldFromGoldenAgeStart(NULL),
+	m_piYieldChangePerGoldenAge(NULL),
+	m_piYieldChangePerGoldenAgeCap(NULL),
 	m_piGoldenAgeYieldMod(NULL),
 	m_piYieldFromWLTKD(NULL),
 	m_piYieldFromGPExpend(NULL),
@@ -342,6 +354,7 @@ CvBuildingEntry::CvBuildingEntry(void):
 	m_piYieldFromUnitLevelUp(NULL),
 	m_piYieldFromCombatExperienceTimes100(NULL),
 	m_piYieldFromPurchase(NULL),
+	m_piYieldFromPurchaseGlobal(NULL),
 	m_piYieldFromFaithPurchase(NULL),
 #endif
 	m_piYieldChange(NULL),
@@ -349,6 +362,8 @@ CvBuildingEntry::CvBuildingEntry(void):
 #if defined(MOD_BALANCE_CORE)
 	m_piYieldChangePerPopInEmpire(),
 #endif
+	m_siUnitClassTrainingAllowed(),
+	m_sibResourceClaim(),
 	m_piYieldChangePerReligion(NULL),
 	m_piYieldModifier(NULL),
 	m_piAreaYieldModifier(NULL),
@@ -444,6 +459,7 @@ CvBuildingEntry::~CvBuildingEntry(void)
 	SAFE_DELETE_ARRAY(m_piSeaPlotYieldChange);
 	SAFE_DELETE_ARRAY(m_piRiverPlotYieldChange);
 	SAFE_DELETE_ARRAY(m_piLakePlotYieldChange);
+	SAFE_DELETE_ARRAY(m_piLakePlotYieldChangeGlobal);
 	SAFE_DELETE_ARRAY(m_piSeaResourceYieldChange);
 	SAFE_DELETE_ARRAY(m_piGrowthExtraYield);
 #if defined(MOD_BALANCE_CORE_POLICIES)
@@ -453,10 +469,15 @@ CvBuildingEntry::~CvBuildingEntry(void)
 	SAFE_DELETE_ARRAY(m_piYieldFromVictory);
 	SAFE_DELETE_ARRAY(m_piYieldFromVictoryGlobal);
 	SAFE_DELETE_ARRAY(m_piYieldFromVictoryGlobalEraScaling);
+	SAFE_DELETE_ARRAY(m_piYieldFromVictoryGlobalInGoldenAge);
+	SAFE_DELETE_ARRAY(m_piYieldFromVictoryGlobalInGoldenAgeEraScaling);
 	SAFE_DELETE_ARRAY(m_piYieldFromVictoryGlobalPlayer);
 	SAFE_DELETE_ARRAY(m_piYieldFromPillage);
 	SAFE_DELETE_ARRAY(m_piYieldFromPillageGlobal);
 	SAFE_DELETE_ARRAY(m_piYieldFromPillageGlobalPlayer);
+	SAFE_DELETE_ARRAY(m_piYieldFromGoldenAgeStart);
+	SAFE_DELETE_ARRAY(m_piYieldChangePerGoldenAge);
+	SAFE_DELETE_ARRAY(m_piYieldChangePerGoldenAgeCap);
 	SAFE_DELETE_ARRAY(m_piGoldenAgeYieldMod);
 	SAFE_DELETE_ARRAY(m_piYieldFromWLTKD);
 	SAFE_DELETE_ARRAY(m_piYieldFromGPExpend);
@@ -482,6 +503,7 @@ CvBuildingEntry::~CvBuildingEntry(void)
 	SAFE_DELETE_ARRAY(m_piYieldFromUnitLevelUp);
 	SAFE_DELETE_ARRAY(m_piYieldFromCombatExperienceTimes100);
 	SAFE_DELETE_ARRAY(m_piYieldFromPurchase);
+	SAFE_DELETE_ARRAY(m_piYieldFromPurchaseGlobal);
 	SAFE_DELETE_ARRAY(m_piYieldFromFaithPurchase);
 #endif
 	SAFE_DELETE_ARRAY(m_piYieldChange);
@@ -489,6 +511,8 @@ CvBuildingEntry::~CvBuildingEntry(void)
 #if defined(MOD_BALANCE_CORE)
 	m_piYieldChangePerPopInEmpire.clear();
 #endif
+	m_siUnitClassTrainingAllowed.clear();
+	m_sibResourceClaim.clear();
 	SAFE_DELETE_ARRAY(m_piYieldChangePerReligion);
 	SAFE_DELETE_ARRAY(m_piYieldModifier);
 	SAFE_DELETE_ARRAY(m_piAreaYieldModifier);
@@ -666,12 +690,17 @@ bool CvBuildingEntry::CacheResults(Database::Results& kResults, CvDatabaseUtilit
 	m_iGlobalCultureRateModifier = kResults.GetInt("GlobalCultureRateModifier");
 	m_iGreatPeopleRateModifier = kResults.GetInt("GreatPeopleRateModifier");
 	m_iGlobalGreatPeopleRateModifier = kResults.GetInt("GlobalGreatPeopleRateModifier");
+	m_iGPRateModifierPerMarriage = kResults.GetInt("GPRateModifierPerMarriage");
+	m_iGPRateModifierPerLocalTheme = kResults.GetInt("GPRateModifierPerLocalTheme");
+	m_iGPPOnCitizenBirth = kResults.GetInt("GPPOnCitizenBirth");
 	m_iGreatGeneralRateModifier = kResults.GetInt("GreatGeneralRateModifier");
 	m_iGreatPersonExpendGold = kResults.GetInt("GreatPersonExpendGold");
 	m_iUnitUpgradeCostMod = kResults.GetInt("UnitUpgradeCostMod");
 	m_iGoldenAgeModifier = kResults.GetInt("GoldenAgeModifier");
 	m_iFreeExperience = kResults.GetInt("Experience");
 	m_iGlobalFreeExperience = kResults.GetInt("GlobalExperience");
+	m_iGlobalHappinessPerMajorWar = kResults.GetInt("GlobalHappinessPerMajorWar");
+	m_iGlobalMilitaryProductionModPerMajorWar = kResults.GetInt("GlobalMilitaryProductionModPerMajorWar");
 	m_iFoodKept = kResults.GetInt("FoodKept");
 	m_bAirlift = kResults.GetBool("Airlift");
 	m_iAirModifier = kResults.GetInt("AirModifier");
@@ -898,6 +927,7 @@ bool CvBuildingEntry::CacheResults(Database::Results& kResults, CvDatabaseUtilit
 	m_iGrantsRandomResourceTerritory = kResults.GetInt("GrantsRandomResourceTerritory");
 	m_bPuppetPurchaseOverride = kResults.GetBool("PuppetPurchaseOverride");
 	m_bAllowsPuppetPurchase = kResults.GetBool("AllowsPuppetPurchase");
+	m_bNoStarvationNonSpecialist = kResults.GetBool("NoStarvationNonSpecialist");
 	m_iGetCooldown = kResults.GetInt("PurchaseCooldown");
 	m_iNumPoliciesNeeded = kResults.GetInt("NumPoliciesNeeded");
 #endif
@@ -941,17 +971,23 @@ bool CvBuildingEntry::CacheResults(Database::Results& kResults, CvDatabaseUtilit
 	kUtility.SetYields(m_piSeaPlotYieldChange, "Building_SeaPlotYieldChanges", "BuildingType", szBuildingType);
 	kUtility.SetYields(m_piRiverPlotYieldChange, "Building_RiverPlotYieldChanges", "BuildingType", szBuildingType);
 	kUtility.SetYields(m_piLakePlotYieldChange, "Building_LakePlotYieldChanges", "BuildingType", szBuildingType);
+	kUtility.SetYields(m_piLakePlotYieldChangeGlobal, "Building_LakePlotYieldChangesGlobal", "BuildingType", szBuildingType);
 	kUtility.SetYields(m_piSeaResourceYieldChange, "Building_SeaResourceYieldChanges", "BuildingType", szBuildingType);
 #if defined(MOD_BALANCE_CORE)
 	kUtility.SetYields(m_piGrowthExtraYield, "Building_GrowthExtraYield", "BuildingType", szBuildingType);
 	kUtility.SetYields(m_piYieldFromDeath, "Building_YieldFromDeath", "BuildingType", szBuildingType);
 	kUtility.SetYields(m_piYieldFromVictory, "Building_YieldFromVictory", "BuildingType", szBuildingType);
-	kUtility.SetYields(m_piYieldFromVictoryGlobal, "Building_YieldFromVictoryGlobal", "BuildingType", szBuildingType, "(IsEraScaling='false' or IsEraScaling='0')");
-	kUtility.SetYields(m_piYieldFromVictoryGlobalEraScaling, "Building_YieldFromVictoryGlobal", "BuildingType", szBuildingType, "(IsEraScaling='true' or IsEraScaling='1')");
+	kUtility.SetYields(m_piYieldFromVictoryGlobal, "Building_YieldFromVictoryGlobal", "BuildingType", szBuildingType, "(IsEraScaling='false' or IsEraScaling='0') and (GoldenAgeOnly='false' or GoldenAgeOnly='0')");
+	kUtility.SetYields(m_piYieldFromVictoryGlobalEraScaling, "Building_YieldFromVictoryGlobal", "BuildingType", szBuildingType, "(IsEraScaling='true' or IsEraScaling='1') and (GoldenAgeOnly='false' or GoldenAgeOnly='0')");
+	kUtility.SetYields(m_piYieldFromVictoryGlobalInGoldenAge, "Building_YieldFromVictoryGlobal", "BuildingType", szBuildingType, "(IsEraScaling='false' or IsEraScaling='0') and (GoldenAgeOnly='true' or GoldenAgeOnly='1')");
+	kUtility.SetYields(m_piYieldFromVictoryGlobalInGoldenAgeEraScaling, "Building_YieldFromVictoryGlobal", "BuildingType", szBuildingType, "(IsEraScaling='true' or IsEraScaling='1') and (GoldenAgeOnly='true' or GoldenAgeOnly='1')");
 	kUtility.SetYields(m_piYieldFromVictoryGlobalPlayer, "Building_YieldFromVictoryGlobalPlayer", "BuildingType", szBuildingType);
 	kUtility.SetYields(m_piYieldFromPillage, "Building_YieldFromPillage", "BuildingType", szBuildingType);
 	kUtility.SetYields(m_piYieldFromPillageGlobal, "Building_YieldFromPillageGlobal", "BuildingType", szBuildingType);
 	kUtility.SetYields(m_piYieldFromPillageGlobalPlayer, "Building_YieldFromPillageGlobalPlayer", "BuildingType", szBuildingType);
+	kUtility.SetYields(m_piYieldFromGoldenAgeStart, "Building_YieldFromGoldenAgeStart", "BuildingType", szBuildingType);
+	kUtility.SetYields(m_piYieldChangePerGoldenAge, "Building_YieldChangesPerGoldenAge", "BuildingType", szBuildingType);
+	kUtility.PopulateArrayByValue(m_piYieldChangePerGoldenAgeCap, "Yields", "Building_YieldChangesPerGoldenAge", "YieldType", "BuildingType", szBuildingType, "YieldCap", INT_MAX);
 	kUtility.SetYields(m_piGoldenAgeYieldMod, "Building_GoldenAgeYieldMod", "BuildingType", szBuildingType);
 	kUtility.SetYields(m_piYieldFromWLTKD, "Building_WLTKDYieldMod", "BuildingType", szBuildingType);
 	kUtility.SetYields(m_piYieldFromGPExpend, "Building_YieldFromGPExpend", "BuildingType", szBuildingType);
@@ -977,6 +1013,7 @@ bool CvBuildingEntry::CacheResults(Database::Results& kResults, CvDatabaseUtilit
 	kUtility.SetYields(m_piYieldFromUnitLevelUp, "Building_YieldFromUnitLevelUp", "BuildingType", szBuildingType);
 	kUtility.SetYields(m_piYieldFromCombatExperienceTimes100, "Building_YieldFromCombatExperienceTimes100", "BuildingType", szBuildingType);
 	kUtility.SetYields(m_piYieldFromPurchase, "Building_YieldFromPurchase", "BuildingType", szBuildingType);
+	kUtility.SetYields(m_piYieldFromPurchaseGlobal, "Building_YieldFromPurchaseGlobal", "BuildingType", szBuildingType);
 	kUtility.SetYields(m_piYieldFromFaithPurchase, "Building_YieldFromFaithPurchase", "BuildingType", szBuildingType);
 #endif
 	kUtility.SetYields(m_piYieldChange, "Building_YieldChanges", "BuildingType", szBuildingType);
@@ -1046,7 +1083,7 @@ bool CvBuildingEntry::CacheResults(Database::Results& kResults, CvDatabaseUtilit
 
 	kUtility.SetYields(m_piYieldChangeWorldWonder, "Building_YieldChangeWorldWonder", "BuildingType", szBuildingType);
 	kUtility.SetYields(m_piYieldChangeWorldWonderGlobal, "Building_YieldChangeWorldWonderGlobal", "BuildingType", szBuildingType);
-
+	
 	m_iGPRateModifierPerXFranchises = kResults.GetInt("GPRateModifierPerXFranchises");
 #endif
 	kUtility.PopulateArrayByValue(m_piResourceQuantityFromPOP, "Resources", "Building_ResourceQuantityFromPOP", "ResourceType", "BuildingType", szBuildingType, "Modifier");
@@ -1168,29 +1205,72 @@ bool CvBuildingEntry::CacheResults(Database::Results& kResults, CvDatabaseUtilit
 	}
 
 	//Building_YieldChangesPerPopInEmpire
+	{
+		std::string strKey("Building_YieldChangesPerPopInEmpire");
+		Database::Results* pResults = kUtility.GetResults(strKey);
+		if (pResults == NULL)
 		{
-			std::string strKey("Building_YieldChangesPerPopInEmpire");
-			Database::Results* pResults = kUtility.GetResults(strKey);
-			if (pResults == NULL)
-			{
-				pResults = kUtility.PrepareResults(strKey, "select Yields.ID as YieldID, Yield from Building_YieldChangesPerPopInEmpire inner join Yields on Yields.Type = YieldType where BuildingType = ?");
-			}
-
-			pResults->Bind(1, szBuildingType);
-
-			while (pResults->Step())
-			{
-				const int iYieldType = pResults->GetInt(0);
-				const int iYield = pResults->GetInt(1);
-
-				m_piYieldChangePerPopInEmpire[iYieldType] += iYield;
-			}
-
-			pResults->Reset();
-
-			//Trim extra memory off container since this is mostly read-only.
-			std::map<int, int>(m_piYieldChangePerPopInEmpire).swap(m_piYieldChangePerPopInEmpire);
+			pResults = kUtility.PrepareResults(strKey, "select Yields.ID as YieldID, Yield from Building_YieldChangesPerPopInEmpire inner join Yields on Yields.Type = YieldType where BuildingType = ?");
 		}
+
+		pResults->Bind(1, szBuildingType);
+
+		while (pResults->Step())
+		{
+			const int iYieldType = pResults->GetInt(0);
+			const int iYield = pResults->GetInt(1);
+
+			m_piYieldChangePerPopInEmpire[iYieldType] += iYield;
+		}
+
+		pResults->Reset();
+
+		//Trim extra memory off container since this is mostly read-only.
+		std::map<int, int>(m_piYieldChangePerPopInEmpire).swap(m_piYieldChangePerPopInEmpire);
+	}
+
+	//Building_UnitClassTrainingAllowed
+	{
+		std::string strKey("Building_UnitClassTrainingAllowed");
+		Database::Results* pResults = kUtility.GetResults(strKey);
+		if (pResults == NULL)
+		{
+			pResults = kUtility.PrepareResults(strKey, "select UnitClasses.ID as UnitClassID from Building_UnitClassTrainingAllowed inner join UnitClasses on UnitClasses.Type = UnitClassType where BuildingType = ?");
+		}
+
+		pResults->Bind(1, szBuildingType);
+
+		while (pResults->Step())
+		{
+			const int iUnitClass = pResults->GetInt(0);
+
+			m_siUnitClassTrainingAllowed.insert(iUnitClass);
+		}
+
+		pResults->Reset();
+	}
+
+	//Building_ResourceClaim
+	{
+		std::string strKey("Building_ResourceClaim");
+		Database::Results* pResults = kUtility.GetResults(strKey);
+		if (pResults == NULL)
+		{
+			pResults = kUtility.PrepareResults(strKey, "select Resources.ID as ResourceID, IncludeOwnedByOtherPlayer from Building_ResourceClaim inner join Resources on Resources.Type = ResourceType where BuildingType = ?");
+		}
+
+		pResults->Bind(1, szBuildingType);
+
+		while (pResults->Step())
+		{
+			const int iResourceID = pResults->GetInt(0);
+			const bool bIncludeOwnedByOtherPlayer = pResults->GetBool(1);
+
+			m_sibResourceClaim.insert(make_pair(iResourceID, bIncludeOwnedByOtherPlayer));
+		}
+
+		pResults->Reset();
+	}
 #endif
 
 	//FeatureYieldChanges
@@ -1754,10 +1834,15 @@ bool CvBuildingEntry::IsPuppetPurchaseOverride() const
 {
 	return m_bPuppetPurchaseOverride;
 }
-/// Dpes this building unlock purchasing in any city?
+/// Does this building unlock purchasing in any city?
 bool CvBuildingEntry::IsAllowsPuppetPurchase() const
 {
 	return m_bAllowsPuppetPurchase;
+}
+/// Does this building prevent non-specialists to consume more food than the city's food production?
+bool CvBuildingEntry::IsNoStarvationNonSpecialist() const
+{
+	return m_bNoStarvationNonSpecialist;
 }
 /// Does this building have a cooldown cost when purchased?
 int CvBuildingEntry::GetCooldown() const
@@ -1971,6 +2056,24 @@ int CvBuildingEntry::GetGlobalGreatPeopleRateModifier() const
 	return m_iGlobalGreatPeopleRateModifier;
 }
 
+/// Modifier to great people per active marriage with a CS
+int CvBuildingEntry::GetGPRateModifierPerMarriage() const
+{
+	return m_iGPRateModifierPerMarriage;
+}
+
+/// Modifier to great people rate per active theming bonus in the city
+int CvBuildingEntry::GetGPRateModifierPerLocalTheme() const
+{
+	return m_iGPRateModifierPerLocalTheme;
+}
+
+/// Instant GPP for the specialist with the most points currently, scaling with Era
+int CvBuildingEntry::GetGPPOnCitizenBirth() const
+{
+	return m_iGPPOnCitizenBirth;
+}
+
 /// Change in spawn rate for great generals
 int CvBuildingEntry::GetGreatGeneralRateModifier() const
 {
@@ -2005,6 +2108,18 @@ int CvBuildingEntry::GetFreeExperience() const
 int CvBuildingEntry::GetGlobalFreeExperience() const
 {
 	return m_iGlobalFreeExperience;
+}
+
+/// Global happiness per major civ currently at war with the player
+int CvBuildingEntry::GetGlobalHappinessPerMajorWar() const
+{
+	return m_iGlobalHappinessPerMajorWar;
+}
+
+/// Global Production modifier towards military units per major civ currently at war with the player
+int CvBuildingEntry::GetGlobalMilitaryProductionModPerMajorWar() const
+{
+	return m_iGlobalMilitaryProductionModPerMajorWar;
 }
 
 /// Percentage of food retained after city growth
@@ -3143,10 +3258,37 @@ int CvBuildingEntry::GetYieldFromVictoryGlobalEraScaling(int i) const
 	return m_piYieldFromVictoryGlobalEraScaling ? m_piYieldFromVictoryGlobalEraScaling[i] : -1;
 }
 /// Array of yield changes
-int* CvBuildingEntry::GetYieldFromVictoryGlobalArrayEraScaling() const
+int* CvBuildingEntry::GetYieldFromVictoryGlobalEraScalingArray() const
 {
 	return m_piYieldFromVictoryGlobalEraScaling;
 }
+
+/// Change to yield if victorious in battle while in a golden age
+int CvBuildingEntry::GetYieldFromVictoryGlobalInGoldenAge(int i) const
+{
+	CvAssertMsg(i < NUM_YIELD_TYPES, "Index out of bounds");
+	CvAssertMsg(i > -1, "Index out of bounds");
+	return m_piYieldFromVictoryGlobalInGoldenAge ? m_piYieldFromVictoryGlobalInGoldenAge[i] : -1;
+}
+/// Array of yield changes
+int* CvBuildingEntry::GetYieldFromVictoryGlobalInGoldenAgeArray() const
+{
+	return m_piYieldFromVictoryGlobalInGoldenAge;
+}
+
+/// Change to yield if victorious in battle while in a golden age, scaling with era.
+int CvBuildingEntry::GetYieldFromVictoryGlobalInGoldenAgeEraScaling(int i) const
+{
+	CvAssertMsg(i < NUM_YIELD_TYPES, "Index out of bounds");
+	CvAssertMsg(i > -1, "Index out of bounds");
+	return m_piYieldFromVictoryGlobalInGoldenAgeEraScaling ? m_piYieldFromVictoryGlobalInGoldenAgeEraScaling[i] : -1;
+}
+/// Array of yield changes
+int* CvBuildingEntry::GetYieldFromVictoryGlobalInGoldenAgeEraScalingArray() const
+{
+	return m_piYieldFromVictoryGlobalInGoldenAgeEraScaling;
+}
+
 
 
 /// Change to yield if victorious in battle.
@@ -3201,6 +3343,45 @@ int* CvBuildingEntry::GetYieldFromPillageGlobalPlayerArray() const
 	return m_piYieldFromPillageGlobalPlayer;
 }
 
+
+/// Instant yield when starting a golden age
+int CvBuildingEntry::GetYieldFromGoldenAgeStart(int i) const
+{
+	CvAssertMsg(i < NUM_YIELD_TYPES, "Index out of bounds");
+	CvAssertMsg(i > -1, "Index out of bounds");
+	return m_piYieldFromGoldenAgeStart ? m_piYieldFromGoldenAgeStart[i] : -1;
+}
+/// Array of yield changes
+int* CvBuildingEntry::GetYieldFromGoldenAgeStartArray() const
+{
+	return m_piYieldFromGoldenAgeStart;
+}
+
+/// Yields permamently added whenever a golden age starts
+int CvBuildingEntry::GetYieldChangePerGoldenAge(int i) const
+{
+	CvAssertMsg(i < NUM_YIELD_TYPES, "Index out of bounds");
+	CvAssertMsg(i > -1, "Index out of bounds");
+	return m_piYieldChangePerGoldenAge ? m_piYieldChangePerGoldenAge[i] : -1;
+}
+/// Array of yield changes
+int* CvBuildingEntry::GetYieldChangePerGoldenAgeArray() const
+{
+	return m_piYieldChangePerGoldenAge;
+}
+
+/// cap to the values in GetYieldChangesPerGoldenAge
+int CvBuildingEntry::GetYieldChangePerGoldenAgeCap(int i) const
+{
+	CvAssertMsg(i < NUM_YIELD_TYPES, "Index out of bounds");
+	CvAssertMsg(i > -1, "Index out of bounds");
+	return m_piYieldChangePerGoldenAgeCap ? m_piYieldChangePerGoldenAgeCap[i] : -1;
+}
+/// Array of yield changes
+int* CvBuildingEntry::GetYieldChangePerGoldenAgeCapArray() const
+{
+	return m_piYieldChangePerGoldenAgeCap;
+}
 
 /// Change to yield during golden ages
 int CvBuildingEntry::GetGoldenAgeYieldMod(int i) const
@@ -3369,6 +3550,18 @@ int CvBuildingEntry::GetYieldFromPurchase(int i) const
 int* CvBuildingEntry::GetYieldFromPurchaseArray() const
 {
 	return m_piYieldFromPurchase;
+}
+
+int CvBuildingEntry::GetYieldFromPurchaseGlobal(int i) const
+{
+	CvAssertMsg(i < NUM_YIELD_TYPES, "Index out of bounds");
+	CvAssertMsg(i > -1, "Index out of bounds");
+	return m_piYieldFromPurchaseGlobal[i];
+}
+/// Array of yield changes
+int* CvBuildingEntry::GetYieldFromPurchaseGlobalArray() const
+{
+	return m_piYieldFromPurchaseGlobal;
 }
 
 int CvBuildingEntry::GetYieldFromFaithPurchase(int i) const
@@ -3563,6 +3756,16 @@ int* CvBuildingEntry::GetYieldChangePerReligionArray() const
 	return m_piYieldChangePerReligion;
 }
 
+set<int> CvBuildingEntry::GetUnitClassTrainingAllowed() const
+{
+	return m_siUnitClassTrainingAllowed;
+}
+
+set<std::pair<int, bool>> CvBuildingEntry::GetResourceClaim() const
+{
+	return m_sibResourceClaim;
+}
+
 /// Modifier to yield by type
 int CvBuildingEntry::GetYieldModifier(int i) const
 {
@@ -3659,6 +3862,20 @@ int CvBuildingEntry::GetLakePlotYieldChange(int i) const
 int* CvBuildingEntry::GetLakePlotYieldChangeArray() const
 {
 	return m_piLakePlotYieldChange;
+}
+
+/// Global lake plot yield changes by type
+int CvBuildingEntry::GetLakePlotYieldChangeGlobal(int i) const
+{
+	CvAssertMsg(i < NUM_YIELD_TYPES, "Index out of bounds");
+	CvAssertMsg(i > -1, "Index out of bounds");
+	return m_piLakePlotYieldChangeGlobal ? m_piLakePlotYieldChangeGlobal[i] : -1;
+}
+
+/// Array of global lake plot yield changes
+int* CvBuildingEntry::GetLakePlotYieldChangeGlobalArray() const
+{
+	return m_piLakePlotYieldChangeGlobal;
 }
 
 /// Sea resource yield changes by type
@@ -4511,7 +4728,7 @@ std::vector<CvBuildingEntry*>& CvBuildingXMLEntries::GetBuildingEntries()
 }
 
 /// Number of defined policies
-inline int CvBuildingXMLEntries::GetNumBuildings()
+int CvBuildingXMLEntries::GetNumBuildings()
 {
 	return m_paBuildingEntries.size();
 }
@@ -5818,7 +6035,7 @@ bool CvCityBuildings::GetNextAvailableGreatWorkSlot(GreatWorkSlotType eGreatWork
 int CvCityBuildings::GetYieldFromGreatWorks(YieldTypes eYield) const
 {
 	//Simplification - errata yields not worth considering.
-	if(eYield > YIELD_GOLDEN_AGE_POINTS && !MOD_BALANCE_CORE_JFD)
+	if(eYield > YIELD_CULTURE_LOCAL && !MOD_BALANCE_CORE_JFD)
 	{
 		return 0;
 	}

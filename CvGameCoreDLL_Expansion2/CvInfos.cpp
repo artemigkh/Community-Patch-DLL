@@ -725,7 +725,6 @@ CvSpecialistInfo::CvSpecialistInfo() :
 	m_iMissionType(NO_MISSION),
 	m_bVisible(false),
 	m_piYieldChange(NULL),
-	m_piFlavorValue(NULL),
 	m_iExperience(0)
 {
 }
@@ -733,7 +732,6 @@ CvSpecialistInfo::CvSpecialistInfo() :
 CvSpecialistInfo::~CvSpecialistInfo()
 {
 	SAFE_DELETE_ARRAY(m_piYieldChange);
-	SAFE_DELETE_ARRAY(m_piFlavorValue);
 }
 //------------------------------------------------------------------------------
 int CvSpecialistInfo::getCost() const
@@ -788,14 +786,6 @@ const int* CvSpecialistInfo::getYieldChangeArray() const
 	return m_piYieldChange;
 }
 //------------------------------------------------------------------------------
-int CvSpecialistInfo::getFlavorValue(int i) const
-{
-	CvAssertMsg(i < GC.getNumFlavorTypes(), "Index out of bounds");
-	CvAssertMsg(i > -1, "Index out of bounds");
-	return m_piFlavorValue ? m_piFlavorValue[i] : 0;
-}
-
-//------------------------------------------------------------------------------
 const char* CvSpecialistInfo::getTexture() const
 {
 	return m_strTexture;
@@ -824,7 +814,6 @@ bool CvSpecialistInfo::CacheResults(Database::Results& kResults, CvDatabaseUtili
 
 	//Arrays
 	const char* szType = GetType();
-	kUtility.SetFlavors(m_piFlavorValue, "SpecialistFlavors", "SpecialistType", szType);
 	kUtility.SetYields(m_piYieldChange, "SpecialistYields", "SpecialistType", szType);
 
 	return true;
@@ -1554,11 +1543,6 @@ size_t CvMultiUnitFormationInfo::getNumFormationSlotEntriesRequired() const
 	return iCount;
 }
 
-bool CvMultiUnitFormationInfo::IsRequiresNavalUnitConsistency() const
-{
-	return m_bRequiresNavalUnitConsistency;
-}
-
 const CvFormationSlotEntry& CvMultiUnitFormationInfo::getFormationSlotEntry(size_t index) const
 {
 	return m_vctSlotEntries[index];
@@ -1575,8 +1559,8 @@ bool CvMultiUnitFormationInfo::CacheResults(Database::Results& kResults, CvDatab
 	if(!CvBaseInfo::CacheResults(kResults, kUtility))
 		return false;
 
+	// Unused, but could be useful for logging purposes so it stays
 	m_strFormationName = kResults.GetText("Name");
-	m_bRequiresNavalUnitConsistency = kResults.GetBool("RequiresNavalUnitConsistency");
 
 	//Slot entries
 	{
@@ -5890,7 +5874,6 @@ CvResourceInfo::CvResourceInfo() :
 	m_aiiiBuildingProductionCostModifiersLocal(),
 #endif
 	m_piResourceQuantityTypes(NULL),
-	m_piFlavor(NULL),
 	m_piImprovementChange(NULL),
 	m_pbTerrain(NULL),
 	m_pbFeature(NULL),
@@ -5913,7 +5896,6 @@ CvResourceInfo::~CvResourceInfo()
 	m_aiiiBuildingProductionCostModifiersLocal.clear();
 #endif
 	SAFE_DELETE_ARRAY(m_piResourceQuantityTypes);
-	SAFE_DELETE_ARRAY(m_piFlavor);
 	SAFE_DELETE_ARRAY(m_piImprovementChange);
 	SAFE_DELETE_ARRAY(m_pbTerrain);
 	SAFE_DELETE_ARRAY(m_pbFeature);
@@ -6524,13 +6506,6 @@ bool CvResourceInfo::isFeatureTerrain(int i) const
 	return m_pbFeatureTerrain ?	m_pbFeatureTerrain[i] : false;
 }
 //------------------------------------------------------------------------------
-int CvResourceInfo::getFlavorValue(int i) const
-{
-	CvAssertMsg(i < GC.getNumFlavorTypes(), "index out of bounds");
-	CvAssertMsg(i > -1, "index out of bounds");
-	return m_piFlavor[i];
-}
-//------------------------------------------------------------------------------
 bool CvResourceInfo::CacheResults(Database::Results& kResults, CvDatabaseUtility& kUtility)
 {
 	if(!CvBaseInfo::CacheResults(kResults, kUtility))
@@ -6607,11 +6582,6 @@ bool CvResourceInfo::CacheResults(Database::Results& kResults, CvDatabaseUtility
 	const char* szAIStopTradingEra = kResults.GetText("AIStopTradingEra");
 	m_iAIStopTradingEra = GC.getInfoTypeForString(szAIStopTradingEra, true);
 
-#if defined(MOD_BALANCE_CORE)
-	const char* szTextVal = kResults.GetText("StrategicHelp");
-	m_strStrategicHelp = szTextVal;
-#endif
-
 	//Arrays
 	const char* szResourceType = GetType();
 	kUtility.SetYields(m_piYieldChange, "Resource_YieldChanges", "ResourceType", szResourceType);
@@ -6619,7 +6589,6 @@ bool CvResourceInfo::CacheResults(Database::Results& kResults, CvDatabaseUtility
 	kUtility.SetYields(m_piYieldChangeFromMonopoly, "Resource_YieldChangeFromMonopoly", "ResourceType", szResourceType);
 	kUtility.SetYields(m_piCityYieldModFromMonopoly, "Resource_CityYieldModFromMonopoly", "ResourceType", szResourceType);
 #endif
-	kUtility.SetFlavors(m_piFlavor, "Resource_Flavors", "ResourceType", szResourceType);
 
 	kUtility.PopulateArrayByExistence(m_pbTerrain, "Terrains", "Resource_TerrainBooleans", "TerrainType", "ResourceType", szResourceType);
 	kUtility.PopulateArrayByExistence(m_pbFeature, "Features", "Resource_FeatureBooleans", "FeatureType", "ResourceType", szResourceType);
@@ -7828,13 +7797,15 @@ CvLeaderHeadInfo::CvLeaderHeadInfo() :
 	m_iBoldness(0),
 	m_iDiploBalance(0),
 	m_iWarmongerHate(0),
-	m_iDenounceWillingness(0),
 	m_iDoFWillingness(0),
+	m_iDenounceWillingness(0),
+	m_iWorkWithWillingness(0),
+	m_iWorkAgainstWillingness(0),
 	m_iLoyalty(0),
-	m_iNeediness(0),
 	m_iForgiveness(0),
-	m_iChattiness(0),
+	m_iNeediness(0),
 	m_iMeanness(0),
+	m_iChattiness(0),
 	m_ePrimaryVictoryPursuit(NO_VICTORY_PURSUIT),
 	m_eSecondaryVictoryPursuit(NO_VICTORY_PURSUIT),
 	m_piMajorCivApproachBiases(NULL),
@@ -7890,6 +7861,16 @@ int CvLeaderHeadInfo::GetDoFWillingness() const
 int CvLeaderHeadInfo::GetDenounceWillingness() const
 {
 	return m_iDenounceWillingness;
+}
+//------------------------------------------------------------------------------
+int CvLeaderHeadInfo::GetWorkWithWillingness() const
+{
+	return m_iWorkWithWillingness;
+}
+//------------------------------------------------------------------------------
+int CvLeaderHeadInfo::GetWorkAgainstWillingness() const
+{
+	return m_iWorkAgainstWillingness;
 }
 //------------------------------------------------------------------------------
 int CvLeaderHeadInfo::GetLoyalty() const
@@ -8069,13 +8050,15 @@ bool CvLeaderHeadInfo::CacheResults(Database::Results& kResults, CvDatabaseUtili
 	m_iBoldness									= kResults.GetInt("Boldness");
 	m_iDiploBalance								= kResults.GetInt("DiploBalance");
 	m_iWarmongerHate							= kResults.GetInt("WarmongerHate");
-	m_iDenounceWillingness						= kResults.GetInt("DenounceWillingness");
 	m_iDoFWillingness							= kResults.GetInt("DoFWillingness");
+	m_iDenounceWillingness						= kResults.GetInt("DenounceWillingness");
+	m_iWorkWithWillingness						= kResults.GetInt("WorkWithWillingness");
+	m_iWorkAgainstWillingness					= kResults.GetInt("WorkAgainstWillingness");
 	m_iLoyalty									= kResults.GetInt("Loyalty");
-	m_iNeediness								= kResults.GetInt("Neediness");
 	m_iForgiveness								= kResults.GetInt("Forgiveness");
-	m_iChattiness								= kResults.GetInt("Chattiness");
+	m_iNeediness								= kResults.GetInt("Neediness");
 	m_iMeanness									= kResults.GetInt("Meanness");
+	m_iChattiness								= kResults.GetInt("Chattiness");
 
 	//Arrays
 	const char* szType = GetType();

@@ -1,5 +1,5 @@
 -- Reset these values to avoid carryover from the Community Patch / base game
-UPDATE Leaders SET SecondaryVictoryPursuit = NULL;
+UPDATE Leaders SET PrimaryVictoryPursuit = NULL, SecondaryVictoryPursuit = NULL;
 UPDATE Leader_MinorCivApproachBiases SET Bias = -1 WHERE MinorCivApproachType = 'MINOR_CIV_APPROACH_FRIENDLY';
 DELETE FROM Leader_MajorCivApproachBiases;
 DELETE FROM Leader_MinorCivApproachBiases WHERE MinorCivApproachType <> 'MINOR_CIV_APPROACH_FRIENDLY';
@@ -18,11 +18,12 @@ SET
 	WarmongerHate = 5,
 	DoFWillingness = 7,
 	DenounceWillingness = 6,
+	WorkWithWillingness = 7,
+	WorkAgainstWillingness = 6,
 	Loyalty = 4,
 	Forgiveness = 5,
 	Neediness = 6,
-	Meanness = 5,
-	Chattiness = 4
+	Meanness = 5
 WHERE Type = 'LEADER_AHMAD_ALMANSUR';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -58,11 +59,12 @@ SET
 	WarmongerHate = 2,
 	DoFWillingness = 5,
 	DenounceWillingness = 7,
+	WorkWithWillingness = 5,
+	WorkAgainstWillingness = 7,
 	Loyalty = 7,
 	Forgiveness = 4,
 	Neediness = 3,
-	Meanness = 8,
-	Chattiness = 4
+	Meanness = 8
 WHERE Type = 'LEADER_ALEXANDER';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -98,11 +100,12 @@ SET
 	WarmongerHate = 7,
 	DoFWillingness = 3,
 	DenounceWillingness = 6,
+	WorkWithWillingness = 3,
+	WorkAgainstWillingness = 6,
 	Loyalty = 3,
 	Forgiveness = 5,
 	Neediness = 9,
-	Meanness = 8,
-	Chattiness = 4
+	Meanness = 8
 WHERE Type = 'LEADER_ASHURBANIPAL';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -137,11 +140,12 @@ SET
 	WarmongerHate = 7,
 	DoFWillingness = 4,
 	DenounceWillingness = 7,
+	WorkWithWillingness = 4,
+	WorkAgainstWillingness = 7,
 	Loyalty = 1,
 	Forgiveness = 3,
 	Neediness = 6,
-	Meanness = 9,
-	Chattiness = 4
+	Meanness = 9
 WHERE Type = 'LEADER_ASKIA';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -176,11 +180,12 @@ SET
 	WarmongerHate = 2,
 	DoFWillingness = 3,
 	DenounceWillingness = 5,
+	WorkWithWillingness = 3,
+	WorkAgainstWillingness = 5,
 	Loyalty = 3,
 	Forgiveness = 8,
 	Neediness = 10,
-	Meanness = 10,
-	Chattiness = 4
+	Meanness = 10
 WHERE Type = 'LEADER_ATTILA';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -215,11 +220,12 @@ SET
 	WarmongerHate = 5,
 	DoFWillingness = 2,
 	DenounceWillingness = 2,
+	WorkWithWillingness = 2,
+	WorkAgainstWillingness = 2,
 	Loyalty = 3,
 	Forgiveness = 1,
 	Neediness = 4,
-	Meanness = 8,
-	Chattiness = 4
+	Meanness = 8
 WHERE Type = 'LEADER_AUGUSTUS';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -254,11 +260,12 @@ SET
 	WarmongerHate = 8,
 	DoFWillingness = 8,
 	DenounceWillingness = 5,
+	WorkWithWillingness = 8,
+	WorkAgainstWillingness = 5,
 	Loyalty = 6,
 	Forgiveness = 8,
 	Neediness = 5,
-	Meanness = 9,
-	Chattiness = 4
+	Meanness = 9
 WHERE Type = 'LEADER_BISMARCK';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -283,7 +290,6 @@ VALUES
 -- Boudicca (The Celts); generalist civ with no victory pursuit bias
 UPDATE Leaders
 SET
-	PrimaryVictoryPursuit = NULL,
 	Personality = 'PERSONALITY_EXPANSIONIST',
 	VictoryCompetitiveness = 8,
 	WonderCompetitiveness = 6,
@@ -293,11 +299,12 @@ SET
 	WarmongerHate = 9,
 	DoFWillingness = 6,
 	DenounceWillingness = 6,
+	WorkWithWillingness = 6,
+	WorkAgainstWillingness = 6,
 	Loyalty = 6,
 	Forgiveness = 6,
 	Neediness = 7,
-	Meanness = 5,
-	Chattiness = 4
+	Meanness = 5
 WHERE Type = 'LEADER_BOUDICCA';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -322,7 +329,6 @@ VALUES
 -- Casimir III (Poland); generalist civ with no victory pursuit bias
 UPDATE Leaders
 SET
-	PrimaryVictoryPursuit = NULL,
 	Personality = 'PERSONALITY_COALITION',
 	VictoryCompetitiveness = 4,
 	WonderCompetitiveness = 6,
@@ -332,11 +338,12 @@ SET
 	WarmongerHate = 7,
 	DoFWillingness = 5,
 	DenounceWillingness = 7,
+	WorkWithWillingness = 5,
+	WorkAgainstWillingness = 7,
 	Loyalty = 9,
 	Forgiveness = 2,
 	Neediness = 8,
-	Meanness = 5,
-	Chattiness = 4
+	Meanness = 5
 WHERE Type = 'LEADER_CASIMIR';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -372,11 +379,12 @@ SET
 	WarmongerHate = 4,
 	DoFWillingness = 6,
 	DenounceWillingness = 9,
+	WorkWithWillingness = 6,
+	WorkAgainstWillingness = 9,
 	Loyalty = 7,
 	Forgiveness = 6,
 	Neediness = 9,
-	Meanness = 9,
-	Chattiness = 4
+	Meanness = 9
 WHERE Type = 'LEADER_CATHERINE';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -411,11 +419,12 @@ SET
 	WarmongerHate = 4,
 	DoFWillingness = 5,
 	DenounceWillingness = 6,
+	WorkWithWillingness = 5,
+	WorkAgainstWillingness = 6,
 	Loyalty = 5,
 	Forgiveness = 5,
 	Neediness = 5,
-	Meanness = 4,
-	Chattiness = 4
+	Meanness = 4
 WHERE Type = 'LEADER_DARIUS';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -451,11 +460,12 @@ SET
 	WarmongerHate = 6,
 	DoFWillingness = 6,
 	DenounceWillingness = 4,
+	WorkWithWillingness = 6,
+	WorkAgainstWillingness = 4,
 	Loyalty = 8,
 	Forgiveness = 3,
 	Neediness = 8,
-	Meanness = 6,
-	Chattiness = 4
+	Meanness = 6
 WHERE Type = 'LEADER_DIDO';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -491,11 +501,12 @@ SET
 	WarmongerHate = 5,
 	DoFWillingness = 6,
 	DenounceWillingness = 8,
+	WorkWithWillingness = 6,
+	WorkAgainstWillingness = 8,
 	Loyalty = 6,
 	Forgiveness = 4,
 	Neediness = 7,
-	Meanness = 8,
-	Chattiness = 4
+	Meanness = 8
 WHERE Type = 'LEADER_ELIZABETH';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -530,11 +541,12 @@ SET
 	WarmongerHate = 12,
 	DoFWillingness = 10,
 	DenounceWillingness = 7,
+	WorkWithWillingness = 10,
+	WorkAgainstWillingness = 7,
 	Loyalty = 5,
 	Forgiveness = 7,
 	Neediness = 7,
-	Meanness = 3,
-	Chattiness = 4
+	Meanness = 3
 WHERE Type = 'LEADER_ENRICO_DANDOLO';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -570,11 +582,12 @@ SET
 	WarmongerHate = 4,
 	DoFWillingness = 7,
 	DenounceWillingness = 6,
+	WorkWithWillingness = 7,
+	WorkAgainstWillingness = 6,
 	Loyalty = 10,
 	Forgiveness = 7,
 	Neediness = 3,
-	Meanness = 9,
-	Chattiness = 4
+	Meanness = 9
 WHERE Type = 'LEADER_GAJAH_MADA';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -610,11 +623,12 @@ SET
 	WarmongerHate = 12,
 	DoFWillingness = 10,
 	DenounceWillingness = 8,
+	WorkWithWillingness = 10,
+	WorkAgainstWillingness = 8,
 	Loyalty = 10,
 	Forgiveness = 7,
 	Neediness = 5,
-	Meanness = 4,
-	Chattiness = 4
+	Meanness = 4
 WHERE Type = 'LEADER_GANDHI';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -649,11 +663,12 @@ SET
 	WarmongerHate = 3,
 	DoFWillingness = 7,
 	DenounceWillingness = 4,
+	WorkWithWillingness = 7,
+	WorkAgainstWillingness = 4,
 	Loyalty = 8,
 	Forgiveness = 1,
 	Neediness = 8,
-	Meanness = 10,
-	Chattiness = 4
+	Meanness = 10
 WHERE Type = 'LEADER_GENGHIS_KHAN';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -688,11 +703,12 @@ SET
 	WarmongerHate = 4,
 	DoFWillingness = 2,
 	DenounceWillingness = 6,
+	WorkWithWillingness = 2,
+	WorkAgainstWillingness = 6,
 	Loyalty = 2,
 	Forgiveness = 4,
 	Neediness = 7,
-	Meanness = 8,
-	Chattiness = 4
+	Meanness = 8
 WHERE Type = 'LEADER_GUSTAVUS_ADOLPHUS';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -728,11 +744,12 @@ SET
 	WarmongerHate = 8,
 	DoFWillingness = 6,
 	DenounceWillingness = 6,
+	WorkWithWillingness = 6,
+	WorkAgainstWillingness = 6,
 	Loyalty = 5,
 	Forgiveness = 5,
 	Neediness = 5,
-	Meanness = 5,
-	Chattiness = 4
+	Meanness = 5
 WHERE Type = 'LEADER_SELASSIE';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -767,11 +784,12 @@ SET
 	WarmongerHate = 1,
 	DoFWillingness = 8,
 	DenounceWillingness = 5,
+	WorkWithWillingness = 8,
+	WorkAgainstWillingness = 5,
 	Loyalty = 3,
 	Forgiveness = 4,
 	Neediness = 8,
-	Meanness = 9,
-	Chattiness = 4
+	Meanness = 9
 WHERE Type = 'LEADER_HARALD';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -806,11 +824,12 @@ SET
 	WarmongerHate = 9,
 	DoFWillingness = 8,
 	DenounceWillingness = 8,
+	WorkWithWillingness = 8,
+	WorkAgainstWillingness = 8,
 	Loyalty = 3,
 	Forgiveness = 4,
 	Neediness = 8,
-	Meanness = 7,
-	Chattiness = 4
+	Meanness = 7
 WHERE Type = 'LEADER_HARUN_AL_RASHID';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -846,11 +865,12 @@ SET
 	WarmongerHate = 7,
 	DoFWillingness = 8,
 	DenounceWillingness = 7,
+	WorkWithWillingness = 8,
+	WorkAgainstWillingness = 7,
 	Loyalty = 9,
 	Forgiveness = 10,
 	Neediness = 3,
-	Meanness = 8,
-	Chattiness = 4
+	Meanness = 8
 WHERE Type = 'LEADER_HIAWATHA';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -886,11 +906,12 @@ SET
 	WarmongerHate = 4,
 	DoFWillingness = 4,
 	DenounceWillingness = 8,
+	WorkWithWillingness = 4,
+	WorkAgainstWillingness = 8,
 	Loyalty = 6,
 	Forgiveness = 4,
 	Neediness = 8,
-	Meanness = 8,
-	Chattiness = 4
+	Meanness = 8
 WHERE Type = 'LEADER_ISABELLA';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -925,11 +946,12 @@ SET
 	WarmongerHate = 7,
 	DoFWillingness = 9,
 	DenounceWillingness = 4,
+	WorkWithWillingness = 9,
+	WorkAgainstWillingness = 4,
 	Loyalty = 8,
 	Forgiveness = 6,
 	Neediness = 4,
-	Meanness = 3,
-	Chattiness = 4
+	Meanness = 3
 WHERE Type = 'LEADER_KAMEHAMEHA';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -964,11 +986,12 @@ SET
 	WarmongerHate = 9,
 	DoFWillingness = 8,
 	DenounceWillingness = 8,
+	WorkWithWillingness = 8,
+	WorkAgainstWillingness = 8,
 	Loyalty = 9,
 	Forgiveness = 7,
 	Neediness = 3,
-	Meanness = 6,
-	Chattiness = 4
+	Meanness = 6
 WHERE Type = 'LEADER_MARIA_I';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -1004,11 +1027,12 @@ SET
 	WarmongerHate = 10,
 	DoFWillingness = 7,
 	DenounceWillingness = 9,
+	WorkWithWillingness = 7,
+	WorkAgainstWillingness = 9,
 	Loyalty = 5,
 	Forgiveness = 6,
 	Neediness = 8,
-	Meanness = 4,
-	Chattiness = 4
+	Meanness = 4
 WHERE Type = 'LEADER_MARIA';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -1043,11 +1067,12 @@ SET
 	WarmongerHate = -1,
 	DoFWillingness = 5,
 	DenounceWillingness = 7,
+	WorkWithWillingness = 5,
+	WorkAgainstWillingness = 7,
 	Loyalty = 4,
 	Forgiveness = 3,
 	Neediness = 9,
-	Meanness = 10,
-	Chattiness = 4
+	Meanness = 10
 WHERE Type = 'LEADER_MONTEZUMA';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -1083,11 +1108,12 @@ SET
 	WarmongerHate = 3,
 	DoFWillingness = 7,
 	DenounceWillingness = 8,
+	WorkWithWillingness = 7,
+	WorkAgainstWillingness = 8,
 	Loyalty = 4,
 	Forgiveness = 8,
 	Neediness = 7,
-	Meanness = 6,
-	Chattiness = 4
+	Meanness = 6
 WHERE Type = 'LEADER_NAPOLEON';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -1122,11 +1148,12 @@ SET
 	WarmongerHate = 8,
 	DoFWillingness = 3,
 	DenounceWillingness = 5,
+	WorkWithWillingness = 3,
+	WorkAgainstWillingness = 5,
 	Loyalty = 8,
 	Forgiveness = 5,
 	Neediness = 2,
-	Meanness = 7,
-	Chattiness = 4
+	Meanness = 7
 WHERE Type = 'LEADER_NEBUCHADNEZZAR';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -1162,11 +1189,12 @@ SET
 	WarmongerHate = 5,
 	DoFWillingness = 6,
 	DenounceWillingness = 6,
+	WorkWithWillingness = 6,
+	WorkAgainstWillingness = 6,
 	Loyalty = 2,
 	Forgiveness = 1,
 	Neediness = 7,
-	Meanness = 10,
-	Chattiness = 4
+	Meanness = 10
 WHERE Type = 'LEADER_ODA_NOBUNAGA';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -1202,11 +1230,12 @@ SET
 	WarmongerHate = 6,
 	DoFWillingness = 7,
 	DenounceWillingness = 6,
+	WorkWithWillingness = 7,
+	WorkAgainstWillingness = 6,
 	Loyalty = 6,
 	Forgiveness = 6,
 	Neediness = 5,
-	Meanness = 7,
-	Chattiness = 4
+	Meanness = 7
 WHERE Type = 'LEADER_PACAL';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -1241,11 +1270,12 @@ SET
 	WarmongerHate = 7,
 	DoFWillingness = 4,
 	DenounceWillingness = 6,
+	WorkWithWillingness = 4,
+	WorkAgainstWillingness = 6,
 	Loyalty = 7,
 	Forgiveness = 5,
 	Neediness = 5,
-	Meanness = 7,
-	Chattiness = 4
+	Meanness = 7
 WHERE Type = 'LEADER_PACHACUTI';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -1280,11 +1310,12 @@ SET
 	WarmongerHate = 10,
 	DoFWillingness = 10,
 	DenounceWillingness = 8,
+	WorkWithWillingness = 10,
+	WorkAgainstWillingness = 8,
 	Loyalty = 9,
 	Forgiveness = 3,
 	Neediness = 8,
-	Meanness = 2,
-	Chattiness = 4
+	Meanness = 2
 WHERE Type = 'LEADER_PEDRO';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -1309,7 +1340,6 @@ VALUES
 -- Pocatello (The Shoshone); generalist civ with no victory pursuit bias
 UPDATE Leaders
 SET
-	PrimaryVictoryPursuit = NULL,
 	Personality = 'PERSONALITY_EXPANSIONIST',
 	VictoryCompetitiveness = 7,
 	WonderCompetitiveness = 3,
@@ -1319,11 +1349,12 @@ SET
 	WarmongerHate = 8,
 	DoFWillingness = 5,
 	DenounceWillingness = 7,
+	WorkWithWillingness = 5,
+	WorkAgainstWillingness = 7,
 	Loyalty = 9,
 	Forgiveness = 2,
 	Neediness = 6,
-	Meanness = 5,
-	Chattiness = 4
+	Meanness = 5
 WHERE Type = 'LEADER_POCATELLO';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -1358,11 +1389,12 @@ SET
 	WarmongerHate = 8,
 	DoFWillingness = 3,
 	DenounceWillingness = 8,
+	WorkWithWillingness = 3,
+	WorkAgainstWillingness = 8,
 	Loyalty = 5,
 	Forgiveness = 4,
 	Neediness = 9,
-	Meanness = 8,
-	Chattiness = 4
+	Meanness = 8
 WHERE Type = 'LEADER_RAMESSES';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -1397,11 +1429,12 @@ SET
 	WarmongerHate = 9,
 	DoFWillingness = 9,
 	DenounceWillingness = 6,
+	WorkWithWillingness = 9,
+	WorkAgainstWillingness = 6,
 	Loyalty = 7,
 	Forgiveness = 7,
 	Neediness = 4,
-	Meanness = 5,
-	Chattiness = 4
+	Meanness = 5
 WHERE Type = 'LEADER_RAMKHAMHAENG';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -1436,11 +1469,12 @@ SET
 	WarmongerHate = 10,
 	DoFWillingness = 9,
 	DenounceWillingness = 4,
+	WorkWithWillingness = 9,
+	WorkAgainstWillingness = 4,
 	Loyalty = 9,
 	Forgiveness = 4,
 	Neediness = 3,
-	Meanness = 2,
-	Chattiness = 4
+	Meanness = 2
 WHERE Type = 'LEADER_SEJONG';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -1475,11 +1509,12 @@ SET
 	WarmongerHate = 1,
 	DoFWillingness = 5,
 	DenounceWillingness = 7,
+	WorkWithWillingness = 5,
+	WorkAgainstWillingness = 7,
 	Loyalty = 3,
 	Forgiveness = 2,
 	Neediness = 5,
-	Meanness = 12,
-	Chattiness = 4
+	Meanness = 12
 WHERE Type = 'LEADER_SHAKA';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -1515,11 +1550,12 @@ SET
 	WarmongerHate = 4,
 	DoFWillingness = 7,
 	DenounceWillingness = 2,
+	WorkWithWillingness = 7,
+	WorkAgainstWillingness = 2,
 	Loyalty = 8,
 	Forgiveness = 7,
 	Neediness = 8,
-	Meanness = 7,
-	Chattiness = 4
+	Meanness = 7
 WHERE Type = 'LEADER_SULEIMAN';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -1544,7 +1580,6 @@ VALUES
 -- Theodora (Byzantium); generalist civ with no victory pursuit bias
 UPDATE Leaders
 SET
-	PrimaryVictoryPursuit = NULL,
 	Personality = 'PERSONALITY_DIPLOMAT',
 	VictoryCompetitiveness = 6,
 	WonderCompetitiveness = 9,
@@ -1554,11 +1589,12 @@ SET
 	WarmongerHate = 8,
 	DoFWillingness = 10,
 	DenounceWillingness = 8,
+	WorkWithWillingness = 10,
+	WorkAgainstWillingness = 8,
 	Loyalty = 5,
 	Forgiveness = 7,
 	Neediness = 9,
-	Meanness = 6,
-	Chattiness = 4
+	Meanness = 6
 WHERE Type = 'LEADER_THEODORA';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -1583,7 +1619,6 @@ VALUES
 -- Washington (America); generalist civ with no victory pursuit bias
 UPDATE Leaders
 SET
-	PrimaryVictoryPursuit = NULL,
 	Personality = 'PERSONALITY_COALITION',
 	VictoryCompetitiveness = 8,
 	WonderCompetitiveness = 4,
@@ -1593,11 +1628,12 @@ SET
 	WarmongerHate = 6,
 	DoFWillingness = 8,
 	DenounceWillingness = 9,
+	WorkWithWillingness = 8,
+	WorkAgainstWillingness = 9,
 	Loyalty = 5,
 	Forgiveness = 4,
 	Neediness = 10,
-	Meanness = 7,
-	Chattiness = 4
+	Meanness = 7
 WHERE Type = 'LEADER_WASHINGTON';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -1632,11 +1668,12 @@ SET
 	WarmongerHate = 8,
 	DoFWillingness = 10,
 	DenounceWillingness = 3,
+	WorkWithWillingness = 10,
+	WorkAgainstWillingness = 3,
 	Loyalty = 6,
 	Forgiveness = 8,
 	Neediness = 8,
-	Meanness = 9,
-	Chattiness = 4
+	Meanness = 9
 WHERE Type = 'LEADER_WILLIAM';
 
 INSERT INTO Leader_MajorCivApproachBiases
@@ -1672,11 +1709,12 @@ SET
 	WarmongerHate = 9,
 	DoFWillingness = 5,
 	DenounceWillingness = 10,
+	WorkWithWillingness = 5,
+	WorkAgainstWillingness = 10,
 	Loyalty = 4,
 	Forgiveness = 5,
 	Neediness = 9,
-	Meanness = 9,
-	Chattiness = 4
+	Meanness = 9
 WHERE Type = 'LEADER_WU_ZETIAN';
 
 INSERT INTO Leader_MajorCivApproachBiases

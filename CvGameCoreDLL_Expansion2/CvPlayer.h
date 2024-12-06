@@ -197,7 +197,7 @@ public:
 	int GetNumUnitsWithUnitCombat(UnitCombatTypes eUnitCombat);
 	int GetNumUnitsOfType(UnitTypes eUnit, bool bIncludeBeingTrained = false);
 	int GetNumUnitPromotions(PromotionTypes ePromotion);
-	void UpdateDangerPlots(bool bKeepKnownUnits);
+	void UpdateDangerPlots();
 	void SetDangerPlotsDirty();
 
 	bool isHuman() const;
@@ -321,7 +321,7 @@ public:
 	void foundCity(int iX, int iY, ReligionTypes eReligion = NO_RELIGION, bool bForce = false, CvUnitEntry* pkSettlerUnitEntry = NULL);
 	void cityBoost(int iX, int iY, CvUnitEntry* pkUnitEntry, int iExtraPlots, int iPopChange, int iFoodPercent);
 
-	bool canTrainUnit(UnitTypes eUnit, bool bContinue = false, bool bTestVisible = false, bool bIgnoreCost = false, bool bIgnoreUniqueUnitStatus = false, CvString* toolTipSink = NULL) const;
+	bool canTrainUnit(UnitTypes eUnit, bool bContinue = false, bool bTestVisible = false, bool bIgnoreCost = false, bool bIgnoreUniqueUnitStatus = false, bool bIgnoreTechRequirements = false, CvString* toolTipSink = NULL) const;
 	bool canConstruct(BuildingTypes eBuilding, bool bContinue = false, bool bTestVisible = false, bool bIgnoreCost = false, CvString* toolTipSink = NULL) const;
 	bool canConstruct(BuildingTypes eBuilding, const std::vector<int>& vPreExistingBuildings, bool bContinue = false, bool bTestVisible = false, bool bIgnoreCost = false, CvString* toolTipSink = NULL) const;
 	bool canCreate(ProjectTypes eProject, bool bContinue = false, bool bTestVisible = false) const;
@@ -424,6 +424,9 @@ public:
 
 	int GetGreatWorkYieldChange(YieldTypes eYield) const;
 	void ChangeGreatWorkYieldChange(YieldTypes eYield, int iChange);
+
+	int getLakePlotYield(YieldTypes eYield) const;
+	void changeLakePlotYield(YieldTypes eYield, int iChange);
 
 	CvPlot* getStartingPlot() const;
 	void setStartingPlot(CvPlot* pNewValue);
@@ -816,6 +819,11 @@ public:
 	void UpdateFaithPerTurnFromAnnexedMinors();
 	int GetHappinessFromAnnexedMinors() const;
 	void UpdateHappinessFromAnnexedMinors();
+
+	int getHappinessPerMajorWar() const;
+	void changeHappinessPerMajorWar(int iValue);
+	int getMilitaryProductionModPerMajorWar() const;
+	void changeMilitaryProductionModPerMajorWar(int iValue);
 
 	int GetExtraLeagueVotes() const;
 	int GetImprovementLeagueVotes() const;
@@ -2129,8 +2137,12 @@ public:
 	bool IsRefuseResearchAgreementTrade();
 	void SetRefuseResearchAgreementTrade(bool refuseTrade);
 
-	bool IsInstantYieldNotificationDisabled(InstantYieldType eInstantYield);
+	bool IsInstantYieldNotificationDisabled(InstantYieldType eInstantYield) const;
 	void SetInstantYieldNotificationDisabled(InstantYieldType eInstantYield, bool bNewValue);
+
+	bool IsAccomplishmentCompleted(AccomplishmentTypes eAccomplishment) const;
+	int GetNumTimesAccomplishmentCompleted(AccomplishmentTypes eAccomplishment) const;
+	void CompleteAccomplishment(AccomplishmentTypes eAccomplishment);
 
 	bool IsResourceCityTradeable(ResourceTypes eResource, bool bCheckTeam = true) const;
 	bool IsResourceRevealed(ResourceTypes eResource, bool bCheckTeam = true) const;
@@ -2392,6 +2404,8 @@ public:
 	void setReplayDataValue(const CvString& strDataset, unsigned int uiTurn, int iValue);
 
 	int getYieldPerTurnHistory(YieldTypes eYield, int iNumTurns, bool bIgnoreInstant = false);
+	void UpdateUnitClassTrainingAllowedAnywhere(UnitClassTypes eUnitClass);
+	set<UnitClassTypes> GetUnitClassTrainingAllowedAnywhere() const;
 	void updateYieldPerTurnHistory();
 
 	int getInstantYieldAvg(YieldTypes eYield, int iTurnA, int iTurnB) const;
@@ -2492,8 +2506,7 @@ public:
 	int GetPlotDanger(const CvCity* pCity, const CvUnit* pPretendGarrison = NULL);
 	int GetPlotDanger(const CvPlot& Plot, bool bFixedDamageOnly);
 	void ResetDangerCache(const CvPlot& Plot, int iRange);
-	int GetDangerPlotAge() const;
-	std::vector<CvUnit*> GetPrevTurnKnownEnemyUnits() const;
+	bool IsVanishedUnit(const IDInfo& id) const;
 	std::vector<CvUnit*> GetPossibleAttackers(const CvPlot& Plot, TeamTypes eTeamForVisibilityCheck);
 
 	bool IsKnownAttacker(const CvUnit* pAttacker);
@@ -2514,6 +2527,7 @@ public:
 	int GetNumOurCitiesOwnedBy(PlayerTypes ePlayer);
 	int CalculateDefensivePactLimit(bool bIsAITradeWithHumanPossible = false) const;
 	bool IsIgnoreDefensivePactLimit() const;
+	void ChangeIgnoreDefensivePactLimitCount(int iCount);
 	int GetMilitaryRating() const;
 	void SetMilitaryRating(int iValue);
 	void ChangeMilitaryRating(int iChange);
@@ -2719,6 +2733,8 @@ public:
 	int GetCityDistanceHighwaterMark() const;
 	void SetCityDistanceHighwaterMark(int iNewValue);
 
+	int GetNumMarriedCityStatesNotAtWar() const;
+
 	void SetEmbarkedGraphicOverride(CvString szGraphicName)
 	{
 		m_strEmbarkedGraphicOverride = szGraphicName;
@@ -2855,6 +2871,7 @@ public:
 	int GetYieldPerTurnFromVassals(YieldTypes eYield) const;
 
 	int GetHappinessFromVassals() const;
+	int GetHappinessFromWarsWithMajors() const;
 	int GetHappinessFromVassal(PlayerTypes ePlayer) const;
 
 	int GetVassalGoldMaintenanceMod() const;
@@ -2997,6 +3014,7 @@ protected:
 	std::vector<int> m_viInstantYieldsTotal;
 	std::tr1::unordered_map<YieldTypes, int> m_miLocalInstantYieldsTotal;
 	std::tr1::unordered_map<YieldTypes, std::vector<int>> m_aiYieldHistory;
+	set<UnitClassTypes> m_sUnitClassTrainingAllowedAnywhere;
 	int m_iUprisingCounter;
 	int m_iExtraHappinessPerLuxury;
 	int m_iUnhappinessFromUnits;
@@ -3057,6 +3075,8 @@ protected:
 	int m_iFaithPerTurnFromAnnexedMinors;
 	int	m_iHappinessFromAnnexedMinors;
 
+	int m_iHappinessPerMajorWar;
+	int m_iMilitaryProductionModPerMajorWar;
 	int m_iExtraLeagueVotes;
 	int m_iImprovementLeagueVotes;
 	int m_iFaithToVotes;
@@ -3350,6 +3370,7 @@ protected:
 	int m_iConversionTimer;
 	int m_iCapitalCityID;
 	int m_iCitiesLost;
+	int m_iIgnoreDefensivePactLimitCount;
 	int m_iMilitaryRating;
 	int m_iMilitaryMight;
 	int m_iNuclearMight;
@@ -3363,7 +3384,6 @@ protected:
 	int m_iScenarioScore3;
 	int m_iScenarioScore4;
 	int m_iScoreFromFutureTech;
-	int m_iTurnLastAttackedMinorCiv; // Delete this before releasing v. 4.15+ or later
 	int m_iCombatExperienceTimes100;
 	int m_iLifetimeCombatExperienceTimes100;
 	int m_iNavalCombatExperienceTimes100;
@@ -3451,6 +3471,8 @@ protected:
 	bool m_bHasAdoptedStateReligion;
 	bool m_bWorkersIgnoreImpassable;
 
+	std::vector<int> m_aiAccomplishments;
+
 	std::vector<int> m_aiCityYieldChange;
 	std::vector<int> m_aiCoastalCityYieldChange;
 	std::vector<int> m_aiCapitalYieldChange;
@@ -3521,6 +3543,7 @@ protected:
 	std::vector<int> m_aiResearchAgreementCounter;
 	std::vector<int> m_aiSiphonLuxuryCount;
 	std::vector<int> m_aiGreatWorkYieldChange;
+	std::vector<int> m_aiLakePlotYield;
 	std::vector<int> m_aiTourismBonusTurnsPlayer;
 
 	typedef std::pair<uint, int> PlayerOptionEntry;
@@ -3857,6 +3880,7 @@ SYNC_ARCHIVE_VAR(bool, m_bIsReformation)
 SYNC_ARCHIVE_VAR(std::vector<int>, m_viInstantYieldsTotal)
 SYNC_ARCHIVE_VAR(SYNC_ARCHIVE_VAR_TYPE(std::tr1::unordered_map<YieldTypes, int>), m_miLocalInstantYieldsTotal)
 SYNC_ARCHIVE_VAR(SYNC_ARCHIVE_VAR_TYPE(std::tr1::unordered_map<YieldTypes, std::vector<int>>), m_aiYieldHistory)
+SYNC_ARCHIVE_VAR(set<UnitClassTypes>, m_sUnitClassTrainingAllowedAnywhere)
 SYNC_ARCHIVE_VAR(int, m_iUprisingCounter)
 SYNC_ARCHIVE_VAR(int, m_iExtraHappinessPerLuxury)
 SYNC_ARCHIVE_VAR(int, m_iUnhappinessFromUnits)
@@ -3909,6 +3933,8 @@ SYNC_ARCHIVE_VAR(int, m_iCulturePerTurnFromAnnexedMinors)
 SYNC_ARCHIVE_VAR(int, m_iSciencePerTurnFromAnnexedMinors)
 SYNC_ARCHIVE_VAR(int, m_iFaithPerTurnFromAnnexedMinors)
 SYNC_ARCHIVE_VAR(int, m_iHappinessFromAnnexedMinors)
+SYNC_ARCHIVE_VAR(int, m_iHappinessPerMajorWar)
+SYNC_ARCHIVE_VAR(int, m_iMilitaryProductionModPerMajorWar)
 SYNC_ARCHIVE_VAR(int, m_iExtraLeagueVotes)
 SYNC_ARCHIVE_VAR(int, m_iImprovementLeagueVotes)
 SYNC_ARCHIVE_VAR(int, m_iFaithToVotes)
@@ -4169,6 +4195,7 @@ SYNC_ARCHIVE_VAR(int, m_iCultureBombTimer)
 SYNC_ARCHIVE_VAR(int, m_iConversionTimer)
 SYNC_ARCHIVE_VAR(int, m_iCapitalCityID)
 SYNC_ARCHIVE_VAR(int, m_iCitiesLost)
+SYNC_ARCHIVE_VAR(int, m_iIgnoreDefensivePactLimitCount)
 SYNC_ARCHIVE_VAR(int, m_iMilitaryRating)
 SYNC_ARCHIVE_VAR(int, m_iMilitaryMight)
 SYNC_ARCHIVE_VAR(int, m_iNuclearMight)
@@ -4182,7 +4209,6 @@ SYNC_ARCHIVE_VAR(int, m_iScenarioScore2)
 SYNC_ARCHIVE_VAR(int, m_iScenarioScore3)
 SYNC_ARCHIVE_VAR(int, m_iScenarioScore4)
 SYNC_ARCHIVE_VAR(int, m_iScoreFromFutureTech)
-SYNC_ARCHIVE_VAR(int, m_iTurnLastAttackedMinorCiv) // Delete this before releasing v. 4.15+ or later
 SYNC_ARCHIVE_VAR(int, m_iCombatExperienceTimes100)
 SYNC_ARCHIVE_VAR(int, m_iLifetimeCombatExperienceTimes100)
 SYNC_ARCHIVE_VAR(int, m_iNavalCombatExperienceTimes100)
@@ -4254,6 +4280,7 @@ SYNC_ARCHIVE_VAR(PlayerTypes, m_eConqueror)
 SYNC_ARCHIVE_VAR(bool, m_bLostHolyCity)
 SYNC_ARCHIVE_VAR(PlayerTypes, m_eHolyCityConqueror)
 SYNC_ARCHIVE_VAR(bool, m_bHasAdoptedStateReligion)
+SYNC_ARCHIVE_VAR(std::vector<int>, m_aiAccomplishments)
 SYNC_ARCHIVE_VAR(std::vector<int>, m_aiCityYieldChange)
 SYNC_ARCHIVE_VAR(std::vector<int>, m_aiCoastalCityYieldChange)
 SYNC_ARCHIVE_VAR(std::vector<int>, m_aiCapitalYieldChange)
@@ -4312,6 +4339,7 @@ SYNC_ARCHIVE_VAR(std::vector<int>, m_aiProximityToPlayer)
 SYNC_ARCHIVE_VAR(std::vector<int>, m_aiResearchAgreementCounter)
 SYNC_ARCHIVE_VAR(std::vector<int>, m_aiSiphonLuxuryCount)
 SYNC_ARCHIVE_VAR(std::vector<int>, m_aiGreatWorkYieldChange)
+SYNC_ARCHIVE_VAR(std::vector<int>, m_aiLakePlotYield)
 SYNC_ARCHIVE_VAR(std::vector<int>, m_aiTourismBonusTurnsPlayer)
 SYNC_ARCHIVE_VAR(SYNC_ARCHIVE_VAR_TYPE(std::vector< std::pair<uint, int> >), m_aOptions)
 SYNC_ARCHIVE_VAR(CvString, m_strReligionKey)

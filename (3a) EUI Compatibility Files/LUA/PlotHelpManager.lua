@@ -74,6 +74,7 @@ local YieldTypes_NUM_YIELD_TYPES_1 = YieldTypes.NUM_YIELD_TYPES-1
 local GameInfoTechnologies = GameInfo.Technologies
 local GameInfoPolicies = GameInfo.Policies
 local GameInfoBeliefs = GameInfo.Beliefs
+local GameInfoAccomplishments = GameInfo.Accomplishments
 
 local civ5_mode = type( MouseOverStrategicViewResource ) == "function"
 local gk_mode = type( Game.GetReligionName ) == "function"
@@ -85,7 +86,7 @@ local civ5_bnw_mode = bnw_mode and civ5_mode
 local MouseEvents_MouseMove = MouseEvents.MouseMove
 local Controls_TheBox = Controls.TheBox
 
-local g_tipTimerThreshold1, g_tipTimerThreshold2, g_isScienceEnabled, g_isPoliciesEnabled, g_isHappinessEnabled, g_isReligionEnabled, g_isNoob, g_isCivilianYields
+local g_tipTimerThreshold1, g_tipTimerThreshold2, g_isScienceEnabled, g_isPoliciesEnabled, g_isHappinessEnabled, g_isReligionEnabled, g_isAccomplishmentsEnabled, g_isNoob, g_isCivilianYields
 
 local g_tipTimer = 0
 local g_tipLevel = 0
@@ -242,6 +243,14 @@ local PlotToolTips = EUI.PlotToolTips or function( plot, isExtraTips )
 	end
 
 	------------------
+	-- Accomplishments Filter
+	local function AccomplishmentFilter(row)
+		local numTimesCompleted = ( plotOwner and plotOwner:GetNumTimesAccomplishmentCompleted( row.ID ) ) or 0
+		local maxTimesCompletable = row.MaxPossibleCompletions
+		return row and ( not plotOwner or not maxTimesCompletable or numTimesCompleted < maxTimesCompletable )
+	end
+
+	------------------
 	-- Global Building Filter (for buildings with global effect)
 	local function GlobalBuildingFilter( building )
 
@@ -298,7 +307,7 @@ local PlotToolTips = EUI.PlotToolTips or function( plot, isExtraTips )
 						or ( building.River and not owningCityPlot:IsRiver())
 						or ( building.FreshWater and not owningCityPlot:IsFreshWater() )
 -- CP
-						or ( (building.IsNoWater == 1) and owningCityPlot:IsFreshWater() )
+						or ( building.IsNoWater and owningCityPlot:IsFreshWater() )
 -- END
 						or ( building.Hill and not owningCityPlot:IsHills() )
 						or ( building.Flat and owningCityPlot:IsHills() )
@@ -464,6 +473,9 @@ local PlotToolTips = EUI.PlotToolTips or function( plot, isExtraTips )
 			end
 			if g_isReligionEnabled then
 				insertYieldChanges( tips, bullet, "[COLOR_WHITE]", "BeliefType", BeliefFilter, GameInfoBeliefs, GameInfo.Belief_ImprovementYieldChanges( thisImprovementType ) )
+			end
+			if g_isAccomplishmentsEnabled then
+				insertYieldChanges( tips, bullet, "[COLOR_YELLOW]", "AccomplishmentType", AccomplishmentFilter, GameInfoAccomplishments, GameInfo.Improvement_AccomplishmentYieldChanges( thisImprovementType ) )
 			end
 		end
 	end
@@ -838,15 +850,6 @@ local PlotToolTips = EUI.PlotToolTips or function( plot, isExtraTips )
 		end
 -- todo: moves required
 
-		if #yieldTips > 0  then -- and (isExtraTips or g_isNoob or not isCombatUnitSelected) then
-			if g_isNoob then
-				tips:insert( L"TXT_KEY_OUTPUT" .. ": " .. yieldTips:concat( " " ) )
-			else
-				tips:insert( yieldTips:concat( " " ) )
-			end
-		end
-
-
 		----------------------
 		-- Improvement & Route
 		local improvementTips = table()
@@ -876,6 +879,17 @@ local PlotToolTips = EUI.PlotToolTips or function( plot, isExtraTips )
 		if revealedImprovementID >= 0 then
 			revealedImprovement = GameInfo.Improvements[revealedImprovementID]
 			improvementTips:insert( "[COLOR_POSITIVE_TEXT]" .. checkPillaged( revealedImprovement, isPillaged ) .. "[ENDCOLOR]" )
+			if not isPillaged then
+				yieldTips:insertIf( (revealedImprovement.GreatPersonRateModifier or 0)~=0 and string_format( "%s%%[ICON_GREAT_PEOPLE]", revealedImprovement.GreatPersonRateModifier ) )
+			end
+		end
+
+		if #yieldTips > 0  then -- and (isExtraTips or g_isNoob or not isCombatUnitSelected) then
+			if g_isNoob then
+				tips:insert( L"TXT_KEY_OUTPUT" .. ": " .. yieldTips:concat( " " ) )
+			else
+				tips:insert( yieldTips:concat( " " ) )
+			end
 		end
 
 		local routeID = plot:GetRevealedRouteType( activeTeamID, true )
@@ -959,9 +973,10 @@ local PlotToolTips = EUI.PlotToolTips or function( plot, isExtraTips )
 				local buildID = build.ID
 				local buildTip = L(build.Description)
 
-				local canBuild = plot:CanBuild( buildID, activePlayerID ) and build.ShowInPedia ~= false and isWaterPlot == build.Water -- filter duplicates, fix DLL bug can build roads in lakes
+				local canBuild = plot:CanBuild( buildID, activePlayerID ) and build.ShowInPedia and isWaterPlot == build.Water -- filter duplicates, fix DLL bug can build roads in lakes
 				local isBasicBuild = true
-				local buildImprovement = GameInfo.Improvements[ build.ImprovementType or -1 ]
+				local buildImprovementID = build.ImprovementType
+				local buildImprovement = GameInfo.Improvements[ buildImprovementID or -1 ]
 
 				local buildInProgress = buildsInProgress[ buildID ]
 
@@ -971,7 +986,7 @@ local PlotToolTips = EUI.PlotToolTips or function( plot, isExtraTips )
 					-- Work around unrevealed improvement game bug
 					-- can always build unrevealed improvements (prevents "CanBuild" detection)
 					if not (revealedImprovement or canBuild) then
-						canBuild = actualImprovementID == buildImprovement.ID
+						canBuild = actualImprovementID == buildImprovementID
 					end
 
 					-- case where improvement requires a specific civilization
@@ -1036,7 +1051,7 @@ local PlotToolTips = EUI.PlotToolTips or function( plot, isExtraTips )
 						local yieldChange
 						-- Work around unrevealed improvement game bug
 						if buildImprovement and revealedImprovementID ~= actualImprovementID then
-							yieldChange = plot:CalculateImprovementYieldChange( buildImprovement.ID, yieldID, activePlayerID ) -- false = not optimal
+							yieldChange = plot:CalculateImprovementYieldChange( buildImprovementID, yieldID, activePlayerID ) -- false = not optimal
 						else
 							yieldChange = plot:GetYieldWithBuild( buildID, yieldID, false, activePlayerID ) - plot:CalculateYield( yieldID, false ) -- false = without upgrade, false = actual
 						end
@@ -1049,6 +1064,21 @@ local PlotToolTips = EUI.PlotToolTips or function( plot, isExtraTips )
 							buildTip = string_format( "%s [COLOR_NEGATIVE_TEXT]%+i[ENDCOLOR]%s", buildTip, yieldChange, YieldIcons[yieldID] or "" )
 						end
 					end
+
+					-- GPP Rate
+					if buildImprovement then
+						local iGPPRateChange = (buildImprovement.GreatPersonRateModifier or 0)
+						if revealedImprovementID >= 0 and not isPillaged then
+							iGPPRateChange = iGPPRateChange - (revealedImprovement.GreatPersonRateModifier or 0)
+						end
+						-- Positive or negative change?
+						if iGPPRateChange > 0 then
+							buildTip = string_format( "%s [COLOR_POSITIVE_TEXT]%+i%%[ENDCOLOR][ICON_GREAT_PEOPLE]", buildTip, iGPPRateChange )
+						elseif iGPPRateChange < 0 then
+							buildTip = string_format( "%s [COLOR_NEGATIVE_TEXT]%+i%%[ENDCOLOR][ICON_GREAT_PEOPLE]", buildTip, iGPPRateChange )
+						end
+					end
+
 					-- Maintenance
 					if buildImprovement then
 						if civ5_mode then
@@ -1067,7 +1097,7 @@ local PlotToolTips = EUI.PlotToolTips or function( plot, isExtraTips )
 							end
 						end
 						if resource and isResourceUsefull then
-							if plot:IsResourceConnectedByImprovement( buildImprovement.ID ) then
+							if plot:IsResourceConnectedByImprovement( buildImprovementID ) then
 								if not isResourceConnected then
 									buildTip = string_format("%s [COLOR_POSITIVE_TEXT]%+i[ENDCOLOR]%s", buildTip, numResource, resource.IconString )
 								end
@@ -1142,6 +1172,7 @@ local function UpdateOptions()
 	g_isPoliciesEnabled = not Game.IsOption(GameOptionTypes.GAMEOPTION_NO_POLICIES)
 	g_isHappinessEnabled = civ5_mode and not Game.IsOption(GameOptionTypes.GAMEOPTION_NO_HAPPINESS)
 	g_isReligionEnabled = civ5_mode and gk_mode and not Game.IsOption(GameOptionTypes.GAMEOPTION_NO_RELIGION)
+	g_isAccomplishmentsEnabled = true
 	g_isNoob = civ5_mode and not OptionsManager.IsNoBasicHelp()
 	ResetAll()
 end

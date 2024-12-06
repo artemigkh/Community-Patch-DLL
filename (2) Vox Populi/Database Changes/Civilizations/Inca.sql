@@ -54,15 +54,12 @@ VALUES
 --	('IMPROVEMENT_TERRACE_FARM', 'YIELD_FOOD', 1),
 	('IMPROVEMENT_TERRACE_FARM', 'YIELD_PRODUCTION', 2);
 
-INSERT INTO Improvement_YieldAdjacentSameType
-	(ImprovementType, YieldType, Yield)
+INSERT INTO Improvement_YieldPerXAdjacentImprovement
+	(ImprovementType, OtherImprovementType, YieldType, Yield, NumRequired)
 VALUES
-	('IMPROVEMENT_TERRACE_FARM', 'YIELD_FOOD', 1);
-
-INSERT INTO Improvement_AdjacentImprovementYieldChanges
-	(ImprovementType, OtherImprovementType, YieldType, Yield)
-VALUES
-	('IMPROVEMENT_TERRACE_FARM', 'IMPROVEMENT_FARM', 'YIELD_FOOD', 1);
+	('IMPROVEMENT_FARM', 'IMPROVEMENT_TERRACE_FARM', 'YIELD_FOOD', 1, 1),
+	('IMPROVEMENT_TERRACE_FARM', 'IMPROVEMENT_TERRACE_FARM', 'YIELD_FOOD', 1, 1),
+	('IMPROVEMENT_TERRACE_FARM', 'IMPROVEMENT_MANUFACTORY', 'YIELD_FOOD', 1, 1);
 
 INSERT INTO Improvement_TechYieldChanges
 	(ImprovementType, TechType, YieldType, Yield)

@@ -357,9 +357,11 @@ CvUnit::CvUnit() :
 	, m_iFortificationYieldChange()
 	, m_strScriptData()
 	, m_iScenarioData()
-	, m_terrainIgnoreCostCount()
+	, m_ignoreTerrainCostInCount()
+	, m_ignoreTerrainCostFromCount()
+	, m_ignoreFeatureCostInCount()
+	, m_ignoreFeatureCostFromCount()
 	, m_terrainDoubleMoveCount()
-	, m_featureIgnoreCostCount()
 	, m_featureDoubleMoveCount()
 	, m_terrainImpassableCount()
 	, m_featureImpassableCount()
@@ -440,6 +442,7 @@ CvUnit::CvUnit() :
 	, m_iWonderProductionModifier()
 	, m_iUnitProductionModifier()
 	, m_iNearbyEnemyDamage()
+	, m_iAdjacentCityDefenseMod()
 	, m_iGGGAXPPercent()
 	, m_iGiveCombatMod()
 	, m_iGiveHPIfEnemyKilled()
@@ -1513,6 +1516,7 @@ void CvUnit::reset(int iID, UnitTypes eUnit, PlayerTypes eOwner, bool bConstruct
 	m_iWonderProductionModifier = 0;
 	m_iUnitProductionModifier = 0;
 	m_iNearbyEnemyDamage = 0;
+	m_iAdjacentCityDefenseMod = 0;
 	m_iGGGAXPPercent = 0;
 	m_eGiveDomain = NO_DOMAIN;
 	m_iGiveCombatMod = 0;
@@ -1733,7 +1737,8 @@ void CvUnit::reset(int iID, UnitTypes eUnit, PlayerTypes eOwner, bool bConstruct
 	{
 		m_Promotions.Reset();
 
-		m_terrainIgnoreCostCount.clear();
+		m_ignoreTerrainCostInCount.clear();
+		m_ignoreTerrainCostFromCount.clear();
 		m_terrainDoubleMoveCount.clear();
 #if defined(MOD_PROMOTIONS_HALF_MOVE)
 		m_terrainHalfMoveCount.clear();
@@ -1750,7 +1755,8 @@ void CvUnit::reset(int iID, UnitTypes eUnit, PlayerTypes eOwner, bool bConstruct
 		m_extraTerrainAttackPercent.clear();
 		m_extraTerrainDefensePercent.clear();
 
-		m_featureIgnoreCostCount.clear();
+		m_ignoreFeatureCostInCount.clear();
+		m_ignoreFeatureCostFromCount.clear();
 		m_featureDoubleMoveCount.clear();
 #if defined(MOD_PROMOTIONS_HALF_MOVE)
 		m_featureHalfMoveCount.clear();
@@ -1888,9 +1894,11 @@ void CvUnit::setupGraphical()
 void CvUnit::uninitInfos()
 {
 	VALIDATE_OBJECT
-	m_terrainIgnoreCostCount.clear();
+	m_ignoreTerrainCostInCount.clear();
+	m_ignoreTerrainCostFromCount.clear();
+	m_ignoreFeatureCostInCount.clear();
+	m_ignoreFeatureCostFromCount.clear();
 	m_terrainDoubleMoveCount.clear(); // BUG FIX
-	m_featureIgnoreCostCount.clear();
 	m_featureDoubleMoveCount.clear();
 	m_terrainHalfMoveCount.clear();
 	m_featureHalfMoveCount.clear();
@@ -2186,6 +2194,12 @@ void CvUnit::convert(CvUnit* pUnit, bool bIsUpgrade)
 	{
 		SetOriginalOwner(eOriginalOwner);
 	}
+	// Transfer gifted by player
+	PlayerTypes eGiftedByPlayer = bIsUpgrade ? pUnit->GetGiftedByPlayer() : NO_PLAYER;
+	if (eGiftedByPlayer != NO_PLAYER)
+	{
+		SetGiftedByPlayer(eGiftedByPlayer);
+	}
 
 	if (MOD_EVENTS_UNIT_CONVERTS)
 	{
@@ -2428,9 +2442,9 @@ void CvUnit::kill(bool bDelay, PlayerTypes ePlayer /*= NO_PLAYER*/)
 							if (GET_PLAYER(eUnitOwner).GetDiplomacyAI()->IsPlayerValid(eLoopPlayer) && GET_PLAYER(eUnitOwner).GetDiplomacyAI()->IsVassal(eLoopPlayer))
 							{
 								if (iCivValue > 0)
-									GET_PLAYER(eUnitOwner).GetDiplomacyAI()->ChangeVassalFailedProtectValue(eLoopPlayer, iCivValue);
+									GET_PLAYER(eUnitOwner).GetDiplomacyAI()->ChangeVassalProtectValue(eLoopPlayer, -iCivValue);
 								else
-									GET_PLAYER(eUnitOwner).GetDiplomacyAI()->ChangeVassalFailedProtectValue(eLoopPlayer, iUnitValue);
+									GET_PLAYER(eUnitOwner).GetDiplomacyAI()->ChangeVassalProtectValue(eLoopPlayer, -iUnitValue);
 							}
 						}
 					}
@@ -2439,9 +2453,9 @@ void CvUnit::kill(bool bDelay, PlayerTypes ePlayer /*= NO_PLAYER*/)
 					{
 						// Penalize the master whose territory we're in
 						if (iCivValue > 0)
-							GET_PLAYER(eUnitOwner).GetDiplomacyAI()->ChangeVassalFailedProtectValue(pPlot->getOwner(), iCivValue);
+							GET_PLAYER(eUnitOwner).GetDiplomacyAI()->ChangeVassalProtectValue(pPlot->getOwner(), -iCivValue);
 						else
-							GET_PLAYER(eUnitOwner).GetDiplomacyAI()->ChangeVassalFailedProtectValue(pPlot->getOwner(), iUnitValue);
+							GET_PLAYER(eUnitOwner).GetDiplomacyAI()->ChangeVassalProtectValue(pPlot->getOwner(), -iUnitValue);
 					}
 					// Unit killed in neutral territory near one of the vassal's cities (currently disabled)
 					else if (pPlot->getOwner() == NO_PLAYER && GET_PLAYER(eUnitOwner).GetCityDistanceInPlots(pPlot) <= /*0*/ GD_INT_GET(VASSALAGE_FAILED_PROTECT_CITY_DISTANCE))
@@ -2453,9 +2467,9 @@ void CvUnit::kill(bool bDelay, PlayerTypes ePlayer /*= NO_PLAYER*/)
 							if (GET_PLAYER(eUnitOwner).GetDiplomacyAI()->IsPlayerValid(eLoopPlayer) && GET_PLAYER(eUnitOwner).GetDiplomacyAI()->IsVassal(eLoopPlayer))
 							{
 								if (iCivValue > 0)
-									GET_PLAYER(eUnitOwner).GetDiplomacyAI()->ChangeVassalFailedProtectValue(eLoopPlayer, iCivValue);
+									GET_PLAYER(eUnitOwner).GetDiplomacyAI()->ChangeVassalProtectValue(eLoopPlayer, -iCivValue);
 								else
-									GET_PLAYER(eUnitOwner).GetDiplomacyAI()->ChangeVassalFailedProtectValue(eLoopPlayer, iUnitValue);
+									GET_PLAYER(eUnitOwner).GetDiplomacyAI()->ChangeVassalProtectValue(eLoopPlayer, -iUnitValue);
 							}
 						}
 					}
@@ -3048,7 +3062,7 @@ bool CvUnit::getCaptureDefinition(CvUnitCaptureDefinition* pkCaptureDef, PlayerT
 				if (kCaptureDef.eOriginalOwner != NO_PLAYER && GET_PLAYER(kCaptureDef.eOriginalOwner).isAlive() && !GET_PLAYER(kCaptureDef.eCapturingPlayer).isHuman() && !GET_PLAYER(kCaptureDef.eCapturingPlayer).IsAtWarWith(kCaptureDef.eOriginalOwner))
 				{
 					CivOpinionTypes eMajorOpinion = CIV_OPINION_NEUTRAL;
-					CivApproachTypes eMinorOpinion = NO_CIV_APPROACH;
+					CivApproachTypes eMinorOpinion = CIV_APPROACH_NEUTRAL;
 					if(GET_PLAYER(kCaptureDef.eOriginalOwner).isMajorCiv())
 					{
 						eMajorOpinion = kCapturingPlayer.GetDiplomacyAI()->GetCivOpinion(kCaptureDef.eOriginalOwner);
@@ -3087,8 +3101,8 @@ bool CvUnit::getCaptureDefinition(CvUnitCaptureDefinition* pkCaptureDef, PlayerT
 #if defined(MOD_BALANCE_CORE)
 			if(kCaptureDef.eOriginalOwner != NO_PLAYER && !GET_PLAYER(kCaptureDef.eCapturingPlayer).isHuman())
 			{
-				CivOpinionTypes eMajorOpinion = NO_CIV_OPINION;
-				CivApproachTypes eMinorOpinion = NO_CIV_APPROACH;
+				CivOpinionTypes eMajorOpinion = CIV_OPINION_NEUTRAL;
+				CivApproachTypes eMinorOpinion = CIV_APPROACH_NEUTRAL;
 				if(GET_PLAYER(kCaptureDef.eOriginalOwner).isMajorCiv())
 				{
 					eMajorOpinion = kCapturingPlayer.GetDiplomacyAI()->GetCivOpinion(kCaptureDef.eOriginalOwner);
@@ -10322,7 +10336,7 @@ bool CvUnit::pillage()
 							PlayerTypes eLoopPlayer = (PlayerTypes) iPlayerLoop;
 							if (GET_PLAYER(pPlot->getOwner()).GetDiplomacyAI()->IsPlayerValid(eLoopPlayer) && GET_PLAYER(pPlot->getOwner()).GetDiplomacyAI()->IsVassal(eLoopPlayer))
 							{
-								GET_PLAYER(pPlot->getOwner()).GetDiplomacyAI()->ChangeVassalFailedProtectValue(eLoopPlayer, iTileValue);
+								GET_PLAYER(pPlot->getOwner()).GetDiplomacyAI()->ChangeVassalProtectValue(eLoopPlayer, -iTileValue);
 							}
 						}
 					}
@@ -12114,6 +12128,10 @@ bool CvUnit::trade()
 
 	GET_PLAYER(eMinor).GetMinorCivAI()->ChangeFriendshipWithMajor(getOwner(), iInfluence);
 
+	// TODO: Add code here so only a unit with the right promotion triggers the accomplishment
+	if (iInfluence > 0)
+		GET_PLAYER(getOwner()).CompleteAccomplishment(ACCOMPLISHMENT_DIPLOMATIC_MISSION_BOOST);
+
 	// Great Diplomat: now update the friend/ally status for the other players
 	if (bGreatDiplomat)
 	{
@@ -12553,6 +12571,10 @@ void CvUnit::PerformCultureBomb(int iRadius)
 			if (ePlotOwner == getOwner())
 				continue;
 
+			// Can't steal blocked tiles
+			if (pLoopPlot->IsStealBlockedByImprovement())
+				continue;
+
 			if (ePlotOwner != NO_PLAYER)
 			{
 				// Notify plot owner
@@ -12568,105 +12590,48 @@ void CvUnit::PerformCultureBomb(int iRadius)
 				}
 				vePlayersBombed[ePlotOwner] = true;
 
-				// Diplomacy stuff!
-				int iTileValue = /*80*/ GD_INT_GET(STOLEN_TILE_BASE_WAR_VALUE);
-				int iValueMultiplier = 0;
-
-				if (pLoopPlot->IsNaturalWonder())
+				bool bHighValueTile = false; // reference variable
+				int iTileValue = pLoopPlot->GetStealPlotValue(getOwner(), bHighValueTile);
+				if (bHighValueTile)
 				{
-					iValueMultiplier += 200;
 					vePlayersStoleHighValueTileFrom[ePlotOwner] = true;
 				}
-				else
+
+				// Stole a major civ's embassy from a City-State?
+				if (pLoopPlot->IsImprovementEmbassy() && GET_PLAYER(ePlotOwner).isMinorCiv())
 				{
-					if (pLoopPlot->getResourceType(GET_PLAYER(ePlotOwner).getTeam()) != NO_RESOURCE)
+					PlayerTypes eEmbassyOwner = pLoopPlot->GetPlayerThatBuiltImprovement();
+					if (GET_PLAYER(eEmbassyOwner).isAlive() && GET_PLAYER(eEmbassyOwner).isMajorCiv() && GET_PLAYER(eEmbassyOwner).getTeam() != GET_PLAYER(getOwner()).getTeam())
 					{
-						CvResourceInfo* pInfo = GC.getResourceInfo(pLoopPlot->getResourceType(GET_PLAYER(ePlotOwner).getTeam()));
-						if (pInfo)
+						// Notify the embassy owner
+						if (!vePlayersBombed[eEmbassyOwner])
 						{
-							switch (pInfo->getResourceUsage())
+							CvNotifications* pNotifications = GET_PLAYER(eEmbassyOwner).GetNotifications();
+							if (pNotifications)
 							{
-							case RESOURCEUSAGE_STRATEGIC:
-								iValueMultiplier += 100;
-								vePlayersStoleHighValueTileFrom[ePlotOwner] = true;
-								break;
-							case RESOURCEUSAGE_LUXURY:
-								iValueMultiplier += 50;
-								vePlayersStoleHighValueTileFrom[ePlotOwner] = true;
-								break;
-							case RESOURCEUSAGE_BONUS:
-								iValueMultiplier += 20;
-								break;
+								CvString strBuffer = GetLocalizedText("TXT_KEY_NOTIFICATION_GREAT_ARTIST_STOLE_PLOT", GET_PLAYER(getOwner()).getNameKey());
+								CvString strSummary = GetLocalizedText("TXT_KEY_NOTIFICATION_SUMMARY_GREAT_ARTIST_STOLE_PLOT", GET_PLAYER(getOwner()).getNameKey());
+								pNotifications->Add(NOTIFICATION_GENERIC, strBuffer, strSummary, pLoopPlot->getX(), pLoopPlot->getY(), -1);
 							}
 						}
-					}
+						vePlayersBombed[eEmbassyOwner] = true;
+						vePlayersStoleHighValueTileFrom[eEmbassyOwner] = true;
 
-					bool bChokePoint = pLoopPlot->IsChokePoint();
-					if (bChokePoint)
-					{
-						iValueMultiplier += 50;
-						vePlayersStoleHighValueTileFrom[ePlotOwner] = true;
-					}
-
-					ImprovementTypes eImprovement = pLoopPlot->getImprovementType();
-					if (eImprovement != NO_IMPROVEMENT)
-					{
-						CvImprovementEntry* pkImprovementInfo = GC.getImprovementInfo(eImprovement);
-						CvAssert(pkImprovementInfo);
-
-						if (bChokePoint)
+						// Stole from the City-State's ally? The City-State is furious!
+						if (GET_PLAYER(ePlotOwner).GetMinorCivAI()->GetAlly() == eEmbassyOwner)
 						{
-							iValueMultiplier += pkImprovementInfo->GetDefenseModifier();
-							if (pkImprovementInfo->IsNoFollowUp())
-								iValueMultiplier += 20;
+							GET_PLAYER(ePlotOwner).GetMinorCivAI()->SetFriendshipWithMajor(getOwner(), /*-60*/ GD_INT_GET(MINOR_FRIENDSHIP_AT_WAR));
 						}
-
-						if (pkImprovementInfo->IsCreatedByGreatPerson())
+						// Stole from the City-State's friend and we're not their ally? Reset Influence to 0.
+						else if (GET_PLAYER(ePlotOwner).GetMinorCivAI()->GetAlly() != getOwner() && GET_PLAYER(ePlotOwner).GetMinorCivAI()->IsFriends(eEmbassyOwner))
 						{
-							iValueMultiplier += 100;
-							vePlayersStoleHighValueTileFrom[ePlotOwner] = true;
-						}
-					}
-
-					// Stole a major civ's embassy from a City-State?
-					if (pLoopPlot->IsImprovementEmbassy() && GET_PLAYER(ePlotOwner).isMinorCiv())
-					{
-						PlayerTypes eEmbassyOwner = pLoopPlot->GetPlayerThatBuiltImprovement();
-						if (GET_PLAYER(eEmbassyOwner).isAlive() && GET_PLAYER(eEmbassyOwner).isMajorCiv() && GET_PLAYER(eEmbassyOwner).getTeam() != GET_PLAYER(getOwner()).getTeam())
-						{
-							// Notify the embassy owner
-							if (!vePlayersBombed[eEmbassyOwner])
+							if (GET_PLAYER(ePlotOwner).GetMinorCivAI()->GetBaseFriendshipWithMajorTimes100(getOwner()) > 0)
 							{
-								CvNotifications* pNotifications = GET_PLAYER(eEmbassyOwner).GetNotifications();
-								if (pNotifications)
-								{
-									CvString strBuffer = GetLocalizedText("TXT_KEY_NOTIFICATION_GREAT_ARTIST_STOLE_PLOT", GET_PLAYER(getOwner()).getNameKey());
-									CvString strSummary = GetLocalizedText("TXT_KEY_NOTIFICATION_SUMMARY_GREAT_ARTIST_STOLE_PLOT", GET_PLAYER(getOwner()).getNameKey());
-									pNotifications->Add(NOTIFICATION_GENERIC, strBuffer, strSummary, pLoopPlot->getX(), pLoopPlot->getY(), -1);
-								}
-							}
-							vePlayersBombed[eEmbassyOwner] = true;
-							vePlayersStoleHighValueTileFrom[eEmbassyOwner] = true;
-
-							// Stole from the City-State's ally? The City-State is furious!
-							if (GET_PLAYER(ePlotOwner).GetMinorCivAI()->GetAlly() == eEmbassyOwner)
-							{
-								GET_PLAYER(ePlotOwner).GetMinorCivAI()->SetFriendshipWithMajor(getOwner(), /*-60*/ GD_INT_GET(MINOR_FRIENDSHIP_AT_WAR));
-							}
-							// Stole from the City-State's friend and we're not their ally? Reset Influence to 0.
-							else if (GET_PLAYER(ePlotOwner).GetMinorCivAI()->GetAlly() != getOwner() && GET_PLAYER(ePlotOwner).GetMinorCivAI()->IsFriends(eEmbassyOwner))
-							{
-								if (GET_PLAYER(ePlotOwner).GetMinorCivAI()->GetBaseFriendshipWithMajorTimes100(getOwner()) > 0)
-								{
-									GET_PLAYER(ePlotOwner).GetMinorCivAI()->SetFriendshipWithMajor(getOwner(), 0);
-								}
+								GET_PLAYER(ePlotOwner).GetMinorCivAI()->SetFriendshipWithMajor(getOwner(), 0);
 							}
 						}
 					}
 				}
-
-				iTileValue *= 100 + iValueMultiplier;
-				iTileValue /= 100;
 
 				// If the players are at war, this counts for war value!
 				if (GET_PLAYER(getOwner()).IsAtWarWith(ePlotOwner))
@@ -12676,7 +12641,7 @@ void CvUnit::PerformCultureBomb(int iRadius)
 					if (GET_PLAYER(getOwner()).isMajorCiv())
 					{
 						int iWarProgress = /*20*/ GD_INT_GET(WAR_PROGRESS_STOLE_TILE);
-						if (vePlayersStoleHighValueTileFrom[ePlotOwner])
+						if (bHighValueTile)
 						{
 							iWarProgress *= /*200*/ GD_INT_GET(WAR_PROGRESS_HIGH_VALUE_PILLAGE_MULTIPLIER);
 							iWarProgress /= 100;
@@ -12686,7 +12651,7 @@ void CvUnit::PerformCultureBomb(int iRadius)
 					if (GET_PLAYER(ePlotOwner).isMajorCiv())
 					{
 						int iWarProgress = /*-10*/ GD_INT_GET(WAR_PROGRESS_LOST_TILE);
-						if (vePlayersStoleHighValueTileFrom[ePlotOwner])
+						if (bHighValueTile)
 						{
 							iWarProgress *= /*200*/ GD_INT_GET(WAR_PROGRESS_HIGH_VALUE_PILLAGE_MULTIPLIER);
 							iWarProgress /= 100;
@@ -13411,7 +13376,7 @@ bool CvUnit::canBuild(const CvPlot* pPlot, BuildTypes eBuild, bool bTestVisible,
 
 			if(pLoopUnit && pLoopUnit != this)
 			{
-				if(pLoopUnit->IsWork() && pLoopUnit->getBuildType() != NO_BUILD)
+				if(pLoopUnit->IsWork() && pLoopUnit->IsWorking())
 				{
 					return false;
 				}
@@ -15606,24 +15571,9 @@ BuildTypes CvUnit::getBuildType() const
 	{
 		if(pkMissionNode->eMissionType == CvTypes::getMISSION_ROUTE_TO())
 		{
-			RouteTypes eBestRoute = GET_PLAYER(m_eOwner).getBestRoute(plot());
-			if(eBestRoute != NO_ROUTE)
-			{
-				for(int iI = 0; iI < GC.getNumBuildInfos(); iI++)
-				{
-					BuildTypes eBuild = (BuildTypes)iI;
-					CvBuildInfo* pkBuildInfo = GC.getBuildInfo(eBuild);
-
-					if(pkBuildInfo)
-					{
-						RouteTypes eRoute = ((RouteTypes)(pkBuildInfo->getRoute()));
-						if(eRoute == eBestRoute)
-						{
-							return eBuild;
-						}
-					}
-				}
-			}
+			BuildTypes eBestBuild = NO_BUILD;
+			GetBestBuildRouteForRoadTo(plot(), &eBestBuild);
+			return eBestBuild;
 		}
 		else if(pkMissionNode->eMissionType == CvTypes::getMISSION_BUILD())
 		{
@@ -15634,6 +15584,13 @@ BuildTypes CvUnit::getBuildType() const
 	return NO_BUILD;
 }
 
+//	----------------------------------------------------------------------------
+bool CvUnit::IsWorking() const
+{
+	VALIDATE_OBJECT
+	const MissionData* pkMissionNode = HeadMissionData();
+	return pkMissionNode && (pkMissionNode->eMissionType == CvTypes::getMISSION_ROUTE_TO() || pkMissionNode->eMissionType == CvTypes::getMISSION_BUILD());
+}
 
 //	--------------------------------------------------------------------------------
 int CvUnit::workRate(bool bMax, BuildTypes /*eBuild*/) const
@@ -16369,6 +16326,10 @@ int CvUnit::GetGenericMeleeStrengthModifier(const CvUnit* pOtherUnit, const CvPl
 		if (pOtherUnit->IsLargerCivThan(this))
 		{
 			iModifier += GET_PLAYER(getOwner()).GetPlayerTraits()->GetCombatBonusVsLargerCiv();
+		}
+		if (GET_PLAYER(pOtherUnit->getOwner()).getTotalPopulation() > GET_PLAYER(getOwner()).getTotalPopulation())
+		{
+			iModifier += GET_PLAYER(getOwner()).GetPlayerTraits()->GetCombatBonusVsHigherPop();
 		}
 	}
 
@@ -17145,6 +17106,10 @@ int CvUnit::GetMaxRangedCombatStrength(const CvUnit* pOtherUnit, const CvCity* p
 		if (pOtherUnit->IsLargerCivThan(this))
 		{
 			iModifier += GET_PLAYER(getOwner()).GetPlayerTraits()->GetCombatBonusVsLargerCiv();
+		}
+		if (GET_PLAYER(pOtherUnit->getOwner()).getTotalPopulation() > GET_PLAYER(getOwner()).getTotalPopulation())
+		{
+			iModifier += GET_PLAYER(getOwner()).GetPlayerTraits()->GetCombatBonusVsHigherPop();
 		}
 
 		// ATTACKING
@@ -17973,6 +17938,16 @@ void CvUnit::ChangeNearbyEnemyDamage(int iValue)
 	VALIDATE_OBJECT
 	m_iNearbyEnemyDamage += iValue;
 }
+int CvUnit::GetAdjacentCityDefenseMod() const
+{
+	VALIDATE_OBJECT
+		return m_iAdjacentCityDefenseMod;
+}
+void CvUnit::ChangeAdjacentCityDefenseMod(int iValue)
+{
+	VALIDATE_OBJECT
+		m_iAdjacentCityDefenseMod += iValue;
+}
 int CvUnit::GetGGGAXPPercent() const
 {
 	VALIDATE_OBJECT
@@ -18118,7 +18093,7 @@ inline int CvUnit::getIsConvertUnit() const
 	VALIDATE_OBJECT
 	return	m_iConvertUnit;
 }
-inline bool CvUnit::isConvertUnit() const
+bool CvUnit::isConvertUnit() const
 {
 	VALIDATE_OBJECT
 	return getIsConvertUnit() > 0;
@@ -21625,7 +21600,7 @@ int CvUnit::DoAdjacentPlotDamage(CvPlot* pWhere, int iValue, const char* chTextK
 		{
 			CvUnit* pEnemyUnit = pSplashPlot->getUnitByIndex(iJ);
 			//logically we should damage non-enemy units as well? but that is too complex to consider ... 
-			if (pEnemyUnit != NULL && pEnemyUnit->isEnemy(getTeam()))
+			if (pEnemyUnit != NULL && pEnemyUnit->isEnemy(getTeam()) && !pEnemyUnit->isTrade())
 			{
 				//no splash damage in cities/forts
 				if (pSplashPlot->isFortification(pEnemyUnit->getTeam()))
@@ -25568,9 +25543,9 @@ void CvUnit::setScenarioData(int iNewValue)
 }
 
 //	--------------------------------------------------------------------------------
-int CvUnit::getTerrainIgnoreCostCount(TerrainTypes eIndex) const
+int CvUnit::getIgnoreTerrainCostInCount(TerrainTypes eIndex) const
 {
-	for (TerrainTypeCounter::const_iterator it = m_terrainIgnoreCostCount.begin(); it != m_terrainIgnoreCostCount.end(); ++it)
+	for (TerrainTypeCounter::const_iterator it = m_ignoreTerrainCostInCount.begin(); it != m_ignoreTerrainCostInCount.end(); ++it)
 	{
 		if (it->first == eIndex)
 			return it->second;
@@ -25580,12 +25555,12 @@ int CvUnit::getTerrainIgnoreCostCount(TerrainTypes eIndex) const
 }
 
 //	--------------------------------------------------------------------------------
-void CvUnit::changeTerrainIgnoreCostCount(TerrainTypes eIndex, int iChange)
+void CvUnit::changeIgnoreTerrainCostInCount(TerrainTypes eIndex, int iChange)
 {
 	if (iChange == 0)
 		return;
 
-	TerrainTypeCounter& mVec = m_terrainIgnoreCostCount;
+	TerrainTypeCounter& mVec = m_ignoreTerrainCostInCount;
 	for (TerrainTypeCounter::iterator it = mVec.begin(); it != mVec.end(); ++it)
 	{
 		if (it->first == eIndex)
@@ -25599,7 +25574,42 @@ void CvUnit::changeTerrainIgnoreCostCount(TerrainTypes eIndex, int iChange)
 		}
 	}
 
-	m_terrainIgnoreCostCount.push_back(make_pair(eIndex, iChange));
+	m_ignoreTerrainCostInCount.push_back(make_pair(eIndex, iChange));
+}
+
+//	--------------------------------------------------------------------------------
+int CvUnit::getIgnoreTerrainCostFromCount(TerrainTypes eIndex) const
+{
+	for (TerrainTypeCounter::const_iterator it = m_ignoreTerrainCostFromCount.begin(); it != m_ignoreTerrainCostFromCount.end(); ++it)
+	{
+		if (it->first == eIndex)
+			return it->second;
+	}
+
+	return 0;
+}
+
+//	--------------------------------------------------------------------------------
+void CvUnit::changeIgnoreTerrainCostFromCount(TerrainTypes eIndex, int iChange)
+{
+	if (iChange == 0)
+		return;
+
+	TerrainTypeCounter& mVec = m_ignoreTerrainCostFromCount;
+	for (TerrainTypeCounter::iterator it = mVec.begin(); it != mVec.end(); ++it)
+	{
+		if (it->first == eIndex)
+		{
+			it->second += iChange;
+
+			if (it->second == 0)
+				mVec.erase(it);
+
+			return;
+		}
+	}
+
+	m_ignoreTerrainCostFromCount.push_back(make_pair(eIndex, iChange));
 }
 
 //	--------------------------------------------------------------------------------
@@ -25638,9 +25648,9 @@ void CvUnit::changeTerrainDoubleMoveCount(TerrainTypes eIndex, int iChange)
 }
 
 //	--------------------------------------------------------------------------------
-int CvUnit::getFeatureIgnoreCostCount(FeatureTypes eIndex) const
+int CvUnit::getIgnoreFeatureCostInCount(FeatureTypes eIndex) const
 {
-	for (FeatureTypeCounter::const_iterator it = m_featureIgnoreCostCount.begin(); it != m_featureIgnoreCostCount.end(); ++it)
+	for (FeatureTypeCounter::const_iterator it = m_ignoreFeatureCostInCount.begin(); it != m_ignoreFeatureCostInCount.end(); ++it)
 	{
 		if (it->first == eIndex)
 			return it->second;
@@ -25650,12 +25660,12 @@ int CvUnit::getFeatureIgnoreCostCount(FeatureTypes eIndex) const
 }
 
 //	--------------------------------------------------------------------------------
-void CvUnit::changeFeatureIgnoreCostCount(FeatureTypes eIndex, int iChange)
+void CvUnit::changeIgnoreFeatureCostInCount(FeatureTypes eIndex, int iChange)
 {
 	if (iChange == 0)
 		return;
 
-	FeatureTypeCounter& mVec = m_featureIgnoreCostCount;
+	FeatureTypeCounter& mVec = m_ignoreFeatureCostInCount;
 	for (FeatureTypeCounter::iterator it = mVec.begin(); it != mVec.end(); ++it)
 	{
 		if (it->first == eIndex)
@@ -25669,7 +25679,42 @@ void CvUnit::changeFeatureIgnoreCostCount(FeatureTypes eIndex, int iChange)
 		}
 	}
 
-	m_featureIgnoreCostCount.push_back(make_pair(eIndex, iChange));
+	m_ignoreFeatureCostInCount.push_back(make_pair(eIndex, iChange));
+}
+
+//	--------------------------------------------------------------------------------
+int CvUnit::getIgnoreFeatureCostFromCount(FeatureTypes eIndex) const
+{
+	for (FeatureTypeCounter::const_iterator it = m_ignoreFeatureCostFromCount.begin(); it != m_ignoreFeatureCostFromCount.end(); ++it)
+	{
+		if (it->first == eIndex)
+			return it->second;
+	}
+
+	return 0;
+}
+
+//	--------------------------------------------------------------------------------
+void CvUnit::changeIgnoreFeatureCostFromCount(FeatureTypes eIndex, int iChange)
+{
+	if (iChange == 0)
+		return;
+
+	FeatureTypeCounter& mVec = m_ignoreFeatureCostFromCount;
+	for (FeatureTypeCounter::iterator it = mVec.begin(); it != mVec.end(); ++it)
+	{
+		if (it->first == eIndex)
+		{
+			it->second += iChange;
+
+			if (it->second == 0)
+				mVec.erase(it);
+
+			return;
+		}
+	}
+
+	m_ignoreFeatureCostFromCount.push_back(make_pair(eIndex, iChange));
 }
 
 //	--------------------------------------------------------------------------------
@@ -26898,6 +26943,7 @@ void CvUnit::setHasPromotion(PromotionTypes eIndex, bool bNewValue)
 		ChangeWonderProductionModifier(thisPromotion.GetWonderProductionModifier() * iChange);
 		ChangeMilitaryProductionModifier(thisPromotion.GetMilitaryProductionModifier() * iChange);
 		ChangeNearbyEnemyDamage(thisPromotion.GetNearbyEnemyDamage() * iChange);
+		ChangeAdjacentCityDefenseMod(thisPromotion.GetAdjacentCityDefenseMod() * iChange);
 		ChangeGGGAXPPercent(thisPromotion.GetGeneralGoldenAgeExpPercent() * iChange);
 		ChangeGiveCombatMod(thisPromotion.GetGiveCombatMod() * iChange);
 		ChangeGiveHPIfEnemyKilled(thisPromotion.GetGiveHPIfEnemyKilled() * iChange);
@@ -27137,7 +27183,8 @@ void CvUnit::setHasPromotion(PromotionTypes eIndex, bool bNewValue)
 		{
 			changeExtraTerrainAttackPercent(((TerrainTypes)iI), (thisPromotion.GetTerrainAttackPercent(iI) * iChange));
 			changeExtraTerrainDefensePercent(((TerrainTypes)iI), (thisPromotion.GetTerrainDefensePercent(iI) * iChange));
-			changeTerrainIgnoreCostCount(((TerrainTypes)iI), ((thisPromotion.GetTerrainIgnoreCost(iI)) ? iChange : 0));
+			changeIgnoreTerrainCostInCount(((TerrainTypes)iI), ((thisPromotion.GetIgnoreTerrainCostIn(iI)) ? iChange : 0));
+			changeIgnoreTerrainCostFromCount(((TerrainTypes)iI), ((thisPromotion.GetIgnoreTerrainCostFrom(iI)) ? iChange : 0));
 			changeTerrainDoubleMoveCount(((TerrainTypes)iI), ((thisPromotion.GetTerrainDoubleMove(iI)) ? iChange : 0));
 #if defined(MOD_PROMOTIONS_HALF_MOVE)
 			changeTerrainHalfMoveCount(((TerrainTypes)iI), ((thisPromotion.GetTerrainHalfMove(iI)) ? iChange : 0));
@@ -27153,7 +27200,8 @@ void CvUnit::setHasPromotion(PromotionTypes eIndex, bool bNewValue)
 		{
 			changeExtraFeatureAttackPercent(((FeatureTypes)iI), (thisPromotion.GetFeatureAttackPercent(iI) * iChange));
 			changeExtraFeatureDefensePercent(((FeatureTypes)iI), (thisPromotion.GetFeatureDefensePercent(iI) * iChange));
-			changeFeatureIgnoreCostCount(((FeatureTypes)iI), ((thisPromotion.GetFeatureIgnoreCost(iI)) ? iChange : 0));
+			changeIgnoreFeatureCostInCount(((FeatureTypes)iI), ((thisPromotion.GetIgnoreFeatureCostIn(iI)) ? iChange : 0));
+			changeIgnoreFeatureCostFromCount(((FeatureTypes)iI), ((thisPromotion.GetIgnoreFeatureCostFrom(iI)) ? iChange : 0));
 			changeFeatureDoubleMoveCount(((FeatureTypes)iI), ((thisPromotion.GetFeatureDoubleMove(iI)) ? iChange : 0));
 #if defined(MOD_PROMOTIONS_HALF_MOVE)
 			changeFeatureHalfMoveCount(((FeatureTypes)iI), ((thisPromotion.GetFeatureHalfMove(iI)) ? iChange : 0));
@@ -27651,6 +27699,7 @@ void CvUnit::Serialize(Unit& unit, Visitor& visitor)
 	visitor(unit.m_iWonderProductionModifier);
 	visitor(unit.m_iUnitProductionModifier);
 	visitor(unit.m_iNearbyEnemyDamage);
+	visitor(unit.m_iAdjacentCityDefenseMod);
 	visitor(unit.m_iGGGAXPPercent);
 	visitor(unit.m_iGiveCombatMod);
 	visitor(unit.m_iGiveHPIfEnemyKilled);
@@ -27764,9 +27813,11 @@ void CvUnit::Serialize(Unit& unit, Visitor& visitor)
 	visitor(unit.m_strScriptData);
 	visitor(unit.m_iScenarioData);
 	visitor(unit.m_iBuilderStrength);
-	visitor(unit.m_terrainIgnoreCostCount);
+	visitor(unit.m_ignoreTerrainCostInCount);
+	visitor(unit.m_ignoreTerrainCostFromCount);
+	visitor(unit.m_ignoreFeatureCostInCount);
+	visitor(unit.m_ignoreFeatureCostFromCount);
 	visitor(unit.m_terrainDoubleMoveCount);
-	visitor(unit.m_featureIgnoreCostCount);
 	visitor(unit.m_featureDoubleMoveCount);
 	visitor(unit.m_terrainHalfMoveCount);
 	visitor(unit.m_featureHalfMoveCount);
@@ -28945,7 +28996,7 @@ bool CvUnit::SentryAlert(bool bAllowAttacks) const
 }
 
 //	--------------------------------------------------------------------------------
-RouteTypes CvUnit::GetBestBuildRoute(CvPlot* pPlot, BuildTypes* peBestBuild) const
+RouteTypes CvUnit::GetBestBuildRouteForRoadTo(CvPlot* pPlot, BuildTypes* peBestBuild) const
 {
 	VALIDATE_OBJECT
 
@@ -28955,19 +29006,16 @@ RouteTypes CvUnit::GetBestBuildRoute(CvPlot* pPlot, BuildTypes* peBestBuild) con
 	}
 
 	int iBestValue = 0;
+	if (pPlot->getRouteType() != NO_ROUTE && !pPlot->IsRoutePillaged())
+		iBestValue = GC.getRouteInfo(pPlot->getRouteType())->getValue();
 	RouteTypes eBestRoute = NO_ROUTE;
 	
-#if defined(MOD_GLOBAL_QUICK_ROUTES)
-	CvPlayer& kPlayer = GET_PLAYER(getOwner());
-	const MissionData* pkMissionNode = HeadMissionData();
-	bool bOnlyRoad = MOD_GLOBAL_QUICK_ROUTES && kPlayer.isHuman() && (pkMissionNode != NULL && pkMissionNode->eMissionType == CvTypes::getMISSION_ROUTE_TO());
-	
-	if (bOnlyRoad) {
+	bool bOnlyRoad = false;
+	if (MOD_GLOBAL_QUICK_ROUTES && GET_PLAYER(getOwner()).isHuman())
+	{
 		// If there is no road to the mission end plot, bOnlyRoad is true
-		CvUnit* me = kPlayer.getUnit(m_iID); // God I truely hate "const" - we're in a const method, but LastMissionPlot() isn't so we can't call it!!!
-		bOnlyRoad = !IsPlotConnectedToPlot(getOwner(), pPlot, me->LastMissionPlot(), ROUTE_ROAD);
+		bOnlyRoad = !IsPlotConnectedToPlot(getOwner(), pPlot, LastMissionPlot(), ROUTE_ROAD, false, false);
 	}
-#endif
 
 	for(int iI = 0; iI < GC.getNumBuildInfos(); iI++)
 	{
@@ -28985,11 +29033,9 @@ RouteTypes CvUnit::GetBestBuildRoute(CvPlot* pPlot, BuildTypes* peBestBuild) con
 					{
 						int iValue = pkRouteInfo->getValue();
 						
-#if defined(MOD_GLOBAL_QUICK_ROUTES)
 						if (bOnlyRoad && eRoute != ROUTE_ROAD) {
 							iValue = 0;
 						}
-#endif
 
 						if(iValue > iBestValue)
 						{
@@ -29512,30 +29558,39 @@ int CvUnit::UnitPathTo(int iX, int iY, int iFlags)
 // Returns true if we want to continue next turn or false if we are done
 bool CvUnit::UnitRoadTo(int iX, int iY, int iFlags)
 {
+	//do we have movement points left?
+	if (!canMove())
+		return true; //continue next turn
+
 	//first check if we can continue building on the current plot
-	BuildTypes eBestBuild = NO_BUILD;
-	GetBestBuildRoute(plot(), &eBestBuild);
-	RouteTypes eBestRoute = GET_PLAYER(getOwner()).getBestRoute(plot());
-	CvPlayer& kPlayer = GET_PLAYER(getOwner());
-	bool bGetSameBenefitFromTrait = kPlayer.GetSameRouteBenefitFromTrait(plot(), eBestRoute);
-	if(!bGetSameBenefitFromTrait && eBestBuild != NO_BUILD && UnitBuild(eBestBuild))
+	BuildTypes eBestRouteBuildInPlot = NO_BUILD;
+	const RouteTypes eBestRouteInPlot = GetBestBuildRouteForRoadTo(plot(), &eBestRouteBuildInPlot);
+	const CvPlayer& kPlayer = GET_PLAYER(getOwner());
+
+	bool bGetSameBenefitFromTrait = kPlayer.GetSameRouteBenefitFromTrait(plot(), eBestRouteInPlot);
+	if(!bGetSameBenefitFromTrait && eBestRouteBuildInPlot != NO_BUILD && UnitBuild(eBestRouteBuildInPlot))
 		return true;
 
 	//are we at the target plot? then there's nothing else to do
 	if (at(iX, iY))
 		return false;
 
-	//do we have movement points left?
-	if (!canMove())
-		return true; //continue next turn
+	RouteTypes ePlayerBestRoute = kPlayer.getBestRoute();
+
+	if (MOD_GLOBAL_QUICK_ROUTES && kPlayer.isHuman() && ePlayerBestRoute > ROUTE_ROAD) {
+		if (!IsPlotConnectedToPlot(getOwner(), plot(), LastMissionPlot(), ROUTE_ROAD, false, false))
+			ePlayerBestRoute = ROUTE_ROAD;
+	}
+
+	const BuildTypes ePlayerBestRouteBuild = kPlayer.GetBuilderTaskingAI()->GetBuildRoute(ePlayerBestRoute);
 
 	//ok apparently we both can move and need to move
 	//do not use the path cache here, the step finder tells us where to put the route
-	SPathFinderUserData data(getOwner(),PT_BUILD_ROUTE,NO_BUILD,eBestRoute,NO_ROUTE_PURPOSE,false);
+	SPathFinderUserData data(getOwner(), PT_BUILD_ROUTE, ePlayerBestRouteBuild, ePlayerBestRoute, PURPOSE_MANUAL, false);
 	SPath path = GC.GetStepFinder().GetPath(getX(), getY(), iX, iY, data);
 
 	//index zero is the current plot!
-	CvPlot* pNextPlot = path.vPlots.size()>1 ? path.get(1) : NULL;
+	CvPlot* pNextPlot = path.vPlots.size() > 1 ? path.get(1) : NULL;
 	if(!pNextPlot || !canMoveInto(*pNextPlot, iFlags | MOVEFLAG_DESTINATION))
 	{
 		// add route interrupted notification
@@ -29941,7 +29996,7 @@ void CvUnit::UpdateMission()
 
 //	--------------------------------------------------------------------------------
 /// Where does this mission end?
-CvPlot* CvUnit::LastMissionPlot()
+CvPlot* CvUnit::LastMissionPlot() const
 {
 	VALIDATE_OBJECT
 	return CvUnitMission::LastMissionPlot(this);
@@ -31204,7 +31259,16 @@ int CvUnit::AI_promotionValue(PromotionTypes ePromotion)
 		iValue += iExtra;
 	}
 
-
+	iTemp = pkPromotionInfo->GetAdjacentCityDefenseMod();
+	// can't be picked currently
+	if (iTemp != 0)
+	{
+		iExtra = (iTemp) * (iFlavorDefense + 4 * iFlavorCityDefense);
+		iExtra *= 100 + GetAdjacentCityDefenseMod();
+		iExtra /= 100;
+		iExtra *= 0.5;
+		iValue += iExtra;
+	}
 
 	iTemp = pkPromotionInfo->GetFlankAttackModifier();
 	// M + mM: +5 Shock 1 - 3, +25 Overrun (Shock 4).	Zulu: +10 Buffalo Chest & Horns.
@@ -31825,14 +31889,28 @@ int CvUnit::AI_promotionValue(PromotionTypes ePromotion)
 				iValue += iExtra;
 			}
 
-			if(pkPromotionInfo->GetTerrainIgnoreCost(iI) && !isTerrainIgnoreCost(eTerrain) && !ignoreTerrainCost())
-				// Scout: Hill Woodland Trailblazer 1, Snow/Desert Woodland Trailblazer 2.
+			if (pkTerrainInfo->getMovementCost() > 1 && !isIgnoreTerrainCostIn(eTerrain) && !ignoreTerrainCost())
 			{
-				iExtra = (iFlavorMobile * 2 + iFlavorRecon);
-				iExtra *= 8;
-				if (IsGainsXPFromScouting())
-					iExtra *= 3;
-				iValue += iExtra;
+				if (pkPromotionInfo->GetIgnoreTerrainCostIn(eTerrain))
+					// Scout: Hill Woodland Trailblazer 1, Snow/Desert Woodland Trailblazer 2.
+				{
+					iExtra = (iFlavorMobile * 2 + iFlavorRecon);
+					iExtra *= 8;
+					if (IsGainsXPFromScouting())
+						iExtra *= 3;
+					if (isIgnoreTerrainCostFrom(eTerrain))
+						iExtra *= 0.5;
+					iValue += iExtra;
+				}
+
+				if (pkPromotionInfo->GetIgnoreTerrainCostFrom(eTerrain))
+				{
+					iExtra = (iFlavorMobile * 2 + iFlavorRecon);
+					iExtra *= 4;
+					if (IsGainsXPFromScouting())
+						iExtra *= 3;
+					iValue += iExtra;
+				}
 			}
 
 			if(pkPromotionInfo->GetTerrainDoubleMove(iI) && !isTerrainDoubleMove(eTerrain))
@@ -31908,14 +31986,28 @@ int CvUnit::AI_promotionValue(PromotionTypes ePromotion)
 				
 			}
 
-			if(pkPromotionInfo->GetFeatureIgnoreCost(iI) && !isFeatureIgnoreCost(eFeature) && !ignoreTerrainCost())
-				// Scout: Forest/Jungle Woodland Trailblazer 1, Marsh Woodland Trailblazer 2.
+			if (pkFeatureInfo->getMovementCost() > 1 && !isIgnoreFeatureCostIn(eFeature) && !ignoreTerrainCost())
 			{
-				iExtra = (iFlavorMobile * 2 + iFlavorRecon);
-				iExtra *= 8;
-				if (IsGainsXPFromScouting())
-					iExtra *= 3;
-				iValue += iExtra;
+				if (pkPromotionInfo->GetIgnoreFeatureCostIn(eFeature))
+					// Scout: Forest/Jungle Woodland Trailblazer 1, Marsh Woodland Trailblazer 2.
+				{
+					iExtra = (iFlavorMobile * 2 + iFlavorRecon);
+					iExtra *= 8;
+					if (IsGainsXPFromScouting())
+						iExtra *= 3;
+					if (isIgnoreFeatureCostFrom(eFeature))
+						iExtra *= 0.5;
+					iValue += iExtra;
+				}
+
+				if (pkPromotionInfo->GetIgnoreFeatureCostFrom(eFeature))
+				{
+					iExtra = (iFlavorMobile * 2 + iFlavorRecon);
+					iExtra *= 4;
+					if (IsGainsXPFromScouting())
+						iExtra *= 3;
+					iValue += iExtra;
+				}
 			}
 
 			if(pkPromotionInfo->GetFeatureDoubleMove(iI) && !isFeatureDoubleMove(eFeature))

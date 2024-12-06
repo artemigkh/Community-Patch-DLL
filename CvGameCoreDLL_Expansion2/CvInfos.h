@@ -275,7 +275,6 @@ public:
 	// Arrays
 	int getYieldChange(int i) const;
 	const int* getYieldChangeArray() const;
-	int getFlavorValue(int i) const;
 
 	const char* getTexture() const;
 	void setTexture(const char* szVal);
@@ -298,7 +297,6 @@ protected:
 	// Arrays
 
 	int* m_piYieldChange;
-	int* m_piFlavorValue;
 
 private:
 	CvSpecialistInfo(const CvSpecialistInfo&);
@@ -492,14 +490,12 @@ public:
 	size_t getNumFormationSlotEntriesRequired() const;
 	const CvFormationSlotEntry& getFormationSlotEntry(size_t index) const;
 	void addFormationSlotEntry(const CvFormationSlotEntry& slotEntry);
-	bool IsRequiresNavalUnitConsistency() const;
 
 	virtual bool CacheResults(Database::Results& kResults, CvDatabaseUtility& kUtility);
 
 protected:
 	CvString m_strFormationName;
 	std::vector<CvFormationSlotEntry> m_vctSlotEntries;
-	bool m_bRequiresNavalUnitConsistency;
 };
 
 
@@ -1869,7 +1865,6 @@ public:
 	bool isHills() const;
 	bool isFlatlands() const;
 	bool isNoRiverSide() const;
-	bool isNormalize() const;
 	bool isOnlyMinorCivs() const;
 
 	CivilizationTypes GetRequiredCivilization() const;
@@ -1923,8 +1918,6 @@ public:
 	bool isFeature(int i) const;
 	bool isFeatureTerrain(int i) const;
 
-	int getFlavorValue(int i) const;
-
 	virtual bool CacheResults(Database::Results& kResults, CvDatabaseUtility& kUtility);
 
 protected:
@@ -1951,7 +1944,6 @@ protected:
 	int m_iMonopolyMovementBonus;
 	int m_iMonopolyHealBonus;
 	int m_iMonopolyXPBonus;
-	CvString m_strStrategicHelp;
 #endif
 
 	bool m_bPresentOnAllValidPlots;
@@ -1986,7 +1978,6 @@ protected:
 #endif
 	int* m_piResourceQuantityTypes;
 	int* m_piImprovementChange;
-	int* m_piFlavor;
 
 	bool* m_pbTerrain;
 	bool* m_pbFeature;
@@ -2345,6 +2336,8 @@ public:
 	int GetWarmongerHate() const;
 	int GetDoFWillingness() const;
 	int GetDenounceWillingness() const;
+	int GetWorkWithWillingness() const;
+	int GetWorkAgainstWillingness() const;
 	int GetLoyalty() const;
 	int GetForgiveness() const;
 	int GetNeediness() const;
@@ -2382,13 +2375,15 @@ protected:
 	int m_iBoldness;
 	int m_iDiploBalance;
 	int m_iWarmongerHate;
-	int m_iDenounceWillingness;
 	int m_iDoFWillingness;
+	int m_iDenounceWillingness;
+	int m_iWorkWithWillingness;
+	int m_iWorkAgainstWillingness;
 	int m_iLoyalty;
-	int m_iNeediness;
 	int m_iForgiveness;
-	int m_iChattiness;
+	int m_iNeediness;
 	int m_iMeanness;
+	int m_iChattiness;
 
 	int* m_piMajorCivApproachBiases;
 	int* m_piMinorCivApproachBiases;

@@ -770,7 +770,7 @@ void CvUnitMission::ContinueMission(CvUnit* hUnit, int iSteps)
 			{
 				if(hUnit->at(kMissionData.iData1, kMissionData.iData2))
 				{
-					if(hUnit->GetBestBuildRoute(hUnit->plot()) == NO_ROUTE)
+					if(hUnit->GetBestBuildRouteForRoadTo(hUnit->plot()) == NO_ROUTE)
 					{
 						bDone = true;
 					}
@@ -1042,7 +1042,7 @@ bool CvUnitMission::CanStartMission(CvUnit* hUnit, int iMission, int iData1, int
 	}
 	else if(iMission == CvTypes::getMISSION_ROUTE_TO())
 	{
-		if(!(pPlot->at(iData1, iData2)) || (hUnit->GetBestBuildRoute(pPlot) != NO_ROUTE))
+		if(!(pPlot->at(iData1, iData2)) || (hUnit->GetBestBuildRouteForRoadTo(pPlot) != NO_ROUTE))
 		{
 			return true;
 		}
@@ -1756,8 +1756,10 @@ void CvUnitMission::StartMission(CvUnit* hUnit)
 				{
 					if (GC.getGame().isNetworkMultiPlayer())
 					{
-						// This should fix TR/cargo unit related desyncs (different paths etc). I suspect there is still the potential for desyncs if the user opens the TR popup but something changes before they issue the command. Even just opening the popup could cause problems. I think a net message is in order for a real fix.
-						GC.getGame().GetGameTrade()->InvalidateTradePathCache(hUnit->getOwner()); // although we are only interested in one trade route, we invalidate all since the originating client has updated their whole cache when opening the popup
+						// This should fix TR/cargo unit related desyncs (different paths etc).
+						// I suspect there is still the potential for desyncs if the user opens the TR popup but something changes before they issue the command. 
+						// Even just opening the popup could cause problems. I think a net message is in order for a real fix.
+						GC.getGame().GetGameTrade()->InvalidateTradePathCache(hUnit->getOwner());
 					}
 
 					if(hUnit->makeTradeRoute(pPlot->getX(), pPlot->getY(), (TradeConnectionType)pkQueueData->iData2))
@@ -1968,7 +1970,7 @@ void CvUnitMission::StartMission(CvUnit* hUnit)
 
 //	---------------------------------------------------------------------------
 /// Where does this mission end?
-CvPlot* CvUnitMission::LastMissionPlot(CvUnit* hUnit)
+CvPlot* CvUnitMission::LastMissionPlot(const CvUnit* hUnit)
 {
 	const MissionData* pMissionNode = TailMissionData(hUnit->m_missionQueue);
 

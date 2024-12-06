@@ -1513,7 +1513,7 @@ bool CvPlayerEspionage::TriggerSpyFocusSetup(CvCity* pCity, int uiSpyIndex)
 		for (int i = 0; i < GC.getNumCityEventChoiceInfos(); i++)
 		{
 			CvModEventCityChoiceInfo* pkMissionInfo = GC.getCityEventChoiceInfo((CityEventChoiceTypes)i);
-			if (pkMissionInfo->isCounterspyMission())
+			if (pkMissionInfo && pkMissionInfo->isCounterspyMission())
 			{
 				aCounterspyMissionList.push_back(i);
 			}
@@ -2206,6 +2206,7 @@ void CvPlayerEspionage::UncoverIntrigue(uint uiSpyIndex)
 				continue;
 
 			// find player with which a coop war has been agreed to
+			bool bReported = false;
 			for (uint ui2 = 0; ui2 < aiMajorCivIndex.size(); ui2++)
 			{
 				PlayerTypes eThirdPlayer = (PlayerTypes)aiMajorCivIndex[ui2];
@@ -2219,11 +2220,14 @@ void CvPlayerEspionage::UncoverIntrigue(uint uiSpyIndex)
 				if (pTargetDiploAI->GetCoopWarState(eThirdPlayer, eOtherOtherPlayer) >= COOP_WAR_STATE_PREPARING)
 				{
 					AddIntrigueMessage(m_pPlayer->GetID(), eCityOwner, eOtherOtherPlayer, eThirdPlayer, NO_BUILDING, NO_PROJECT, NO_UNIT, INTRIGUE_TYPE_COOP_WAR, uiSpyIndex, pCity, true);
+					bReported = true;
 					break;
 				}
 			}
+
 			// If a coop war is reported, bust out of the loop
-			break;
+			if (bReported)
+				break;
 		}
 	}
 
@@ -8028,7 +8032,7 @@ void CvEspionageAI::PerformSpyMissions()
 	for (int i = 0; i < GC.getNumCityEventChoiceInfos(); i++)
 	{
 		CvModEventCityChoiceInfo* pkMissionInfo = GC.getCityEventChoiceInfo((CityEventChoiceTypes)i);
-		if (pkMissionInfo->isEspionageMission())
+		if (pkMissionInfo && pkMissionInfo->isEspionageMission())
 		{
 			aSpyMissionList.push_back(i);
 		}
@@ -8444,7 +8448,7 @@ int CvEspionageAI::GetMissionScore(CvCity* pCity, CityEventChoiceTypes eMission,
 					for (int i = 0; i < GC.getNumCityEventChoiceInfos(); i++)
 					{
 						CvModEventCityChoiceInfo* pkLoopMissionInfo = GC.getCityEventChoiceInfo((CityEventChoiceTypes)i);
-						if (pkLoopMissionInfo->isEspionageMission())
+						if (pkLoopMissionInfo && pkLoopMissionInfo->isEspionageMission())
 						{
 							bNoOffensiveMissions = false;
 							break;
@@ -8586,7 +8590,7 @@ int CvEspionageAI::GetMissionScore(CvCity* pCity, CityEventChoiceTypes eMission,
 						{
 							// city is constructing a wonder.
 							// are we spiteful enough to delay them just because? add a small bonus.
-							if (pDiplomacyAI->IsPlayerWonderSpammer(ePlayer) || (pDiplomacyAI->GetWonderDisputeLevel(ePlayer) >= DISPUTE_LEVEL_STRONG && pDiplomacyAI->GetCivOpinion(ePlayer) <= CIV_OPINION_COMPETITOR)
+							if (pDiplomacyAI->IsWonderSpammer(ePlayer) || (pDiplomacyAI->GetWonderDisputeLevel(ePlayer) >= DISPUTE_LEVEL_STRONG && pDiplomacyAI->GetCivOpinion(ePlayer) <= CIV_OPINION_COMPETITOR)
 								|| pDiplomacyAI->GetVictoryDisputeLevel(ePlayer) == DISPUTE_LEVEL_FIERCE || pDiplomacyAI->GetVictoryBlockLevel(ePlayer) == BLOCK_LEVEL_FIERCE
 								|| pDiplomacyAI->GetBiggestCompetitor() == ePlayer)
 							{
@@ -8869,6 +8873,12 @@ std::vector<ScoreCityEntry> CvEspionageAI::BuildDiplomatCityList(bool bLogAllCho
 			continue;
 		}
 
+		// can't send a diplomat if we're at war with them
+		if (m_pPlayer->IsAtWarWith(eTargetPlayer))
+		{
+			continue;
+		}
+
 		// if we can't see it, we can't move a diplomat there.
 		if (!pCapitalCity->isRevealed(m_pPlayer->getTeam(), false, false))
 		{
@@ -8908,25 +8918,33 @@ std::vector<ScoreCityEntry> CvEspionageAI::BuildDiplomatCityList(bool bLogAllCho
 				int iTurnsUntilInfluential = m_pPlayer->GetCulture()->GetTurnsToInfluential(eTargetPlayer);
 				if (iTurnsUntilInfluential != 0)
 				{
-					// we are reasonably close to culture victory. give the highest score to the players for which we still need the longest
+					// we are reasonably close to culture victory
+					int iNumPlayersNotInfluential = 0;
 					int iNumWorsePlayers = 0;
 					for (size_t iLoop = 0; iLoop < vTourismTurnsNeeded.size(); iLoop++)
 					{
+
+						if (vTourismTurnsNeeded[iLoop] > 0)
+						{
+							iNumPlayersNotInfluential++;
+						}
 						if (vTourismTurnsNeeded[iLoop] > iTurnsUntilInfluential)
 						{
 							iNumWorsePlayers++;
 						}
 					}
-					iTourismScore += (150 - 150 * iNumWorsePlayers / iNumPlayers);
+					// the less holdouts there are, the higher is the score. if there is more than one option, give the highest score to the players for which we still need the longest
+					iTourismScore += max(100, (500 - 100 * iNumPlayersNotInfluential)) * (100 - 100 * iNumWorsePlayers / iNumPlayers) / 100;
 				}
 			}
 		}
 
-		int iTotalScore = (int)pDiploAI->GetCivApproach(eTargetPlayer) + iLeagueScore + iTourismScore;
+		
 
 		// if we're friendly towards the other player, we are more likely to use a diplomat, so we use the negative diplo modifier here
 		int iDiploMod = -GetPlayerModifier(eTargetPlayer, /*bOnlyDiplo*/ true);
-		iTotalScore *= 100 + iDiploMod;
+		// a high tourism score means the diplomat is important for winning the game, so we don't apply a diplo modifier to it
+		int iTotalScore = ((int)pDiploAI->GetCivApproach(eTargetPlayer) + iLeagueScore) * (100 + iDiploMod) + iTourismScore * 100;
 		iTotalScore /= 100;
 
 		kEntry.m_iScore = iTotalScore;
@@ -8965,7 +8983,7 @@ std::vector<ScoreCityEntry> CvEspionageAI::BuildOffenseCityList(bool bLogAllChoi
 		for (int i = 0; i < GC.getNumCityEventChoiceInfos(); i++)
 		{
 			CvModEventCityChoiceInfo* pkMissionInfo = GC.getCityEventChoiceInfo((CityEventChoiceTypes)i);
-			if (pkMissionInfo->isEspionageMission())
+			if (pkMissionInfo && pkMissionInfo->isEspionageMission())
 			{
 				aSpyMissionList.push_back(i);
 			}
@@ -9126,7 +9144,7 @@ std::vector<ScoreCityEntry> CvEspionageAI::BuildDefenseCityList(bool bLogAllChoi
 		for (int i = 0; i < GC.getNumCityEventChoiceInfos(); i++)
 		{
 			CvModEventCityChoiceInfo* pkMissionInfo = GC.getCityEventChoiceInfo((CityEventChoiceTypes)i);
-			if (pkMissionInfo->isCounterspyMission())
+			if (pkMissionInfo && pkMissionInfo->isCounterspyMission())
 			{
 				aCounterspyMissionList.push_back(i);
 			}
@@ -9277,12 +9295,12 @@ std::vector<ScoreCityEntry> CvEspionageAI::BuildMinorCityList(bool bLogAllChoice
 					if (aiDiploProgressPercent[(int)m_pPlayer->GetID()] > 70)
 						bWantToDefendVotes = true;
 
-					// find the player (not us) who is closest to DV
+					// find the player (not on our team) who is closest to DV
 					int iHighestProgress = 0;
 					for (uint ui = 0; ui < MAX_MAJOR_CIVS; ui++)
 					{
 						PlayerTypes eTargetPlayer = (PlayerTypes)ui;
-						if (eTargetPlayer == m_pPlayer->GetID())
+						if (GET_PLAYER(eTargetPlayer).getTeam() == m_pPlayer->getTeam())
 							continue;
 
 						if (aiDiploProgressPercent[eTargetPlayer] > iHighestProgress && aiDiploProgressPercent[eTargetPlayer] > 70)
@@ -9384,20 +9402,23 @@ std::vector<ScoreCityEntry> CvEspionageAI::BuildMinorCityList(bool bLogAllChoice
 
 		int iModifier = 0;
 
-		for (int iMinorLoop = MAX_MAJOR_CIVS; iMinorLoop < MAX_CIV_PLAYERS; iMinorLoop++)
+		if (/*FALSE*/ GD_INT_GET(QUEST_DISABLED_COUP) < 1)
 		{
-			PlayerTypes eMinor = (PlayerTypes)iMinorLoop;
-			if (eMinor != NO_PLAYER)
+			for (int iMinorLoop = MAX_MAJOR_CIVS; iMinorLoop < MAX_CIV_PLAYERS; iMinorLoop++)
 			{
-				CvPlayer* pMinor = &GET_PLAYER(eMinor);
-				if (pMinor && pMinor->isMinorCiv())
+				PlayerTypes eMinor = (PlayerTypes)iMinorLoop;
+				if (eMinor != NO_PLAYER)
 				{
-					CvMinorCivAI* pMinorCivAI = pMinor->GetMinorCivAI();
-					if (pMinorCivAI && pMinorCivAI->IsActiveQuestForPlayer(m_pPlayer->GetID(), MINOR_CIV_QUEST_COUP))
+					CvPlayer* pMinor = &GET_PLAYER(eMinor);
+					if (pMinor && pMinor->isMinorCiv())
 					{
-						if (pMinorCivAI->GetQuestData1(m_pPlayer->GetID(), MINOR_CIV_QUEST_COUP) == eTargetPlayer)
+						CvMinorCivAI* pMinorCivAI = pMinor->GetMinorCivAI();
+						if (pMinorCivAI && pMinorCivAI->IsActiveQuestForPlayer(m_pPlayer->GetID(), MINOR_CIV_QUEST_COUP))
 						{
-							iModifier += 50;
+							if (pMinorCivAI->GetQuestData1(m_pPlayer->GetID(), MINOR_CIV_QUEST_COUP) == eTargetPlayer)
+							{
+								iModifier += 50;
+							}
 						}
 					}
 				}

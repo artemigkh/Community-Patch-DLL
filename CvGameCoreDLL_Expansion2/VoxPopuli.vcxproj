@@ -9,6 +9,14 @@
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Clang-Debug|Win32">
+      <Configuration>Clang-Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Clang-Release|Win32">
+      <Configuration>Clang-Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2D4B6CDC-0887-4EE1-97B9-0865CC82FAF3}</ProjectGuid>
@@ -28,6 +36,18 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v90</PlatformToolset>
     <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Clang-Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <PlatformToolset>v90</PlatformToolset>
+    <OutDir>$(SolutionDir)clang-output\Debug\</OutDir>
+    <IntDir>$(SolutionDir)clang-build\Debug\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Clang-Release|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <PlatformToolset>v90</PlatformToolset>
+    <OutDir>$(SolutionDir)clang-output\Release\</OutDir>
+    <IntDir>$(SolutionDir)clang-build\Release\</IntDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -53,7 +73,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>FXS_IS_DLL;WIN32;_WINDOWS;_USRDLL;EXTERNAL_PAUSING;STACKWALKER;CVGAMECOREDLL_EXPORTS;FINAL_RELEASE;_CRT_SECURE_NO_WARNINGS;VPDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>FXS_IS_DLL;WIN32;_WINDOWS;_USRDLL;EXTERNAL_PAUSING;STACKWALKER;CVGAMECOREDLL_EXPORTS;FINAL_RELEASE;_CRT_SECURE_NO_WARNINGS;VPDEBUG;DISABLE_CVASSERT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -77,7 +97,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>FXS_IS_DLL;WIN32;_WINDOWS;_USRDLL;EXTERNAL_PAUSING;STACKWALKER;CVGAMECOREDLL_EXPORTS;FINAL_RELEASE;_CRT_SECURE_NO_WARNINGS;STRONG_ASSUMPTIONS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>FXS_IS_DLL;WIN32;_WINDOWS;_USRDLL;EXTERNAL_PAUSING;STACKWALKER;CVGAMECOREDLL_EXPORTS;FINAL_RELEASE;_CRT_SECURE_NO_WARNINGS;STRONG_ASSUMPTIONS;NDEBUG;DISABLE_CVASSERT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -102,6 +122,16 @@
     </Link>
     <PreBuildEvent>
       <Command>..\update_commit_id.bat</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Clang-Debug|Win32'">
+    <PreBuildEvent>
+      <Command>cd "$(SolutionDir)" &amp; python build_vp_clang.py --config debug &amp; type clang-output\Debug\build.log</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Clang-Release|Win32'">
+    <PreBuildEvent>
+      <Command>cd "$(SolutionDir)" &amp; python build_vp_clang.py --config release &amp; type clang-output\Release\build.log</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -659,52 +689,52 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CvGameCoreDLLPCH.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="lua\CvLuaArea.cpp">
+    <ClCompile Include="Lua\CvLuaArea.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CvGameCoreDLLPCH.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="lua\CvLuaArgsHandle.cpp">
+    <ClCompile Include="Lua\CvLuaArgsHandle.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CvGameCoreDLLPCH.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="lua\CvLuaCity.cpp">
+    <ClCompile Include="Lua\CvLuaCity.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CvGameCoreDLLPCH.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="lua\CvLuaDeal.cpp">
+    <ClCompile Include="Lua\CvLuaDeal.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CvGameCoreDLLPCH.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="lua\CvLuaEnums.cpp">
+    <ClCompile Include="Lua\CvLuaEnums.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CvGameCoreDLLPCH.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="lua\CvLuaFractal.cpp">
+    <ClCompile Include="Lua\CvLuaFractal.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CvGameCoreDLLPCH.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="lua\CvLuaGame.cpp">
+    <ClCompile Include="Lua\CvLuaGame.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CvGameCoreDLLPCH.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="lua\CvLuaGameInfo.cpp">
+    <ClCompile Include="Lua\CvLuaGameInfo.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CvGameCoreDLLPCH.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="lua\CvLuaLeague.cpp">
+    <ClCompile Include="Lua\CvLuaLeague.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CvGameCoreDLLPCH.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="lua\CvLuaMap.cpp">
+    <ClCompile Include="Lua\CvLuaMap.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CvGameCoreDLLPCH.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="lua\CvLuaPlayer.cpp">
+    <ClCompile Include="Lua\CvLuaPlayer.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CvGameCoreDLLPCH.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="lua\CvLuaPlot.cpp">
+    <ClCompile Include="Lua\CvLuaPlot.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CvGameCoreDLLPCH.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="lua\CvLuaSupport.cpp">
+    <ClCompile Include="Lua\CvLuaSupport.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CvGameCoreDLLPCH.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="lua\CvLuaTeam.cpp">
+    <ClCompile Include="Lua\CvLuaTeam.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CvGameCoreDLLPCH.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="lua\CvLuaTeamTech.cpp">
+    <ClCompile Include="Lua\CvLuaTeamTech.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CvGameCoreDLLPCH.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="lua\CvLuaUnit.cpp">
+    <ClCompile Include="Lua\CvLuaUnit.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CvGameCoreDLLPCH.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="stackwalker\StackWalker.cpp">
@@ -895,24 +925,24 @@
     <ClInclude Include="CvWonderProductionAI.h" />
     <ClInclude Include="CvWorldBuilderMapLoader.h" />
     <ClInclude Include="HHMods.h" />
-    <ClInclude Include="lua\CvLuaArea.h" />
-    <ClInclude Include="lua\CvLuaArgsHandle.h" />
-    <ClInclude Include="lua\CvLuaCity.h" />
-    <ClInclude Include="lua\CvLuaDeal.h" />
-    <ClInclude Include="lua\CvLuaEnums.h" />
-    <ClInclude Include="lua\CvLuaFractal.h" />
-    <ClInclude Include="lua\CvLuaGame.h" />
-    <ClInclude Include="lua\CvLuaGameInfo.h" />
-    <ClInclude Include="lua\CvLuaLeague.h" />
-    <ClInclude Include="lua\CvLuaMap.h" />
-    <ClInclude Include="lua\CvLuaPlayer.h" />
-    <ClInclude Include="lua\CvLuaPlot.h" />
-    <ClInclude Include="lua\CvLuaScopedIndirectInstance.h" />
-    <ClInclude Include="lua\CvLuaScopedInstance.h" />
-    <ClInclude Include="lua\CvLuaSupport.h" />
-    <ClInclude Include="lua\CvLuaTeam.h" />
-    <ClInclude Include="lua\CvLuaTeamTech.h" />
-    <ClInclude Include="lua\CvLuaUnit.h" />
+    <ClInclude Include="Lua\CvLuaArea.h" />
+    <ClInclude Include="Lua\CvLuaArgsHandle.h" />
+    <ClInclude Include="Lua\CvLuaCity.h" />
+    <ClInclude Include="Lua\CvLuaDeal.h" />
+    <ClInclude Include="Lua\CvLuaEnums.h" />
+    <ClInclude Include="Lua\CvLuaFractal.h" />
+    <ClInclude Include="Lua\CvLuaGame.h" />
+    <ClInclude Include="Lua\CvLuaGameInfo.h" />
+    <ClInclude Include="Lua\CvLuaLeague.h" />
+    <ClInclude Include="Lua\CvLuaMap.h" />
+    <ClInclude Include="Lua\CvLuaPlayer.h" />
+    <ClInclude Include="Lua\CvLuaPlot.h" />
+    <ClInclude Include="Lua\CvLuaScopedIndirectInstance.h" />
+    <ClInclude Include="Lua\CvLuaScopedInstance.h" />
+    <ClInclude Include="Lua\CvLuaSupport.h" />
+    <ClInclude Include="Lua\CvLuaTeam.h" />
+    <ClInclude Include="Lua\CvLuaTeamTech.h" />
+    <ClInclude Include="Lua\CvLuaUnit.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stackwalker\StackWalker.h" />
     <ClInclude Include="TContainer.h" />

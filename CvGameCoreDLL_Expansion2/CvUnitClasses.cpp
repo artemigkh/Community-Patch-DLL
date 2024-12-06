@@ -92,7 +92,6 @@ CvUnitEntry::CvUnitEntry(void) :
 	m_iSpecialUnitCargoLoad(NO_SPECIALUNIT),
 #endif
 	m_iRangedCombat(0),
-	m_bCoastalFire(false),
 	m_bNoSupply(false),
 	m_iMaxHitPoints(100),
 	m_iSpecialCargo(0),
@@ -320,8 +319,7 @@ bool CvUnitEntry::CacheResults(Database::Results& kResults, CvDatabaseUtility& k
 #endif
 	m_iCombat = kResults.GetInt("Combat");
 	m_iRangedCombat = kResults.GetInt("RangedCombat");
-	m_bCoastalFire = kResults.GetBool("CoastalFireOnly");
-	m_bNoSupply = (kResults.GetInt("NoSupply") != 0);
+	m_bNoSupply = kResults.GetBool("NoSupply");
 	m_iMaxHitPoints = kResults.GetInt("MaxHitPoints");
 	m_iExtraMaintenanceCost = kResults.GetInt("ExtraMaintenanceCost");
 	m_bNoMaintenance = kResults.GetBool("NoMaintenance");
@@ -559,11 +557,7 @@ bool CvUnitEntry::CacheResults(Database::Results& kResults, CvDatabaseUtility& k
 			Database::Results* pResults = kUtility.GetResults(strKey);
 			if(pResults == NULL)
 			{
-#if defined(MOD_BALANCE_CORE)
 				pResults = kUtility.PrepareResults(strKey, "select UniqueName, GreatWorkType, EraType from Unit_UniqueNames where UnitType = ? ORDER BY rowid");
-#else
-				pResults = kUtility.PrepareResults(strKey, "select UniqueName, GreatWorkType from Unit_UniqueNames where UnitType = ? ORDER BY rowid");
-#endif
 			}
 
 			pResults->Bind(1, szUnitType, -1, false);
@@ -1040,11 +1034,6 @@ void CvUnitEntry::SetCombat(int iNum)
 int CvUnitEntry::GetRangedCombat() const
 {
 	return m_iRangedCombat;
-}
-
-bool CvUnitEntry::IsCoastalFireOnly() const
-{
-	return m_bCoastalFire;
 }
 
 /// Unit has no supply cost
