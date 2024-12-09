@@ -680,9 +680,9 @@ bool CvGameTrade::CreateTradeRoute(CvCity* pOriginCity, CvCity* pDestCity, Domai
 
 	}
 	// Apply a diplomacy bonus for recent trade in both directions
-	if (eConnectionType == TRADE_CONNECTION_INTERNATIONAL)
+	if (eConnectionType == TRADE_CONNECTION_INTERNATIONAL && GET_PLAYER(eDestPlayer).isMajorCiv() && GET_PLAYER(eOriginPlayer).isMajorCiv())
 	{
-		if (!GET_PLAYER(eDestPlayer).isHuman() && GET_PLAYER(eDestPlayer).isMajorCiv())
+		if (!GET_PLAYER(eDestPlayer).isHuman())
 		{
 			int iFlavorGoldDest = GET_PLAYER(eDestPlayer).GetFlavorManager()->GetPersonalityFlavorForDiplomacy((FlavorTypes)GC.getInfoTypeForString("FLAVOR_GOLD"));
 			int iFlavorScienceDest = GET_PLAYER(eDestPlayer).GetFlavorManager()->GetPersonalityFlavorForDiplomacy((FlavorTypes)GC.getInfoTypeForString("FLAVOR_SCIENCE"));
@@ -697,7 +697,7 @@ bool CvGameTrade::CreateTradeRoute(CvCity* pOriginCity, CvCity* pDestCity, Domai
 				GET_PLAYER(eDestPlayer).GetDiplomacyAI()->ChangeRecentTradeValue(eOriginPlayer, iTradeValueDest);
 			}
 		}
-		if (!GET_PLAYER(eOriginPlayer).isHuman() && GET_PLAYER(eOriginPlayer).isMajorCiv())
+		if (!GET_PLAYER(eOriginPlayer).isHuman())
 		{
 			int iFlavorGoldOrigin = GET_PLAYER(eOriginPlayer).GetFlavorManager()->GetPersonalityFlavorForDiplomacy((FlavorTypes)GC.getInfoTypeForString("FLAVOR_GOLD"));
 			int iFlavorScienceOrigin = GET_PLAYER(eOriginPlayer).GetFlavorManager()->GetPersonalityFlavorForDiplomacy((FlavorTypes)GC.getInfoTypeForString("FLAVOR_SCIENCE"));
@@ -5014,7 +5014,7 @@ bool CvPlayerTrade::PlunderTradeRoute(int iTradeConnectionID, CvUnit* pUnit)
 			GET_PLAYER(eOwningPlayer).GetDiplomacyAI()->ChangeWarProgressScore(m_pPlayer->GetID(), /*-5*/ GD_INT_GET(WAR_PROGRESS_LOST_TRADE_ROUTE));
 
 			// Diplo penalty with destination civ if not at war
-			if (eOwningPlayer != eDestPlayer && !GET_TEAM(m_pPlayer->getTeam()).isAtWar(eDestTeam) && !GET_TEAM(eDestTeam).IsVassal(m_pPlayer->getTeam()))
+			if (eOwningPlayer != eDestPlayer && GET_PLAYER(eDestPlayer).isMajorCiv() && !GET_TEAM(m_pPlayer->getTeam()).isAtWar(eDestTeam) && !GET_TEAM(eDestTeam).IsVassal(m_pPlayer->getTeam()) && eDestTeam != m_pPlayer->getTeam())
 			{
 				GET_PLAYER(eDestPlayer).GetDiplomacyAI()->ChangeNumTradeRoutesPlundered(m_pPlayer->GetID(), 1);
 			}
@@ -5027,7 +5027,7 @@ bool CvPlayerTrade::PlunderTradeRoute(int iTradeConnectionID, CvUnit* pUnit)
 				GET_PLAYER(eOwningPlayer).GetDiplomacyAI()->ChangeNumTradeRoutesPlundered(m_pPlayer->GetID(), 3);
 			}
 			// Diplo penalty with destination civ if not at war
-			if (eOwningPlayer != eDestPlayer && pPlunderPlot->isVisible(eDestTeam) && !GET_TEAM(m_pPlayer->getTeam()).isAtWar(eDestTeam))
+			if (eOwningPlayer != eDestPlayer && GET_PLAYER(eDestPlayer).isMajorCiv() && pPlunderPlot->isVisible(eDestTeam) && !GET_TEAM(m_pPlayer->getTeam()).isAtWar(eDestTeam))
 			{
 				GET_PLAYER(eDestPlayer).GetDiplomacyAI()->ChangeNumTradeRoutesPlundered(m_pPlayer->GetID(), 1);
 			}

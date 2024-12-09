@@ -16,34 +16,6 @@ struct Opinion
 	int m_iValue;
 };
 
-struct DiploLogData
-{
-	template<typename DiploLogDataT, typename Visitor>
-	static void Serialize(DiploLogDataT& diploLogData, Visitor& visitor);
-
-	DiploStatementTypes m_eDiploLogStatement;
-	int m_iTurn;
-};
-FDataStream& operator<<(FDataStream&, const DiploLogData&);
-FDataStream& operator>>(FDataStream&, DiploLogData&);
-
-struct DeclarationLogData
-{
-	template<typename DeclarationLogDataT, typename Visitor>
-	static void Serialize(DeclarationLogDataT& declarationLogData, Visitor& visitor);
-
-	PublicDeclarationTypes m_eDeclaration;
-	int m_iData1;
-	int m_iData2;
-	PlayerTypes m_eMustHaveMetPlayer;
-	bool m_bActive;
-	int m_iTurn;
-};
-FDataStream& operator<<(FDataStream&, const DeclarationLogData&);
-FDataStream& operator>>(FDataStream&, DeclarationLogData&);
-
-#define MAX_DIPLO_LOG_STATEMENTS 60
-#define MAX_TURNS_SAFE_ESTIMATE 9999
 #define WARSCORE_THRESHOLD_POSITIVE (+25)
 #define WARSCORE_THRESHOLD_NEGATIVE (-25)
 
@@ -163,31 +135,14 @@ public:
 	// Diplomatic Interactions
 	// ------------------------------------
 
-	// Declaration Log
-	void DoAddNewDeclarationToLog(PublicDeclarationTypes eDeclaration, int iData1, int iData2, PlayerTypes eMustHaveMetPlayer, bool bActive);
-	PublicDeclarationTypes GetDeclarationLogTypeForIndex(int iIndex);
-	int GetDeclarationLogData1ForIndex(int iIndex);
-	int GetDeclarationLogData2ForIndex(int iIndex);
-	PlayerTypes GetDeclarationLogMustHaveMetPlayerForIndex(int iIndex);
-	bool IsDeclarationLogForIndexActive(int iIndex);
-	void DoMakeDeclarationInactive(PublicDeclarationTypes eDeclaration, int iData1, int iData2);
-	int GetDeclarationLogTurnForIndex(int iIndex);
-	void SetDeclarationLogTurnForIndex(int iIndex, int iNewValue);
-	void ChangeDeclarationLogTurnForIndex(int iIndex, int iChange);
-
 	// Diplo Statement Log
-	void DoAddNewStatementToDiploLog(PlayerTypes ePlayer, DiploStatementTypes eNewDiploLogStatement);
-	DiploStatementTypes GetDiploLogStatementTypeForIndex(PlayerTypes ePlayer, int iIndex);
-	int GetDiploLogStatementTurnForIndex(PlayerTypes ePlayer, int iIndex);
-	void SetDiploLogStatementTurnForIndex(PlayerTypes ePlayer, int iIndex, int iNewValue);
-	void ChangeDiploLogStatementTurnForIndex(PlayerTypes ePlayer, int iIndex, int iChange);
-	int GetNumTurnsSinceStatementSent(PlayerTypes ePlayer, DiploStatementTypes eDiploLogStatement);
-#if defined(MOD_ACTIVE_DIPLOMACY)
-	int GetNumTurnsSinceSomethingSent(PlayerTypes ePlayer);
-#endif
+	int GetTurnStatementLastSent(PlayerTypes ePlayer, DiploStatementTypes eDiploStatement) const;
+	void SetTurnStatementLastSent(PlayerTypes ePlayer, DiploStatementTypes eDiploStatement, int iTurn);
+	int GetNumTurnsSinceStatementSent(PlayerTypes ePlayer, DiploStatementTypes eDiploStatement) const;
+	int GetNumTurnsSinceSomethingSent(PlayerTypes ePlayer) const;
 
 	// Messages sent to other players about protected Minor Civs
-	bool HasSentAttackProtectedMinorTaunt(PlayerTypes ePlayer, PlayerTypes eMinor);
+	bool HasSentAttackProtectedMinorTaunt(PlayerTypes ePlayer, PlayerTypes eMinor) const;
 	void SetSentAttackProtectedMinorTaunt(PlayerTypes ePlayer, PlayerTypes eMinor, bool bValue);
 	void ResetSentAttackProtectedMinorTaunts(PlayerTypes eMinor);
 
@@ -1342,7 +1297,6 @@ public:
 	void DoWeMadePeaceWithSomeone(TeamTypes eOtherTeam);
 	void DoPlayerDeclaredWarOnSomeone(PlayerTypes ePlayer, TeamTypes eOtherTeam, bool bDefensivePact);
 	void DoPlayerBulliedSomeone(PlayerTypes ePlayer, PlayerTypes eOtherPlayer);
-	void DoPlayerMetSomeone(PlayerTypes ePlayer, PlayerTypes eOtherPlayer);
 
 	int GetOtherPlayerWarmongerScore(PlayerTypes ePlayer) const;
 
@@ -1356,8 +1310,6 @@ public:
 	void DoKilledByPlayer(PlayerTypes ePlayer);
 
 	void DoSendStatementToPlayer(PlayerTypes ePlayer, DiploStatementTypes eStatement, int iData1, CvDeal* pDeal);
-
-	void DoMakePublicDeclaration(PublicDeclarationTypes eDeclaration, int iData1 = -1, int iData2 = -1, PlayerTypes eMustHaveMetPlayer = NO_PLAYER, PlayerTypes eForSpecificPlayer = NO_PLAYER);
 
 	void DoContactMajorCivs();
 	void DoContactPlayer(PlayerTypes ePlayer);
@@ -1811,7 +1763,7 @@ private:
 	inline PlayerTypes GetID() const { return (PlayerTypes)m_eID; }
 	inline TeamTypes GetTeam() const { return (TeamTypes)m_eTeam; }
 	inline bool NotMe(PlayerTypes eOtherPlayer) const { return eOtherPlayer != (PlayerTypes)m_eID; }
-	inline bool NotTeam(PlayerTypes eOtherPlayer) const { return GET_PLAYER(eOtherPlayer).getTeam() != (TeamTypes)m_eTeam; }
+	inline bool NotTeam(PlayerTypes eOtherPlayer) const { return eOtherPlayer == NO_PLAYER || GET_PLAYER(eOtherPlayer).getTeam() != (TeamTypes)m_eTeam; }
 
 	// Estimations of other players' tendencies
 	int EstimateVictoryCompetitiveness(PlayerTypes ePlayer) const;
@@ -1835,7 +1787,6 @@ private:
 
 	bool IsValidUIDiplomacyTarget(PlayerTypes eTargetPlayer);
 
-	void LogPublicDeclaration(PublicDeclarationTypes eDeclaration, int iData1, PlayerTypes eForSpecificPlayer = NO_PLAYER);
 	void LogWarDeclaration(PlayerTypes ePlayer, int iTotalWarWeight = -1);
 	void LogPeaceMade(PlayerTypes ePlayer);
 	void LogDoF(PlayerTypes ePlayer);
@@ -1854,7 +1805,6 @@ private:
 	void LogPersonality();
 	void LogStatus();
 	void LogWarStatus();
-	void LogStatements();
 
 	void LogGrandStrategy(CvString& strString);
 
@@ -1940,9 +1890,7 @@ private:
 	StateAllWars m_eStateAllWars;
 
 	// Diplomatic Interactions
-	DiploLogData m_aaDiploStatementsLog[MAX_MAJOR_CIVS][MAX_DIPLO_LOG_STATEMENTS];
-	DeclarationLogData m_aDeclarationsLog[MAX_DIPLO_LOG_STATEMENTS];
-	short m_aDiploLogStatementTurnCountScratchPad[NUM_DIPLO_LOG_STATEMENT_TYPES];
+	int m_aaiTurnStatementLastSent[MAX_MAJOR_CIVS][NUM_DIPLO_STATEMENT_TYPES];
 	bool m_aabSentAttackMessageToMinorCivProtector[MAX_MAJOR_CIVS][MAX_MINOR_CIVS];
 
 	// Opinion & Approach
@@ -1993,7 +1941,7 @@ private:
 	unsigned char m_aiNumWarsFought[MAX_CIV_PLAYERS];
 	unsigned char m_aiNumWarsDeclaredOnUs[MAX_MAJOR_CIVS];
 	unsigned short m_aiCivilianKillerValue[MAX_MAJOR_CIVS];
-	unsigned char m_aiNumCitiesCaptured[MAX_CIV_PLAYERS];
+	unsigned char m_aiNumCitiesCaptured[MAX_PLAYERS];
 	char m_aeWarState[MAX_CIV_PLAYERS];
 	short m_aiWarProgressScore[MAX_CIV_PLAYERS];
 

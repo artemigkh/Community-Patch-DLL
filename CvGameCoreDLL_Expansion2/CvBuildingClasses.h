@@ -594,13 +594,17 @@ public:
 	int GetProductionTraits(int i) const;
 	int GetPrereqNumOfBuildingClass(int i) const;
 	int GetFlavorValue(int i) const;
-	int GetLocalResourceAnd(int i) const;
-	int GetLocalResourceOr(int i) const;
+	uint GetLocalResourceAndSize() const;
+	int GetLocalResourceAnd(uint ui) const;
+	uint GetLocalResourceOrSize() const;
+	int GetLocalResourceOr(uint ui) const;
 #if defined(MOD_BALANCE_CORE_RESOURCE_MONOPOLIES)
 	int GetFeatureOr(int i) const;
 	int GetFeatureAnd(int i) const;
-	int GetResourceMonopolyAnd(int i) const;
-	int GetResourceMonopolyOr(int i) const;
+	uint GetResourceMonopolyAndSize() const;
+	int GetResourceMonopolyAnd(uint ui) const;
+	uint GetResourceMonopolyOrSize() const;
+	int GetResourceMonopolyOr(uint ui) const;
 	int GetGPRateModifierPerXFranchises() const;
 	int GetResourceQuantityPerXFranchises(int i) const;
 	int GetYieldPerFranchise(int i) const;
@@ -1075,13 +1079,13 @@ private:
 	int* m_piDomainProductionModifier;
 	int* m_piPrereqNumOfBuildingClass;
 	int* m_piFlavorValue;
-	int* m_piLocalResourceAnds;
-	int* m_piLocalResourceOrs;
+	std::vector<int> m_viLocalResourceAnds;
+	std::vector<int> m_viLocalResourceOrs;
 #if defined(MOD_BALANCE_CORE_RESOURCE_MONOPOLIES)
 	int* m_piLocalFeatureOrs;
 	int* m_piLocalFeatureAnds;
-	int* m_piResourceMonopolyAnds;
-	int* m_piResourceMonopolyOrs;
+	std::vector<int> m_viResourceMonopolyAnds;
+	std::vector<int> m_viResourceMonopolyOrs;
 	int* m_piYieldPerFranchise;
 	int m_iGPRateModifierPerXFranchises;
 	int* m_piResourceQuantityPerXFranchises;

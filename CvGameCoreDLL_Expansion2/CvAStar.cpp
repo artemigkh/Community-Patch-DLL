@@ -46,6 +46,7 @@
 int giKnownCostWeight = 1;
 int giHeuristicCostWeight = 1;
 int giLastStartIndex = 0;
+int giLastDestIndex = 0;
 
 unsigned int saiRuntimeHistogram[100] = {0};
 
@@ -415,16 +416,18 @@ bool CvAStar::FindPathWithCurrentConfiguration(int iXstart, int iYstart, int iXd
 
 	CvUnit* pUnit = m_sData.iUnitID > 0 ? GET_PLAYER(m_sData.ePlayer).getUnit(m_sData.iUnitID) : NULL;
 #if defined(VPDEBUG)
-	if ( timer.GetDeltaInSeconds()>0.2 && m_sData.ePath==PT_UNIT_MOVEMENT )
+	if (timer.GetDeltaInSeconds() > 0.2 && m_sData.ePath == PT_UNIT_MOVEMENT)
 	{
-		//debug hook
 		int iStartIndex = GC.getMap().plotNum(m_iXstart, m_iYstart);
-		if (iStartIndex==giLastStartIndex && iStartIndex>0)
+		int iDestIndex = GC.getMap().plotNum(m_iXdest, m_iYdest);
+		if (iStartIndex == giLastStartIndex && iDestIndex == giLastDestIndex && iStartIndex > 0 && iDestIndex > 0)
 		{
 			OutputDebugString("Repeated pathfinding start\n");
-			gStackWalker.ShowCallstack(5);
+			// Add debug break point here for investigation during development
+			ASSERT(false && "Repeated pathfinding detected - investigate call path");
 		}
 		giLastStartIndex = iStartIndex;
+		giLastDestIndex = iDestIndex;
 
 		int iNumPlots = GC.getMap().numPlots();
 
@@ -435,13 +438,6 @@ bool CvAStar::FindPathWithCurrentConfiguration(int iXstart, int iYstart, int iXd
 			(100 * m_iProcessedNodes) / iNumPlots, timer.GetDeltaInSeconds() * 1000);
 		OutputDebugString( msg.c_str() );
 
-#ifdef STACKWALKER
-		//FILogFile* pLog = LOGFILEMGR.GetLog("PathfinderLongRun.txt", FILogFile::kDontTimeStamp);
-		//pLog->Msg(msg.c_str());
-		//gStackWalker.SetLog(pLog);
-		//gStackWalker.ShowCallstack(5);
-		//gStackWalker.SetLog(NULL);
-#endif
 	}
 #endif
 
@@ -461,12 +457,6 @@ bool CvAStar::FindPathWithCurrentConfiguration(int iXstart, int iYstart, int iXd
 				pLog->Msg(CvString::format("# %s from %d,%d to %d,%d for player %d, type %d, flags %d\n",
 					GetName(), m_iXstart, m_iYstart, m_iXdest, m_iYdest, m_sData.ePlayer, m_sData.ePath, m_sData.iFlags).c_str());
 			}
-
-#ifdef STACKWALKER
-			gStackWalker.SetLog(pLog);
-			gStackWalker.ShowCallstack(5);
-			gStackWalker.SetLog(NULL);
-#endif
 
 			for (size_t i = 0; i < g_svPathLog.size(); i++)
 				pLog->Msg(CvString::format("%d,%d,%d,%d,%d,%d,%d,%d\n", g_svPathLog[i].round, g_svPathLog[i].type, g_svPathLog[i].x, g_svPathLog[i].y,
@@ -1989,7 +1979,7 @@ int InfluenceCost(const CvAStarNode* parent, const CvAStarNode* node, const SPat
 		{
 			//hack: treat a lake like plains - water has a higher influence cost
 			CvTerrainInfo* pTerrain = GC.getTerrainInfo(pToPlot->isLake() ? TERRAIN_PLAINS : pToPlot->getTerrainType());
-			CvFeatureInfo* pFeature = GC.getFeatureInfo(pToPlot->getFeatureType());
+			CvFeatureInfo* pFeature = pToPlot->getFeatureType() != NO_FEATURE ? GC.getFeatureInfo(pToPlot->getFeatureType()) : NULL;
 			if (pFeature)
 				iExtraCost = max(iExtraCost, pFeature->getInfluenceCost());
 			else if (pTerrain)
@@ -3513,7 +3503,7 @@ int ArmyStepCost(const CvAStarNode* parent, const CvAStarNode* node, const SPath
 	if (!finder->HaveFlag(CvUnit::MOVEFLAG_IGNORE_ENEMIES) && pToPlot->isOwned() && GC.getGame().GetClosestCityDistanceInPlots(pToPlot) < 3)
 	{
 		PlayerTypes eClosestCityOwner = GC.getGame().GetClosestCityOwnerByPlots(pToPlot);
-		if (GET_PLAYER(finder->GetData().ePlayer).IsAtWarWith(eClosestCityOwner))
+		if (finder->GetData().ePlayer != NO_PLAYER && GET_PLAYER(finder->GetData().ePlayer).IsAtWarWith(eClosestCityOwner))
 			iScale *= 2;
 	}
 

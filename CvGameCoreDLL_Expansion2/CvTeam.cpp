@@ -1163,7 +1163,7 @@ bool CvTeam::canDeclareWar(TeamTypes eTeam, PlayerTypes eOriginatingPlayer)
 		return false;
 	}
 
-	if (!GET_PLAYER(eOriginatingPlayer).isHuman())
+	if (eOriginatingPlayer != NO_PLAYER && !GET_PLAYER(eOriginatingPlayer).isHuman())
 	{
 		if (GC.getGame().IsAIPassiveMode())
 		{
@@ -1184,7 +1184,7 @@ bool CvTeam::canDeclareWar(TeamTypes eTeam, PlayerTypes eOriginatingPlayer)
 		TeamTypes eLoopTeam = (TeamTypes) iTeamLoop;
 		if (eLoopTeam != NO_TEAM && eLoopTeam != GetID() && eLoopTeam != eTeam && (GET_TEAM(eTeam).IsHasDefensivePact(eLoopTeam) || GET_TEAM(eTeam).IsVassal(eLoopTeam) || GET_TEAM(eLoopTeam).IsVassal(eTeam)))
 		{
-			if (GET_TEAM(eTeam).isHuman() && !GET_PLAYER(eOriginatingPlayer).isHuman() && GC.getGame().IsAIPassiveTowardsHumans())
+			if (GET_TEAM(eTeam).isHuman() && eOriginatingPlayer != NO_PLAYER && !GET_PLAYER(eOriginatingPlayer).isHuman() && GC.getGame().IsAIPassiveTowardsHumans())
 				return false;
 
 			// Exploit prevention: Can't bypass a Peace Treaty!
@@ -4142,6 +4142,7 @@ void CvTeam::makeHasMet(TeamTypes eIndex, bool bSuppressMessages)
 	}
 
 	// First Contact in Diplo AI (Civ 5)
+	bool bMinorTeam = GET_TEAM(eIndex).isMinorCiv();
 	for (size_t i=0; i<vMyTeam.size(); i++)
 	{
 		PlayerTypes eMyPlayer = vMyTeam[i];
@@ -4151,20 +4152,56 @@ void CvTeam::makeHasMet(TeamTypes eIndex, bool bSuppressMessages)
 		for (size_t j=0; j<vTheirTeam.size(); j++)
 		{
 			PlayerTypes eTheirPlayer = vTheirTeam[j];
-			if (!GET_PLAYER(eTheirPlayer).isAlive())
+			if (!GET_PLAYER(eTheirPlayer).isAlive() || GET_PLAYER(eTheirPlayer).isBarbarian())
 				continue;
 
 			GET_PLAYER(eMyPlayer).GetDiplomacyAI()->DoFirstContact(eTheirPlayer);
 
-			// THIRD party loop - let everyone else know that someone met someone!
-			for (int iThirdPlayersLoop = 0; iThirdPlayersLoop < MAX_MAJOR_CIVS; iThirdPlayersLoop++)
+			// If we met a City-State, check major civs for protectors and notify
+			if (bMinorTeam)
 			{
-				PlayerTypes eThirdPlayer = (PlayerTypes) iThirdPlayersLoop;
-
-				// Don't notify diplo AI if we're the one meeting or the one being met
-				if (GET_PLAYER(eThirdPlayer).isAlive() && eThirdPlayer != eMyPlayer && eThirdPlayer != eTheirPlayer)
+				for (int iThirdPartyLoop = 0; iThirdPartyLoop < MAX_MAJOR_CIVS; iThirdPartyLoop++)
 				{
-					GET_PLAYER(eThirdPlayer).GetDiplomacyAI()->DoPlayerMetSomeone(eMyPlayer, eTheirPlayer);
+					PlayerTypes eThirdPlayer = (PlayerTypes)iThirdPartyLoop;
+					TeamTypes eThirdTeam = GET_PLAYER(eThirdPlayer).getTeam();
+					if (!GET_PLAYER(eThirdPlayer).isAlive() || eThirdTeam == GetID() || eThirdTeam == eIndex)
+						continue;
+
+					if (GET_PLAYER(eTheirPlayer).GetMinorCivAI()->IsProtectedByMajor(eThirdPlayer) && isHasMet(eThirdTeam))
+					{
+						CvNotifications* pNotifications = GET_PLAYER(eMyPlayer).GetNotifications();
+						if (pNotifications)
+						{
+							const char* strMinorCivKey = GET_PLAYER(eTheirPlayer).getNameKey();
+							const char* strText = GET_PLAYER(eThirdPlayer).GetDiplomacyAI()->GetDiploStringForMessage(DIPLO_MESSAGE_DECLARATION_PROTECT_CITY_STATE, NO_PLAYER, strMinorCivKey);
+							Localization::String strSummary = Localization::Lookup("TXT_KEY_NOTIFICATION_DIPLOMACY_DECLARATION");
+							strSummary << GET_PLAYER(eThirdPlayer).getCivilizationShortDescriptionKey();
+							pNotifications->Add(NOTIFICATION_DIPLOMACY_DECLARATION, strText, strSummary.toUTF8(), -1, -1, -1);
+						}
+					}
+				}
+			}
+			// If we met a major civ, check City-States they may be protecting and notify
+			else
+			{
+				for (int iThirdPartyLoop = MAX_MAJOR_CIVS; iThirdPartyLoop < MAX_CIV_PLAYERS; iThirdPartyLoop++)
+				{
+					PlayerTypes eThirdPlayer = (PlayerTypes)iThirdPartyLoop;
+					if (!GET_PLAYER(eThirdPlayer).isAlive())
+						continue;
+
+					if (GET_PLAYER(eThirdPlayer).GetMinorCivAI()->IsProtectedByMajor(eTheirPlayer) && isHasMet(GET_PLAYER(eThirdPlayer).getTeam()))
+					{
+						CvNotifications* pNotifications = GET_PLAYER(eMyPlayer).GetNotifications();
+						if (pNotifications)
+						{
+							const char* strMinorCivKey = GET_PLAYER(eThirdPlayer).getNameKey();
+							const char* strText = GET_PLAYER(eTheirPlayer).GetDiplomacyAI()->GetDiploStringForMessage(DIPLO_MESSAGE_DECLARATION_PROTECT_CITY_STATE, NO_PLAYER, strMinorCivKey);
+							Localization::String strSummary = Localization::Lookup("TXT_KEY_NOTIFICATION_DIPLOMACY_DECLARATION");
+							strSummary << GET_PLAYER(eTheirPlayer).getCivilizationShortDescriptionKey();
+							pNotifications->Add(NOTIFICATION_DIPLOMACY_DECLARATION, strText, strSummary.toUTF8(), -1, -1, -1);
+						}
+					}
 				}
 			}
 		}
@@ -7099,70 +7136,73 @@ void CvTeam::setHasTech(TechTypes eIndex, bool bNewValue, PlayerTypes ePlayer, b
 						if(pLoopPlot->getTeam() == GetID() && pLoopPlot->getOwner() == GC.getGame().getActivePlayer())
 						{
 							ResourceTypes eResource = pLoopPlot->getResourceType();
-							CvResourceInfo* pkResourceInfo = GC.getResourceInfo(eResource);
 
-							if(eResource != NO_RESOURCE && pkResourceInfo)
+							if (eResource != NO_RESOURCE)
 							{
-								TechTypes eDefaultTech = (TechTypes)pkResourceInfo->getTechReveal();
-								PolicyTypes eRevealPolicy = (PolicyTypes)pkResourceInfo->getPolicyReveal();
-								bool bRevealed = false;
-								bool bReveals = false;
-
-								for (std::vector<PlayerTypes>::const_iterator iI = m_members.begin(); iI != m_members.end(); ++iI)
+								CvResourceInfo* pkResourceInfo = GC.getResourceInfo(eResource);
+								if (pkResourceInfo)
 								{
-									const PlayerTypes ePlayer = (PlayerTypes)*iI;
-									CvPlayer* pPlayer = &GET_PLAYER(ePlayer);
+									TechTypes eDefaultTech = (TechTypes)pkResourceInfo->getTechReveal();
+									PolicyTypes eRevealPolicy = (PolicyTypes)pkResourceInfo->getPolicyReveal();
+									bool bRevealed = false;
+									bool bReveals = false;
 
-									if (pPlayer && pPlayer->isAlive())
+									for (std::vector<PlayerTypes>::const_iterator iI = m_members.begin(); iI != m_members.end(); ++iI)
 									{
-										TechTypes eTechReveal = eDefaultTech;
+										const PlayerTypes ePlayer = (PlayerTypes)*iI;
+										CvPlayer* pPlayer = &GET_PLAYER(ePlayer);
 
-										if (pPlayer->GetPlayerTraits()->IsAlternateResourceTechs())
+										if (pPlayer && pPlayer->isAlive())
 										{
-											TechTypes eAltTech = pPlayer->GetPlayerTraits()->GetAlternateResourceTechs(eResource).m_eTechReveal;
-											if (eAltTech != NO_TECH)
+											TechTypes eTechReveal = eDefaultTech;
+
+											if (pPlayer->GetPlayerTraits()->IsAlternateResourceTechs())
 											{
-												eTechReveal = eAltTech;
+												TechTypes eAltTech = pPlayer->GetPlayerTraits()->GetAlternateResourceTechs(eResource).m_eTechReveal;
+												if (eAltTech != NO_TECH)
+												{
+													eTechReveal = eAltTech;
+												}
 											}
-										}
 
-										if ((eRevealPolicy == NO_POLICY || (eRevealPolicy != NO_POLICY && pPlayer->HasPolicy(eRevealPolicy))) && (eTechReveal == NO_TECH || (eTechReveal != eIndex && GetTeamTechs()->HasTech(eTechReveal))))
-										{
-											bRevealed = true;
-											break;
-										}
-										else if (!bReveals && eTechReveal == eIndex)
-										{
-											bReveals = true;
+											if ((eRevealPolicy == NO_POLICY || (eRevealPolicy != NO_POLICY && pPlayer->HasPolicy(eRevealPolicy))) && (eTechReveal == NO_TECH || (eTechReveal != eIndex && GetTeamTechs()->HasTech(eTechReveal))))
+											{
+												bRevealed = true;
+												break;
+											}
+											else if (!bReveals && eTechReveal == eIndex)
+											{
+												bReveals = true;
+											}
 										}
 									}
-								}
 
-								if(bReveals && !bRevealed && !isForceRevealedResource(eResource))
-								{
-									pCity = GC.getMap().findCity(pLoopPlot->getX(), pLoopPlot->getY(), NO_PLAYER, GetID(), false);
-
-									if(pCity != NULL)
+									if (bReveals && !bRevealed && !isForceRevealedResource(eResource))
 									{
-										CvResourceInfo* pResourceInfo = GC.getResourceInfo(eResource);
+										pCity = GC.getMap().findCity(pLoopPlot->getX(), pLoopPlot->getY(), NO_PLAYER, GetID(), false);
 
-										if (pResourceInfo)
+										if (pCity != NULL)
 										{
-											if (strcmp(pResourceInfo->GetType(), "RESOURCE_ARTIFACTS") == 0)
-											{
-												strBuffer = GetLocalizedText("TXT_KEY_MISC_DISCOVERED_ARTIFACTS_NEAR", pCity->getNameKey());
-											}
-											else if (strcmp(pResourceInfo->GetType(), "RESOURCE_HIDDEN_ARTIFACTS") == 0)
-											{
-												strBuffer = GetLocalizedText("TXT_KEY_MISC_DISCOVERED_HIDDEN_ARTIFACTS_NEAR", pCity->getNameKey());
-											}
-											else
-											{
-												strBuffer = GetLocalizedText("TXT_KEY_MISC_YOU_DISCOVERED_RESOURCE", pResourceInfo->GetTextKey(), pCity->getNameKey());
-											}
-										}
+											CvResourceInfo* pResourceInfo = GC.getResourceInfo(eResource);
 
-										DLLUI->AddPlotMessage(0, pLoopPlot->GetPlotIndex(), pLoopPlot->getOwner(), false, /*10*/ GD_INT_GET(EVENT_MESSAGE_TIME), strBuffer/*, "AS2D_DISCOVERRESOURCE", MESSAGE_TYPE_INFO, GC.getResourceInfo(eResource)->GetButton(), (ColorTypes)GC.getInfoTypeForString("COLOR_WHITE"), pLoopPlot->getX(), pLoopPlot->getY(), true, true*/);
+											if (pResourceInfo)
+											{
+												if (strcmp(pResourceInfo->GetType(), "RESOURCE_ARTIFACTS") == 0)
+												{
+													strBuffer = GetLocalizedText("TXT_KEY_MISC_DISCOVERED_ARTIFACTS_NEAR", pCity->getNameKey());
+												}
+												else if (strcmp(pResourceInfo->GetType(), "RESOURCE_HIDDEN_ARTIFACTS") == 0)
+												{
+													strBuffer = GetLocalizedText("TXT_KEY_MISC_DISCOVERED_HIDDEN_ARTIFACTS_NEAR", pCity->getNameKey());
+												}
+												else
+												{
+													strBuffer = GetLocalizedText("TXT_KEY_MISC_YOU_DISCOVERED_RESOURCE", pResourceInfo->GetTextKey(), pCity->getNameKey());
+												}
+											}
+
+											DLLUI->AddPlotMessage(0, pLoopPlot->GetPlotIndex(), pLoopPlot->getOwner(), false, /*10*/ GD_INT_GET(EVENT_MESSAGE_TIME), strBuffer/*, "AS2D_DISCOVERRESOURCE", MESSAGE_TYPE_INFO, GC.getResourceInfo(eResource)->GetButton(), (ColorTypes)GC.getInfoTypeForString("COLOR_WHITE"), pLoopPlot->getX(), pLoopPlot->getY(), true, true*/);
+										}
 									}
 								}
 							}
@@ -8189,51 +8229,51 @@ void CvTeam::processTech(TechTypes eTech, int iChange, bool bNoBonus)
 
 		eResource = pLoopPlot->getResourceType();
 
-		CvResourceInfo* pkResourceInfo = GC.getResourceInfo(eResource);
-		if(eResource != NO_RESOURCE && pkResourceInfo)
-		{
-			TechTypes eDefaultTech = (TechTypes)pkResourceInfo->getTechReveal();
-			PolicyTypes eRevealPolicy = (PolicyTypes)pkResourceInfo->getPolicyReveal();
-			bool bRevealTech = false;
-			bool bRevealed = false;
-
-			for (std::vector<PlayerTypes>::const_iterator iI = m_members.begin(); iI != m_members.end(); ++iI)
+		if (eResource != NO_RESOURCE) {
+			CvResourceInfo* pkResourceInfo = GC.getResourceInfo(eResource);
+			if (pkResourceInfo)
 			{
-				const PlayerTypes ePlayer = (PlayerTypes)*iI;
-				CvPlayer* pPlayer = &GET_PLAYER(ePlayer);
+				TechTypes eDefaultTech = (TechTypes)pkResourceInfo->getTechReveal();
+				PolicyTypes eRevealPolicy = (PolicyTypes)pkResourceInfo->getPolicyReveal();
+				bool bRevealTech = false;
+				bool bRevealed = false;
 
-				if (pPlayer && pPlayer->isAlive())
+				for (std::vector<PlayerTypes>::const_iterator iI = m_members.begin(); iI != m_members.end(); ++iI)
 				{
-					TechTypes eRevealTech = eDefaultTech;
-					
-#if defined(MOD_BALANCE_CORE)
-					if (pPlayer->GetPlayerTraits()->IsAlternateResourceTechs())
+					const PlayerTypes ePlayer = (PlayerTypes)*iI;
+					CvPlayer* pPlayer = &GET_PLAYER(ePlayer);
+
+					if (pPlayer && pPlayer->isAlive())
 					{
-						TechTypes eAltTech = pPlayer->GetPlayerTraits()->GetAlternateResourceTechs(eResource).m_eTechReveal;
-						if (eAltTech != NO_TECH)
+						TechTypes eRevealTech = eDefaultTech;
+
+						if (pPlayer->GetPlayerTraits()->IsAlternateResourceTechs())
 						{
-							eRevealTech = eAltTech;
+							TechTypes eAltTech = pPlayer->GetPlayerTraits()->GetAlternateResourceTechs(eResource).m_eTechReveal;
+							if (eAltTech != NO_TECH)
+							{
+								eRevealTech = eAltTech;
+							}
+						}
+						if ((eRevealPolicy == NO_POLICY || (eRevealPolicy != NO_POLICY && pPlayer->HasPolicy(eRevealPolicy))) && (eRevealTech == NO_TECH || (eRevealTech != eTech && GetTeamTechs()->HasTech(eRevealTech))))
+						{
+							bRevealed = true;
+							break;
+						}
+						else if (!bRevealTech && eRevealTech == eTech)
+						{
+							bRevealTech = true;
 						}
 					}
-#endif
-					if ((eRevealPolicy == NO_POLICY || (eRevealPolicy != NO_POLICY && pPlayer->HasPolicy(eRevealPolicy))) && (eRevealTech == NO_TECH || (eRevealTech != eTech && GetTeamTechs()->HasTech(eRevealTech))))
-					{
-						bRevealed = true;
-						break;
-					}
-					else if (!bRevealTech && eRevealTech == eTech)
-					{
-						bRevealTech = true;
-					}
 				}
-			}
 
-			if(bRevealTech && !bRevealed)
-			{
-				pLoopPlot->updateYield();
-				if(pLoopPlot->isRevealed(m_eID))
+				if (bRevealTech && !bRevealed)
 				{
-					pLoopPlot->setLayoutDirty(true);
+					pLoopPlot->updateYield();
+					if (pLoopPlot->isRevealed(m_eID))
+					{
+						pLoopPlot->setLayoutDirty(true);
+					}
 				}
 			}
 		}

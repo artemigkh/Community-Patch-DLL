@@ -2457,20 +2457,21 @@ CvPlot* CvPlayerAI::FindBestDiplomatTargetPlot(CvUnit* pUnit)
 	{
 		//don't check for cities directly because we cannot enter them ...
 		CvPlot* pPlot = GC.getMap().plotByIndexUnchecked(it->iPlotIndex);
-		if (GET_PLAYER(pPlot->getOwner()).isMinorCiv())
+		PlayerTypes ePlotOwner = pPlot->getOwner();
+		if (ePlotOwner != NO_PLAYER && GET_PLAYER(ePlotOwner).isMinorCiv())
 		{
 			//small performance optimization
-			if (badTargets.find(pPlot->getOwner()) != badTargets.end())
+			if (badTargets.find(ePlotOwner) != badTargets.end())
 				continue;
 
 			//we iterate by distance, so take the first one we find
-			CvCity* pCity = GET_PLAYER(pPlot->getOwner()).getCapitalCity();
+			CvCity* pCity = GET_PLAYER(ePlotOwner).getCapitalCity();
 
 			CvPlot* pBuildPlot = HomelandAIHelpers::GetPlotForEmbassy(pUnit, pCity);
 			if (pBuildPlot)
 				return pBuildPlot;
 			else
-				badTargets.insert(pPlot->getOwner());
+				badTargets.insert(ePlotOwner);
 		}
 	}
 
@@ -3074,10 +3075,24 @@ priority_queue<SPlotWithScore> CvPlayerAI::GetBestCultureBombPlots(const UnitTyp
 					continue;
 
 				// We shouldn't steal from them
-				if (GetDiplomacyAI()->IsBadTheftTarget(eOwner, THEFT_TYPE_CULTURE_BOMB))
+				if (isMajorCiv() && GetDiplomacyAI()->IsBadTheftTarget(eOwner, THEFT_TYPE_CULTURE_BOMB))
 				{
 					iStealScore = 0;
 					break;
+				}
+				else if (isMinorCiv())
+				{
+					if (GetMinorCivAI()->IsFriends(eOwner) || GetMinorCivAI()->IsProtectedByMajor(eOwner))
+					{
+						iStealScore = 0;
+						break;
+					}
+					PlayerTypes eAlly = GetMinorCivAI()->GetAlly();
+					if (eAlly != NO_PLAYER && GET_PLAYER(eAlly).getTeam() == GET_PLAYER(eOwner).getTeam())
+					{
+						iStealScore = 0;
+						break;
+					}
 				}
 
 				// It's dangerous to go there - only check radius 1

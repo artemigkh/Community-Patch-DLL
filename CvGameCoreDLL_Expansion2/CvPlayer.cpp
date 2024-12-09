@@ -2474,7 +2474,7 @@ void CvPlayer::initFreeUnits()
 
 		// If this isn't a Settler, we must be able to train the unit and it must match with the AI type.
 		// If we can't, then find a substitute unit with the same AI type
-		if (!pkUnitInfo->GetUnitAIType(eRequiredUnitAI) || (!pkUnitInfo->IsFound() && !canTrainUnit(eUnit)))
+		if ((eRequiredUnitAI != NO_UNITAI && !pkUnitInfo->GetUnitAIType(eRequiredUnitAI)) || (!pkUnitInfo->IsFound() && !canTrainUnit(eUnit)))
 		{
 			bool bSuccess = false;
 			for (int iUnitLoop = 0; iUnitLoop < GC.getNumUnitInfos(); iUnitLoop++)
@@ -3277,7 +3277,8 @@ CvCity* CvPlayer::acquireCity(CvCity* pCity, bool bConquest, bool bGift, bool bO
 			}
 			if (GET_PLAYER(eOldOwner).isMajorCiv())
 			{
-				GET_PLAYER(eOldOwner).GetDiplomacyAI()->ChangeWarProgressScore(GetID(), iLoserProgressValue);
+				if(!isBarbarian())
+					GET_PLAYER(eOldOwner).GetDiplomacyAI()->ChangeWarProgressScore(GetID(), iLoserProgressValue);
 
 				// If the city belonged to a vassal, penalize the masters
 				if (GET_PLAYER(eOldOwner).IsVassalOfSomeone())
@@ -3297,12 +3298,14 @@ CvCity* CvPlayer::acquireCity(CvCity* pCity, bool bConquest, bool bGift, bool bO
 		}
 
 		// Notify diplomacy AI that the damage was done
+		if (GET_PLAYER(eOldOwner).isMajorCiv())
+			GET_PLAYER(eOldOwner).GetDiplomacyAI()->ChangeNumCitiesCapturedBy(GetID(), 1);
+
 		if (isMajorCiv())
 		{
 			if (GET_PLAYER(eOldOwner).isMajorCiv())
 			{
 				CvDiplomacyAI* pOldOwnerDiploAI = GET_PLAYER(eOldOwner).GetDiplomacyAI();
-				pOldOwnerDiploAI->ChangeNumCitiesCapturedBy(GetID(), 1);
 
 				// Zero out any liberation credit since we just captured a city from them
 				pOldOwnerDiploAI->SetResurrectedBy(GetID(), false);
@@ -4085,7 +4088,9 @@ CvCity* CvPlayer::acquireCity(CvCity* pCity, bool bConquest, bool bGift, bool bO
 		PlayerTypes eLoopPlayer = (PlayerTypes) iPlayerLoop;
 		pNewCity->SetTraded(eLoopPlayer, vbTraded[iPlayerLoop]);
 		pNewCity->setEverLiberated(eLoopPlayer, vbEverLiberated[iPlayerLoop]);
-		pNewCity->setEconomicValue(eLoopPlayer, viEconValue[iPlayerLoop]);
+		if (iPlayerLoop < MAX_CIV_PLAYERS)
+			pNewCity->setEconomicValue(eLoopPlayer, viEconValue[iPlayerLoop]);
+
 		if (!bOriginally)
 			pNewCity->SetNumTimesOwned(eLoopPlayer, viNumTimesOwned[iPlayerLoop]);
 
@@ -5743,7 +5748,7 @@ bool CvPlayer::IsEventValid(EventTypes eEvent)
 		return false;
 
 	//Let's do our linker checks here.
-	for(int iI = 0; iI <= pkEventInfo->GetNumLinkers(); iI++)
+	for(int iI = 0; iI < pkEventInfo->GetNumLinkers(); iI++)
 	{
 		CvEventLinkingInfo *pLinkerInfo = pkEventInfo->GetLinkerInfo(iI);
 		if(pLinkerInfo)
@@ -6255,7 +6260,7 @@ bool CvPlayer::IsEventChoiceValid(EventChoiceTypes eChosenEventChoice, EventType
 	}
 
 	//Let's do our linker checks here.
-	for(int iI = 0; iI <= pkEventInfo->GetNumLinkers(); iI++)
+	for(int iI = 0; iI < pkEventInfo->GetNumLinkers(); iI++)
 	{
 		CvEventChoiceLinkingInfo *pLinkerInfo = pkEventInfo->GetLinkerInfo(iI);
 		if(pLinkerInfo)
@@ -7413,7 +7418,7 @@ CvString CvPlayer::GetDisabledTooltip(EventChoiceTypes eChosenEventChoice)
 	}
 
 	//Let's do our linker checks here.
-	for(int iI = 0; iI <= pkEventInfo->GetNumLinkers(); iI++)
+	for(int iI = 0; iI < pkEventInfo->GetNumLinkers(); iI++)
 	{
 		CvEventChoiceLinkingInfo *pLinkerInfo = pkEventInfo->GetLinkerInfo(iI);
 		if(pLinkerInfo)
@@ -32437,7 +32442,7 @@ void CvPlayer::setAlive(bool bNewValue, bool bNotify)
 			for (int iPlayerLoop = 0; iPlayerLoop < MAX_MAJOR_CIVS; iPlayerLoop++)
 			{
 				PlayerTypes eLoopPlayer = (PlayerTypes) iPlayerLoop;
-				GetMinorCivAI()->DoChangeProtectionFromMajor(eLoopPlayer, false, false);
+				GetMinorCivAI()->DoChangeProtectionFromMajor(eLoopPlayer, false, false, false);
 			}
 		}
 	}
@@ -32485,7 +32490,9 @@ void CvPlayer::setAlive(bool bNewValue, bool bNotify)
 		}
 
 		// Wipe out everything involving this player
-		GC.getGame().GetGameDeals().DoCancelAllDealsWithPlayer(GetID());
+		if (isMajorCiv())
+			GC.getGame().GetGameDeals().DoCancelAllDealsWithPlayer(GetID());
+
 		clearResearchQueue();
 		killUnits();
 		killCities();
@@ -32538,7 +32545,7 @@ void CvPlayer::setAlive(bool bNewValue, bool bNotify)
 			{
 				PlayerTypes eLoopMinor = (PlayerTypes) iPlayerLoop;
 				GET_PLAYER(eLoopMinor).GetMinorCivAI()->ResetFriendshipWithMajor(GetID());
-				GET_PLAYER(eLoopMinor).GetMinorCivAI()->DoChangeProtectionFromMajor(GetID(), false, false);
+				GET_PLAYER(eLoopMinor).GetMinorCivAI()->DoChangeProtectionFromMajor(GetID(), false, false, false);
 				if (GET_PLAYER(eLoopMinor).GetMinorCivAI()->IsAllies(GetID()))
 				{
 					CvLeague* pLeague = GC.getGame().GetGameLeagues()->GetActiveLeague();
@@ -34666,7 +34673,7 @@ int CvPlayer::getMaxAirUnits() const
 int CvPlayer::GetImprovementExtraYield(ImprovementTypes eImprovement, YieldTypes eYield) const
 {
 	CvAssertMsg(eImprovement >= 0, "eIndex1 is expected to be non-negative (invalid Index)");
-	CvAssertMsg(eImprovement < GC.getNumFeatureInfos(), "eIndex1 is expected to be within maximum bounds (invalid Index)");
+	CvAssertMsg(eImprovement < GC.getNumImprovementInfos(), "eIndex1 is expected to be within maximum bounds (invalid Index)");
 	CvAssertMsg(eYield >= 0, "eIndex2 is expected to be non-negative (invalid Index)");
 	CvAssertMsg(eYield < NUM_YIELD_TYPES, "eIndex2 is expected to be within maximum bounds (invalid Index)");
 	return m_ppiImprovementYieldChange[eImprovement][eYield];
@@ -35266,6 +35273,8 @@ void CvPlayer::ChangeWarValueLost(PlayerTypes ePlayer, int iChange)
 		for (int iPlayerLoop = 0; iPlayerLoop < MAX_MAJOR_CIVS; iPlayerLoop++)
 		{
 			PlayerTypes eLoopPlayer = (PlayerTypes) iPlayerLoop;
+			if (eLoopPlayer == ePlayer)
+				continue;
 
 			if (GetDiplomacyAI()->IsPlayerValid(eLoopPlayer) && GET_PLAYER(eLoopPlayer).isMajorCiv())
 			{
@@ -35839,6 +35848,8 @@ void CvPlayer::DoUpdateProximityToPlayers()
 	for (int iPlayerLoop = 0; iPlayerLoop < MAX_CIV_PLAYERS; iPlayerLoop++)
 	{
 		PlayerTypes eLoopPlayer = (PlayerTypes) iPlayerLoop;
+		if (eLoopPlayer == GetID())
+			continue;
 
 		if (!isAlive() || !GET_PLAYER(eLoopPlayer).isAlive())
 		{
@@ -36752,6 +36763,15 @@ void CvPlayer::addResourcesOnPlotToTotal(CvPlot* pPlot, bool bOnlyExtraResources
 		{
 			pOwningCity->ChangeNumResourceLocal(pPlot->getResourceType(), pPlot->getNumResourceForPlayer(GetID(), false, bIgnoreTechPrereq), /*bUnimproved*/ false);
 		}
+
+		if (pOwningCity->GetCityCitizens()->IsWorkingPlot(pPlot))
+		{
+			pOwningCity->ChangeNumResourceWorked(pPlot->getResourceType(), pPlot->getNumResourceForPlayer(GetID(), true, bIgnoreTechPrereq));
+			if (!bOnlyExtraResources)
+			{
+				pOwningCity->ChangeNumResourceWorked(pPlot->getResourceType(), pPlot->getNumResourceForPlayer(GetID(), false, bIgnoreTechPrereq));
+			}
+		}
 	}
 }
 
@@ -36772,7 +36792,15 @@ void CvPlayer::removeResourcesOnPlotFromTotal(CvPlot* pPlot, bool bOnlyExtraReso
 		if (!bOnlyExtraResources)
 		{
 			pOwningCity->ChangeNumResourceLocal(pPlot->getResourceType(), -pPlot->getNumResourceForPlayer(GetID(), false, bIgnoreTechPrereq), /*bUnimproved*/ false);
+		}
 
+		if (pOwningCity->GetCityCitizens()->IsWorkingPlot(pPlot))
+		{
+			pOwningCity->ChangeNumResourceWorked(pPlot->getResourceType(), -pPlot->getNumResourceForPlayer(GetID(), true, bIgnoreTechPrereq));
+			if (!bOnlyExtraResources)
+			{
+				pOwningCity->ChangeNumResourceWorked(pPlot->getResourceType(), -pPlot->getNumResourceForPlayer(GetID(), false, bIgnoreTechPrereq));
+			}
 		}
 	}
 }
@@ -40016,7 +40044,7 @@ bool CvPlayer::IsPlotSafeForRoute(const CvPlot* pPlot, bool bIncludeAdjacent) co
 	}
 
 	// Our vassal's plots and surrounding plots are safe
-	if (GET_TEAM(ePlotTeam).IsVassal(ePlayerTeam) || (bIncludeAdjacent && pPlot->isAdjacentOwnedByVassal(ePlayerTeam, false)))
+	if ((ePlotTeam != NO_TEAM && GET_TEAM(ePlotTeam).IsVassal(ePlayerTeam)) || (bIncludeAdjacent && pPlot->isAdjacentOwnedByVassal(ePlayerTeam, false)))
 	{
 		return true;
 	}
@@ -40061,6 +40089,9 @@ bool CvPlayer::NeedWorkboatToImproveResource(ResourceTypes eResource) const
 			continue;
 
 		ImprovementTypes eImprovement = (ImprovementTypes)pkBuildInfo->getImprovement();
+		if (eImprovement == NO_IMPROVEMENT)
+			continue;
+
 		CvImprovementEntry* pkImprovementInfo = GC.getImprovementInfo(eImprovement);
 
 		if (!pkImprovementInfo)

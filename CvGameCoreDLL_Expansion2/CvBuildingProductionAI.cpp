@@ -289,28 +289,31 @@ int CvBuildingProductionAI::CheckBuildingBuildSanity(BuildingTypes eBuilding, in
 	if (!bIgnoreSituational)
 	{
 		//Minor Check
-		for (int iMinorLoop = MAX_MAJOR_CIVS; iMinorLoop < MAX_CIV_PLAYERS; iMinorLoop++)
+		if (kPlayer.isMajorCiv())
 		{
-			PlayerTypes eMinor = (PlayerTypes)iMinorLoop;
-			if (eMinor != NO_PLAYER)
+			for (int iMinorLoop = MAX_MAJOR_CIVS; iMinorLoop < MAX_CIV_PLAYERS; iMinorLoop++)
 			{
-				CvPlayer* pMinor = &GET_PLAYER(eMinor);
-				if (pMinor)
+				PlayerTypes eMinor = (PlayerTypes)iMinorLoop;
+				if (eMinor != NO_PLAYER)
 				{
-					CvMinorCivAI* pMinorCivAI = pMinor->GetMinorCivAI();
-					if (pMinorCivAI && pMinorCivAI->IsActiveQuestForPlayer(m_pCity->getOwner(), MINOR_CIV_QUEST_BUILD_X_BUILDINGS))
+					CvPlayer* pMinor = &GET_PLAYER(eMinor);
+					if (pMinor)
 					{
-						if ((BuildingTypes)pMinorCivAI->GetQuestData1(m_pCity->getOwner(), MINOR_CIV_QUEST_BUILD_X_BUILDINGS) == eBuilding)
+						CvMinorCivAI* pMinorCivAI = pMinor->GetMinorCivAI();
+						if (pMinorCivAI && pMinorCivAI->IsActiveQuestForPlayer(m_pCity->getOwner(), MINOR_CIV_QUEST_BUILD_X_BUILDINGS))
 						{
-							iBonus += 10;
-						}
-						if ((BuildingTypes)pMinorCivAI->GetQuestData1(m_pCity->getOwner(), MINOR_CIV_QUEST_CONSTRUCT_NATIONAL_WONDER) == eBuilding)
-						{
-							iBonus += 10;
-						}
-						if ((BuildingTypes)pMinorCivAI->GetQuestData1(m_pCity->getOwner(), MINOR_CIV_QUEST_CONSTRUCT_WONDER) == eBuilding)
-						{
-							iBonus += 10;
+							if ((BuildingTypes)pMinorCivAI->GetQuestData1(m_pCity->getOwner(), MINOR_CIV_QUEST_BUILD_X_BUILDINGS) == eBuilding)
+							{
+								iBonus += 10;
+							}
+							if ((BuildingTypes)pMinorCivAI->GetQuestData1(m_pCity->getOwner(), MINOR_CIV_QUEST_CONSTRUCT_NATIONAL_WONDER) == eBuilding)
+							{
+								iBonus += 10;
+							}
+							if ((BuildingTypes)pMinorCivAI->GetQuestData1(m_pCity->getOwner(), MINOR_CIV_QUEST_CONSTRUCT_WONDER) == eBuilding)
+							{
+								iBonus += 10;
+							}
 						}
 					}
 				}
@@ -559,9 +562,9 @@ int CvBuildingProductionAI::CheckBuildingBuildSanity(BuildingTypes eBuilding, in
 		bGoodforHappiness = true;
 	}
 
-	if (pkBuildingInfo->GetHappinessPerXPolicies() > 0)
+	if (pkBuildingInfo->GetHappinessPerXPolicies() > 0 && kPlayer.GetExtraHappinessPerXPolicies() == 0)
 	{
-		iBonus += iHappinessValue * kPlayer.GetPlayerPolicies()->GetNumPoliciesOwned() / kPlayer.GetExtraHappinessPerXPolicies();
+		iBonus += iHappinessValue * kPlayer.GetPlayerPolicies()->GetNumPoliciesOwned() / pkBuildingInfo->GetHappinessPerXPolicies();
 		bGoodforHappiness = true;
 	}
 
@@ -863,6 +866,10 @@ int CvBuildingProductionAI::CheckBuildingBuildSanity(BuildingTypes eBuilding, in
 			}
 			else if (GET_PLAYER(pClaimedPlot->getOwner()).isMajorCiv() && pClaimedPlot->getOwner() != kPlayer.GetID())
 			{
+				// City-States shouldn't steal plots from majors using buildings, that's annoying and will get them killed
+				if (kPlayer.isMinorCiv())
+					return SR_IMPOSSIBLE;
+
 				CivApproachTypes eApproachToPlotOwner = kPlayer.GetDiplomacyAI()->GetCivApproach(pClaimedPlot->getOwner());
 				switch (eApproachToPlotOwner)
 				{
