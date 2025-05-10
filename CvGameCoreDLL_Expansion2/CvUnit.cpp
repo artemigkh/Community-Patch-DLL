@@ -311,6 +311,7 @@ CvUnit::CvUnit() :
 	, m_iBorderCombatModifier()
 	, m_iCombatStrengthModifierPerMarriage()
 	, m_iCombatStrengthModifierPerMarriageCap()
+	, m_iCombatStrengthModifierPerLevel()
 	, m_iNumInterceptions()
 	, m_iMadeInterceptionCount()
 	, m_iEverSelectedCount()
@@ -16172,6 +16173,9 @@ int CvUnit::GetGenericMeleeStrengthModifier(const CvUnit* pOtherUnit, const CvPl
 		iModifier += GetGreatGeneralCombatModifier();
 	}
 
+	// Bonus combat strength from levels
+	iModifier += getCurrentCSModFromLevel();
+
 	////////////////////////
 	// KNOWN BATTLE PLOT
 	////////////////////////
@@ -16912,6 +16916,9 @@ int CvUnit::GetMaxRangedCombatStrength(const CvUnit* pOtherUnit, const CvCity* p
 	{
 		iModifier += GetGreatGeneralCombatModifier();
 	}
+
+	// Bonus combat strength from levels
+	iModifier += getCurrentCSModFromLevel();
 
 	// Resource monopoly
 	if (bAttacking)
@@ -24604,6 +24611,31 @@ int CvUnit::getCSMarriageStrength() const
 	);
 }
 
+int CvUnit::getCombatStrengthModifierPerLevel() const
+{
+	VALIDATE_OBJECT();
+	return m_iCombatStrengthModifierPerLevel;
+}
+
+//	--------------------------------------------------------------------------------
+void CvUnit::changeCombatStrengthModifierPerLevel(int iChange)
+{
+	VALIDATE_OBJECT();
+	if (iChange != 0)
+	{
+		m_iCombatStrengthModifierPerLevel += iChange;
+	}
+
+}
+
+//	--------------------------------------------------------------------------------
+// Returns the current combat strength from levels above 1 for this unit
+int CvUnit::getCurrentCSModFromLevel() const
+{
+	VALIDATE_OBJECT();
+	return (getLevel() - 1) * getCombatStrengthModifierPerLevel();
+}
+
 //	--------------------------------------------------------------------------------
 int CvUnit::getPillageChange() const
 {
@@ -27289,6 +27321,7 @@ void CvUnit::setHasPromotion(PromotionTypes eIndex, bool bNewValue)
 		changeBorderCombatStrengthModifier(thisPromotion.GetBorderMod() * iChange);
 		changeCombatStrengthModifierPerMarriage(thisPromotion.GetMarriageMod()* iChange);
 		changeCombatStrengthModifierPerMarriageCap(thisPromotion.GetMarriageModCap()* iChange);
+		changeCombatStrengthModifierPerLevel(thisPromotion.GetPerLevelMod()* iChange);
 		changeUpgradeDiscount(thisPromotion.GetUpgradeDiscount() * iChange);
 		changeExperiencePercent(thisPromotion.GetExperiencePercent() * iChange);
 		changeCargoSpace(thisPromotion.GetCargoChange() * iChange);
@@ -27901,6 +27934,7 @@ void CvUnit::Serialize(Unit& unit, Visitor& visitor)
 	visitor(unit.m_iBorderCombatModifier);
 	visitor(unit.m_iCombatStrengthModifierPerMarriage);
 	visitor(unit.m_iCombatStrengthModifierPerMarriageCap);
+	visitor(unit.m_iCombatStrengthModifierPerLevel);
 	visitor(unit.m_iHealIfDefeatExcludeBarbariansCount);
 	visitor(unit.m_iNumInterceptions);
 	visitor(unit.m_iExtraAirInterceptRange);

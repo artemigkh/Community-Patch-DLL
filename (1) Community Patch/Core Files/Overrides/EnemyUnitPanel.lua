@@ -760,6 +760,10 @@ function UpdateCombatSimulator(pMyUnit, pTheirUnit, pMyCity, pTheirCity)
 		iModifier = pMyUnit:GetCSMarriageStrength()
 		nBonus, iMiscModifier = ProcessModifier(iModifier, "TXT_KEY_EUPANEL_BONUS_MARRIAGES", nBonus, iMiscModifier, true, true);
 
+		-- Bonus from unit level modifier
+		iModifier = pMyUnit:GetCurrentCSModFromLevel()
+		nBonus, iMiscModifier = ProcessModifier(iModifier, "TXT_KEY_EUPANEL_BONUS_LEVEL", nBonus, iMiscModifier, true, true);
+
 		-- Nearby unit modifier
 		iModifier = pMyUnit:GetGiveCombatModToUnit();
 		nBonus, iMiscModifier = ProcessModifier(iModifier, "TXT_KEY_EUPANEL_NEARBYPROMOTION_COMBAT_BONUS", nBonus, iMiscModifier, true, true);
@@ -1147,6 +1151,10 @@ function UpdateCombatSimulator(pMyUnit, pTheirUnit, pMyCity, pTheirCity)
 				-- Bonus from marriages to city states not at war
 				iModifier = pTheirUnit:GetCSMarriageStrength()
 				nBonus, iMiscModifier = ProcessModifier(iModifier, "TXT_KEY_EUPANEL_BONUS_MARRIAGES", nBonus, iMiscModifier, false, true);
+
+				-- Bonus from unit level modifier
+				iModifier = pTheirUnit:GetCurrentCSModFromLevel()
+				nBonus, iMiscModifier = ProcessModifier(iModifier, "TXT_KEY_EUPANEL_BONUS_LEVEL", nBonus, iMiscModifier, false, true);
 
 				-- Adjacent to X unit combat modifier
 				iModifier = pTheirUnit:PerAdjacentUnitCombatModifier() + pTheirUnit:PerAdjacentUnitCombatDefenseMod();

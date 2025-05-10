@@ -134,6 +134,7 @@ public:
 	int GetBorderMod() const;
 	int GetMarriageMod() const;
 	int GetMarriageModCap() const;
+	int GetPerLevelMod() const;
 	int GetGroundAttackDamage() const;
 
 	int GetDropRange() const;
@@ -460,6 +461,7 @@ protected:
 	int m_iBorderMod;
 	int m_iMarriageMod;
 	int m_iMarriageModCap;
+	int m_iPerLevelMod;
 	int m_iGetGroundAttackDamage;
 	int m_iDropRange;
 	int m_iExtraNavalMoves;

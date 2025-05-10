@@ -486,6 +486,8 @@ void CvLuaUnit::PushMethods(lua_State* L, int t)
 	Method(GetCombatStrengthModifierPerMarriage);
 	Method(GetCombatStrengthModifierPerMarriageCap);
 	Method(GetCSMarriageStrength);
+	Method(GetCombatStrengthModifierPerLevel);
+	Method(GetCurrentCSModFromLevel);
 	Method(GetFriendlyLandsModifier);
 	Method(GetFriendlyLandsAttackModifier);
 	Method(GetOutsideFriendlyLandsModifier);
@@ -5283,6 +5285,21 @@ int CvLuaUnit::lGetCSMarriageStrength(lua_State* L)
 {
 	return BasicLuaMethod(L, &CvUnit::getCSMarriageStrength);
 }
+
+//------------------------------------------------------------------------------
+//int GetCombatStrengthModifierPerLevel();
+int CvLuaUnit::lGetCombatStrengthModifierPerLevel(lua_State* L)
+{
+	return BasicLuaMethod(L, &CvUnit::getCombatStrengthModifierPerLevel);
+}
+
+//------------------------------------------------------------------------------
+//int GetCurrentCSModFromLevel();
+int CvLuaUnit::lGetCurrentCSModFromLevel(lua_State* L)
+{
+	return BasicLuaMethod(L, &CvUnit::getCurrentCSModFromLevel);
+}
+
 //------------------------------------------------------------------------------
 //int GetFriendlyLandsModifier();
 int CvLuaUnit::lGetFriendlyLandsModifier(lua_State* L)

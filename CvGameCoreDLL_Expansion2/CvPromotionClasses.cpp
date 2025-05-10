@@ -106,6 +106,7 @@ CvPromotionEntry::CvPromotionEntry():
 	m_iBorderMod(0),
 	m_iMarriageMod(0),
 	m_iMarriageModCap(0),
+	m_iPerLevelMod(0),
 	m_iGetGroundAttackDamage(0),
 	m_iDropRange(0),
 	m_iExtraNavalMoves(0),
@@ -639,6 +640,7 @@ bool CvPromotionEntry::CacheResults(Database::Results& kResults, CvDatabaseUtili
 	m_iBorderMod = kResults.GetInt("BorderMod");
 	m_iMarriageMod = kResults.GetInt("MarriageMod");
 	m_iMarriageModCap = kResults.GetInt("MarriageModCap");
+	m_iPerLevelMod = kResults.GetInt("CombatModPerLevel");
 	m_iGetGroundAttackDamage = kResults.GetInt("GetGroundAttackDamage");
 	m_iDropRange = kResults.GetInt("DropRange");
 	m_iExtraNavalMoves = kResults.GetInt("ExtraNavalMovement");
@@ -1884,6 +1886,12 @@ int CvPromotionEntry::GetMarriageMod() const
 int CvPromotionEntry::GetMarriageModCap() const
 {
 	return m_iMarriageModCap;
+}
+
+/// Accessor: Per-Level combat strength change
+int CvPromotionEntry::GetPerLevelMod() const
+{
+	return m_iPerLevelMod;
 }
 
 /// Accessor: Percent defense change

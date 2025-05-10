@@ -489,6 +489,8 @@ protected:
 	static int lGetCombatStrengthModifierPerMarriage(lua_State* L);
 	static int lGetCombatStrengthModifierPerMarriageCap(lua_State* L);
 	static int lGetCSMarriageStrength(lua_State* L);
+	static int lGetCombatStrengthModifierPerLevel(lua_State* L);
+	static int lGetCurrentCSModFromLevel(lua_State* L);
 	static int lGetFriendlyLandsModifier(lua_State* L);
 	static int lGetFriendlyLandsAttackModifier(lua_State* L);
 	static int lGetOutsideFriendlyLandsModifier(lua_State* L);

@@ -1505,6 +1505,11 @@ public:
 
 	int getCSMarriageStrength() const;
 
+	int getCombatStrengthModifierPerLevel() const;
+	void changeCombatStrengthModifierPerLevel(int iChange);
+
+	int getCurrentCSModFromLevel() const;
+
 	int getPillageChange() const;
 	void changePillageChange(int iChange);
 
@@ -2299,6 +2304,7 @@ protected:
 	int m_iBorderCombatModifier;
 	int m_iCombatStrengthModifierPerMarriage;
 	int m_iCombatStrengthModifierPerMarriageCap;
+	int m_iCombatStrengthModifierPerLevel;
 	int m_iHealIfDefeatExcludeBarbariansCount;
 	int m_iNumInterceptions;
 #if defined(MOD_BALANCE_CORE)
@@ -2729,6 +2735,7 @@ SYNC_ARCHIVE_VAR(int, m_iFriendlyLandsModifier)
 SYNC_ARCHIVE_VAR(int, m_iBorderCombatModifier)
 SYNC_ARCHIVE_VAR(int, m_iCombatStrengthModifierPerMarriage)
 SYNC_ARCHIVE_VAR(int, m_iCombatStrengthModifierPerMarriageCap)
+SYNC_ARCHIVE_VAR(int, m_iCombatStrengthModifierPerLevel)
 SYNC_ARCHIVE_VAR(int, m_iFriendlyLandsAttackModifier)
 SYNC_ARCHIVE_VAR(int, m_iOutsideFriendlyLandsModifier)
 SYNC_ARCHIVE_VAR(int, m_iHealIfDefeatExcludeBarbariansCount)
