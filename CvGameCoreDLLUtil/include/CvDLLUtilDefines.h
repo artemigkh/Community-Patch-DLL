@@ -9,6 +9,12 @@
 
 #include "CustomModsGlobal.h"
 
+// When set to 1, CustomFilter (the unhandled exception filter / crash handler in
+// CvGlobals.cpp) returns immediately without showing
+// the crash dialog. Default is 0 (handler active)
+#define DISABLE_CRASH_HANDLER 0
+#endif
+
 #define RANDPLOT_LAND										(0x00000001)
 #define RANDPLOT_UNOWNED									(0x00000002)
 #define RANDPLOT_ADJACENT_UNOWNED							(0x00000004)
@@ -23,6 +29,7 @@
 
 #define MAX_CIV_PLAYERS										(63)
 #define MAX_CIV_TEAMS										(MAX_CIV_PLAYERS)
+
 
 #if defined(MOD_GLOBAL_MAX_MAJOR_CIVS)
 #define MAX_PREGAME_MAJOR_CIVS                              (22)

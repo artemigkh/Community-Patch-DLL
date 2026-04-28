@@ -447,8 +447,20 @@ def link_dll(link: str, link_args: list[str], build_dir: Path, out_dir: Path, lo
 
 arg_parser = argparse.ArgumentParser(description='Build VP.')
 arg_parser.add_argument('--config', type=str, default='debug', choices=['release', 'debug'])
+arg_parser.add_argument('--no-asserts', action='store_true',
+    help='Release only: omit VPRELEASE_ERRORMSG so CvAssertMsg dialogs are disabled.')
+arg_parser.add_argument('--disable-crash-handler', action='store_true',
+    help='Define DISABLE_CRASH_HANDLER=1 so CustomFilter is a no-op.')
 args = arg_parser.parse_args()
 config = Config.Release if args.config == 'release' else Config.Debug
+
+# Apply CLI overrides to the predef list for this run.
+_predefs = list(PREDEFS[config])
+if args.no_asserts and 'VPRELEASE_ERRORMSG' in _predefs:
+    _predefs.remove('VPRELEASE_ERRORMSG')
+if args.disable_crash_handler:
+    _predefs.append('DISABLE_CRASH_HANDLER=1')
+PREDEFS[config] = _predefs
 
 cl = 'clang-cl.exe'
 link = 'lld-link.exe'

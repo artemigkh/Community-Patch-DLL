@@ -2795,6 +2795,10 @@ static const char* GetExceptionDescription(DWORD exceptionCode)
 
 LONG WINAPI CustomFilter(EXCEPTION_POINTERS* ExceptionInfo)
 {
+#if DISABLE_CRASH_HANDLER
+	(void)ExceptionInfo;
+	return EXCEPTION_CONTINUE_SEARCH;
+#else
 #if defined(MOD_DEBUG_MINIDUMP)
 	CreateMiniDump(ExceptionInfo);
 #endif
@@ -2870,6 +2874,7 @@ LONG WINAPI CustomFilter(EXCEPTION_POINTERS* ExceptionInfo)
 		MessageBoxA(NULL, szMessage, "Game Crash", MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
 
 	return EXCEPTION_EXECUTE_HANDLER;
+#endif // DISABLE_CRASH_HANDLER
 }
 
 //
