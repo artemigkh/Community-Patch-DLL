@@ -366,3 +366,327 @@ inline void RegisterInstantYieldsTable()
 		GET_SQLITE_LOGGER().RegisterTable("InstantYields", kColumns);
 	}
 }
+
+//	--------------------------------------------------------------------------------
+//	Memory diagnostics (see MemoryDiagnostics.h). These tables exist to tell exhaustion apart from
+//	fragmentation in the 32-bit address space, and to attribute fragmentation to an allocation
+//	pattern. All sizes are kilobytes unless a column says otherwise.
+
+// One row per turn: totals from a VirtualQuery walk of the whole user address range. The "Low"
+// columns cover only addresses below 2GB, which is all a non-large-address-aware host can use.
+// LargestFreeKB is the number that predicts an allocation failure; FreeKB alone does not.
+inline void RegisterMemAddressSpaceTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("CommittedKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("ReservedKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("FreeKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("LargestFreeKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("CommittedLowKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("ReservedLowKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("FreeLowKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("LargestFreeLowKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("ImageKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("MappedKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("PrivateKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TotalRegions", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("FreeRegions", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("CommittedRegions", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemAddressSpace", kColumns);
+	}
+}
+
+// One row per size bucket per turn: how the free address space is distributed. A rising count of
+// small buckets while LargestFreeKB falls is the signature of fragmentation rather than exhaustion.
+// BucketMaxKB is the exclusive upper bound of the bucket; 0 marks the unbounded top bucket.
+inline void RegisterMemFreeBlockHistogramTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("BucketMaxKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Blocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TotalKB", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemFreeBlockHistogram", kColumns);
+	}
+}
+
+// One row per heap-walk turn: in-use vs free-list bytes across every process heap. FreeKB here is
+// memory the process has committed but is not using - intra-heap fragmentation, which the address
+// space walk cannot see. WalkMs records what the measurement itself cost.
+inline void RegisterMemHeapSummaryTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("Heaps", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("BusyBlocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("BusyKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("FreeBlocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("FreeKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("OverheadKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("UncommittedKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("WalkMs", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemHeapSummary", kColumns);
+	}
+}
+
+// One row per allocation size class per heap-walk turn. A large Blocks count in a small size class
+// means many small, long-lived, scattered allocations - the pattern that fragments a heap fastest.
+// BucketMaxBytes is the exclusive upper bound; 0 marks the unbounded top bucket.
+inline void RegisterMemHeapSizeClassTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("BucketMaxBytes", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Blocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TotalKB", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemHeapSizeClass", kColumns);
+	}
+}
+
+// One row per surviving-or-dead civ per turn: the replay history each player still holds. Entries
+// is the exact number of retained (dataset, turn) samples, each of which is one separately
+// allocated red-black tree node. EntryBytes is that node's measured heap cost on this build, so
+// Entries * EntryBytes is a measurement rather than an estimate.
+inline void RegisterMemReplayDataTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("Civ", Database::COLTYPE_TEXT));
+		kColumns.push_back(ColumnDef("PlayerId", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Datasets", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Entries", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("EntryBytes", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TotalKB", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemReplayData", kColumns);
+	}
+}
+
+// One row per turn per large committed address-space region, biggest first. The heap accounts for
+// only part of committed memory; direct VirtualAlloc, thread stacks and mapped images make up the
+// rest, and this is where that rest becomes visible. BaseHigh is the region's base address shifted
+// right by 16 (so it fits an INT), which is enough to recognise the same region across turns.
+inline void RegisterMemRegionsTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("Rank", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("BaseHigh", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("SizeKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("RegionType", Database::COLTYPE_TEXT));
+		GET_SQLITE_LOGGER().RegisterTable("MemRegions", kColumns);
+	}
+}
+
+// One row per turn per individual large heap allocation, biggest first. This is what turns "the
+// 256KB+ size class holds 1.7 GB" into a list of concrete allocation sizes that can be matched
+// against the structures in MemGameState.
+inline void RegisterMemTopBlocksTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("Rank", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Bytes", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemTopBlocks", kColumns);
+	}
+}
+
+// One row per turn per game subsystem: the analytic census of what the game data *is*, derived from
+// public counts and sizeof. Sizes exclude per-block heap headers and spare container capacity, so
+// the gap between SUM(SizeKB) and MemHeapSummary.BusyKB is the memory this model does not explain -
+// which is the number that says whether the model can be trusted. Items and UnitBytes are carried
+// so a wrong assumption shows up as an implausible per-item size instead of a distorted total.
+inline void RegisterMemGameStateTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("Subsystem", Database::COLTYPE_TEXT));
+		kColumns.push_back(ColumnDef("Detail", Database::COLTYPE_TEXT));
+		kColumns.push_back(ColumnDef("SizeKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Items", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("UnitBytes", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemGameState", kColumns);
+	}
+}
+
+// One row per turn of game-entity counts, so memory growth can be correlated with what the game
+// actually contains rather than only with the turn number. Deal counts are participation slots:
+// the per-player accessors are all that is exposed, so a two-party deal counts once per side.
+inline void RegisterMemEntityCountsTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("NumPlots", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("GridWidth", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("GridHeight", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("AlivePlayers", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("AliveMajors", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Units", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Cities", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("PlotsOwned", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("CurrentDealSlots", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HistoricDealSlots", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemEntityCounts", kColumns);
+	}
+}
+
+// Static structure sizes, written once per game. Every derived figure in MemGameState is some count
+// multiplied by one of these, so recording them makes those figures checkable after the fact and
+// makes a layout change between builds visible instead of silently shifting every total.
+inline void RegisterMemSizeofTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("TypeName", Database::COLTYPE_TEXT));
+		kColumns.push_back(ColumnDef("Bytes", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemSizeof", kColumns);
+	}
+}
+
+// One row per turn per distinct *exact* allocation size inside the leak window (128KB-2MB), largest
+// total first. The size-class histogram narrowed the leak to a 256KB-wide bucket; this narrows it to
+// a single number. NewThisTurn counts blocks of that size which were absent at the previous heap
+// walk, so the leaking size is the one where NewThisTurn stays positive turn after turn.
+inline void RegisterMemBlockSizesTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("Rank", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("SizeBytes", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Blocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("NewThisTurn", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TotalKB", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemBlockSizes", kColumns);
+	}
+}
+
+// A sample of the blocks that appeared since the previous heap walk, with their first four 32-bit
+// words as hex. Content identifies the type where size alone cannot: values inside the plot array
+// (see MemAnchors) mean an array of CvPlot*, small magnitudes mean integer data, and values in the
+// heap's own range mean pointers to something else.
+inline void RegisterMemNewBlocksTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("Sample", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("SizeBytes", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HeadWords", Database::COLTYPE_TEXT));
+		GET_SQLITE_LOGGER().RegisterTable("MemNewBlocks", kColumns);
+	}
+}
+
+// One row per turn summarising the leak window: how many blocks live in it, how many appeared this
+// turn, and how many bytes each represents. NewBlocks x their size is the per-turn leak rate, direct.
+// HadPrevious is false on the first walk of a session, where "new" has no meaning.
+inline void RegisterMemBlockWindowTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("WindowBlocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("WindowKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("NewBlocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("NewKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("DistinctSizes", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("SizeOverflow", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HadPrevious", Database::COLTYPE_BOOL));
+		GET_SQLITE_LOGGER().RegisterTable("MemBlockWindow", kColumns);
+	}
+}
+
+// Addresses of a few known objects, logged each turn because they move across a reload. Purely so a
+// pointer value captured in MemNewBlocks can be attributed to a structure offline. AddrHigh is the
+// address shifted right by 4 to fit an INT; multiply by 16 to recover it.
+inline void RegisterMemAnchorsTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("Anchor", Database::COLTYPE_TEXT));
+		kColumns.push_back(ColumnDef("AddrHigh", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("SizeKB", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemAnchors", kColumns);
+	}
+}

@@ -34,6 +34,7 @@
 #include "CvWorldBuilderMapLoader.h"
 #include "CvTypes.h"
 #include "SqliteLoggerRegistrations.h"
+#include "MemoryDiagnostics.h"
 #include "CvDllNetMessageExt.h"
 
 #include "cvStopWatch.h"
@@ -12938,6 +12939,10 @@ void CvGame::LogGameState(bool bLogHeaders) const
 	// Mirror WorldStateLog into the SQLite stats database
 	if (MOD_SQLITE_LOGGING)
 	{
+		// Sample the process's memory footprint first, before the batched logging below allocates
+		// its own buffers, so the numbers describe the game state rather than the logger.
+		MemoryDiagnostics::LogTurn();
+
 		// Mirror mapStateLog into stats.db. Gated purely behind the SQLite flag (independent of the
 		// CSV logging switches above) and internally guarded, so it is safe to call unconditionally.
 		LogMapPlotsState();

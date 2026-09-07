@@ -445,7 +445,8 @@ VALUES
 -- If set to a positive value, observer mode will stop automatically after this many turns
 	('MAX_TURNS_OBSERVER_MODE', 0),
 -- SQLite Logging
-	('SQLITE_LOGGING_BATCHED_BUFFER_ROWS_MAX', 1024), -- Max number of rows the batched SQLite logger buffers in memory before writing them to stats.db in a single transaction. Higher values buffer more rows in memory (larger peak memory footprint) but reduce total write time by amortizing transaction overhead across more rows; lower values use less memory but write more frequently.
+	('SQLITE_LOGGING_BATCHED_BUFFER_ROWS_MAX', 1024),
+	('MEMORY_DIAGNOSTICS_HEAP_WALK_INTERVAL', 1), -- How often (in game turns) the memory diagnostics walk every process heap, logging allocation size classes and the largest individual blocks to stats.db. A heap walk locks each heap and visits every live allocation; measured at 79-265ms with 2.9 million live blocks, so 1 (every turn) is affordable for a diagnosis run. Raise it to sample less often, or set 0 to disable heap walking entirely (the per-turn address-space, game-state census and entity counts are unaffected). Requires SQLITE_LOGGING.
 -- Misc.
 	('MIN_CITY_RANGE', 3), -- Backup min city range (if MinDistanceCities or MinDistanceCityStates are 0 in the Worlds table)
 	('UNHAPPINESS_PER_POPULATION_FLOAT', 0.0),

@@ -68,3 +68,8 @@ clang-output/
 #do not ignore lua-language-server configuration (LuaCATS)
 !.luacheckrc
 !.luarc.json
+# UMDH heap snapshots (memory investigation)
+umdh-snapshots/
+
+# scratch files from the vp-dll-dev skill
+.claude/tmp/
