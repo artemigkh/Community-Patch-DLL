@@ -38,13 +38,14 @@
 	           }
 	       }
 
-	   You declare only your own columns. The logger automatically prepends two leading columns to every
-	   table, which you must NOT declare and must NOT bind:
+	   You declare only your own columns. The logger automatically wraps every table in three columns,
+	   which you must NOT declare and must NOT bind:
 
 	       GameId  INT    -- a compact id referencing the shared uuid_dictionary table (see below)
 	       Turn    INT    -- GC.getGame().getElapsedGameTurns(), the current game turn
+	       RunId   INT    -- identifies this launch of the game process (see BEHAVIOR NOTES)
 
-	   So the table created above is actually: GameId, Turn, Civ, Technology, Action.
+	   So the table created above is actually: GameId, Turn, Civ, Technology, Action, RunId.
 
 	   GameId is an integer key into a shared "uuid_dictionary" table that maps each game's full UUID to
 	   a small auto-incremented integer. Stat rows store that compact id instead of repeating the full
@@ -53,8 +54,8 @@
 	2) LOG A ROW
 
 	   Call the matching Register*() helper (cheap after the first call), then BeginLogRow() and bind one
-	   value per column you declared, in declaration order. The implicit GameId and Turn values are bound
-	   for you, so you begin with your first declared column and finish with execute():
+	   value per column you declared, in declaration order. The implicit GameId, Turn and RunId values
+	   are bound for you, so you begin with your first declared column and finish with execute():
 
 	       if (MOD_SQLITE_LOGGING)
 	       {
@@ -89,8 +90,8 @@
 	       // Unregistered table -> BeginLogRow returns a disabled statement that does nothing:
 	       GET_SQLITE_LOGGER().BeginLogRow("noSuchTable").bind(1).execute(); // no-op
 
-	       // Duplicate column names (including re-declaring the implicit GameId/Turn) -> registration
-	       // is refused and the table is not created:
+	       // Duplicate column names (including re-declaring the implicit GameId/Turn/RunId) ->
+	       // registration is refused and the table is not created:
 	       TableDef kBad;
 	       kBad.push_back(ColumnDef("Turn", Database::COLTYPE_INT)); // clashes with implicit Turn
 	       GET_SQLITE_LOGGER().RegisterTable("badTable", kBad); // no-op
@@ -129,8 +130,8 @@
 	           kBatch.flush();                       // REQUIRED: writes any rows still buffered
 	       }
 
-	   The implicit GameId and Turn values are captured once when the batch is opened and reused for
-	   every row, so (as with the single-row API) you never bind them yourself.
+	   The implicit GameId, Turn and RunId values are captured once when the batch is opened and reused
+	   for every row, so (as with the single-row API) you never bind them yourself.
 
 	2) WHEN ROWS ARE ACTUALLY WRITTEN
 
@@ -162,16 +163,27 @@
 	---------------------------------------------------------------------------------------------------
 	BEHAVIOR NOTES
 	---------------------------------------------------------------------------------------------------
-	  - Every table implicitly begins with GameId (INT) and Turn (INT). They are added by
-	    RegisterTable() and bound by BeginLogRow() automatically; callers neither declare nor bind them.
-	    The GameId value is resolved through ResolveGameId() into the uuid_dictionary table. That table
-	    stores each game's UUID as a 32-char uppercase hex string (dashes stripped) in a TEXT column,
-	    mapped to the compact integer GameId that stat rows actually reference.
+	  - Every table implicitly begins with GameId (INT) and Turn (INT) and ends with RunId (INT). They
+	    are added by RegisterTable() and bound by BeginLogRow() automatically; callers neither declare
+	    nor bind them. The GameId value is resolved through ResolveGameId() into the uuid_dictionary
+	    table. That table stores each game's UUID as a 32-char uppercase hex string (dashes stripped)
+	    in a TEXT column, mapped to the compact integer GameId that stat rows actually reference.
+	  - RunId identifies one launch of the game process (seconds since the epoch, assigned on first
+	    use). GameId is stored in the save file and therefore survives a reload, so replaying turns
+	    that were already logged once produces duplicate (GameId, Turn) rows; RunId is what tells the
+	    two sittings apart, and (GameId, RunId) names exactly one continuous stretch of play. Rows
+	    written before this column existed carry small backfilled ids (100000+) that real runs can
+	    never reach.
+	  - RunId is the trailing column rather than a third leading one so that an existing stats.db can
+	    be migrated with ALTER TABLE ... ADD COLUMN, which can only append. Keep it last: moving it
+	    would make every existing table's schema mismatch, and see the next note for what that costs.
 	  - Column names must be unique (case-insensitive) across the implicit and caller-supplied columns.
 	    A duplicate name causes RegisterTable() to assert and refuse to create the table.
 	  - RegisterTable() creates the table in stats.db if it does not exist. If an existing table's
 	    schema differs from the supplied TableDef (including the implicit columns), the table is
-	    dropped and recreated.
+	    dropped and recreated - which DESTROYS every row it holds, for every game, not just the
+	    current one. Changing a column's name, type or position is therefore a destructive act on any
+	    database that has already accumulated history: migrate the file first, or add a new table.
 	  - When MOD_SQLITE_LOGGING is disabled, RegisterTable()/BeginLogRow() do nothing and stats.db is
 	    never created or modified.
 	  - BeginLogBatch() likewise returns a disabled, do-nothing BatchWriter when logging is disabled or
@@ -291,7 +303,7 @@ public:
 			int m_iBindIndex;
 		};
 
-		BatchWriter(SqliteLogger* pkOwner, const std::string& strTableName, const TableDef* pkSchema, Database::Results* pkResults, int iGameId, int iTurn, int iMaxRows, bool bEnabled);
+		BatchWriter(SqliteLogger* pkOwner, const std::string& strTableName, const TableDef* pkSchema, Database::Results* pkResults, int iGameId, int iTurn, int iRunId, int iMaxRows, bool bEnabled);
 
 		//! Begins building a new row. Bind one value per caller-declared column, then addRowToBatch().
 		RowBuilder BeginLogRow();
@@ -303,7 +315,7 @@ public:
 	private:
 		friend class RowBuilder;
 
-		//! Number of caller-declared columns (schema size minus the implicit GameId/Turn columns).
+		//! Number of caller-declared columns (schema size minus the implicit GameId/Turn/RunId columns).
 		int CallerColumnCount() const;
 
 		SqliteLogger* m_pkOwner;
@@ -312,6 +324,7 @@ public:
 		Database::Results* m_pkResults;
 		int m_iGameId;
 		int m_iTurn;
+		int m_iRunId;
 		int m_iMaxRows;
 		bool m_bEnabled;
 
@@ -330,19 +343,27 @@ public:
 	int ResolveGameId(const std::string& strUuidHex);
 
 	//! Registers (and creates/recreates if needed) a table with the given schema. No-op when disabled.
-	//! Implicit leading GameId (INT), mapping to GUID, and Turn (INT) columns are prepended automatically; callers must
-	//! not include them in kColumns. Duplicate column names (case-insensitive) are rejected.
+	//! Implicit leading GameId (INT), mapping to GUID, and Turn (INT) columns are prepended and an
+	//! implicit trailing RunId (INT) column is appended automatically; callers must not include any of
+	//! them in kColumns. Duplicate column names (case-insensitive) are rejected.
 	void RegisterTable(const std::string& strTableName, const TableDef& kColumns);
 
 	//! Begins a row insert for a previously registered table. Returns a disabled Statement on error.
-	//! The implicit GameId and Turn values are bound automatically, so the caller binds only its own
-	//! columns, starting with the first column it declared in RegisterTable().
+	//! The implicit GameId, Turn and RunId values are bound automatically, so the caller binds only its
+	//! own columns, starting with the first column it declared in RegisterTable().
 	Statement BeginLogRow(const std::string& strTableName);
 
 	//! Begins a batched (transactional) insert for a previously registered table. Buffered rows are
 	//! written in a single transaction when the buffer is full or flush() is called. Returns a disabled
-	//! BatchWriter on error. The implicit GameId and Turn values are captured once for the whole batch.
+	//! BatchWriter on error. The implicit GameId, Turn and RunId values are captured once for the
+	//! whole batch.
 	BatchWriter BeginLogBatch(const std::string& strTableName);
+
+	//! Identifier for this launch of the game process, stamped onto every row written by it.
+	//! Assigned lazily on first use and constant thereafter. Unlike GameId, which survives into a
+	//! save file, this changes every time the game is started, so (GameId, RunId) distinguishes a
+	//! replay of already-logged turns from the original play-through.
+	int GetRunId();
 
 private:
 	friend class BatchWriter;
@@ -376,6 +397,7 @@ private:
 	Database::Connection m_kConnection;
 	bool m_bOpenAttempted;
 	bool m_bOpen;
+	int m_iRunId;          //!< 0 until GetRunId() assigns it on first use.
 
 	SchemaMap m_registeredTableSchemas;
 	InsertMap m_preparedInserts;
