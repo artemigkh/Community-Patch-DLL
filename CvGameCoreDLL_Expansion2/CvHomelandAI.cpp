@@ -6,6 +6,7 @@
 	All rights reserved. 
 	------------------------------------------------------------------------------------------------------- */
 #include "CvGameCoreDLLPCH.h"
+#include "MemoryHooks.h"
 #include "CvGameCoreUtils.h"
 #include "CvHomelandAI.h"
 #include "CvBuilderTaskingAI.h"
@@ -178,6 +179,7 @@ void CvHomelandAI::FindAutomatedUnits()
 /// Update the AI for units
 void CvHomelandAI::Update(bool bUpdateImprovements)
 {
+	MEMHOOK_SCOPE(MEMTAG_HOMELAND_AI);
 
 	//no homeland for barbarians
 	if(m_pPlayer->GetID() == BARBARIAN_PLAYER)

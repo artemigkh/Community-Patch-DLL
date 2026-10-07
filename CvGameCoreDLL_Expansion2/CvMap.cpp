@@ -10,6 +10,7 @@
 //	PURPOSE: Game map class
 
 #include "CvGameCoreDLLPCH.h"
+#include "MemoryHooks.h"
 #include "CvMap.h"
 #include "CvCity.h"
 #include "CvGlobals.h"
@@ -698,6 +699,7 @@ void CvMap::InitPlots()
 //	--------------------------------------------------------------------------------
 void CvMap::init(CvMapInitData* pInitInfo/*=NULL*/)
 {
+	MEMHOOK_SCOPE(MEMTAG_MAPGEN);
 	CvString strMemState = CvString::format("CvMap::init begin - world size=%s, climate=%s, sealevel=%s",
 	                                        getWorldInfo().GetDescription(),
 	                                        getClimateInfo().GetDescription(),

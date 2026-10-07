@@ -1,22 +1,117 @@
 ---
 name: vp-dll-dev
-description: Build, install and exercise the Civ 5 Vox Populi game core DLL against the local modpacked Steam install. Use when asked to build the VP DLL (debug or release), install it into the modpack, start a fresh AI-autoplay game, load a save and play more turns, or check what a run logged into stats.db. Also covers turn-count-bounded game runs for memory, performance and AI investigations.
+description: Build, install and exercise the Civ 5 Vox Populi DLL against the local Steam install, whether Vox Populi is installed as a DLC modpack or as mods in the MODS folder. Use when asked to build the VP DLL (debug or release), install it, start a fresh AI-autoplay game, start a game with a chosen mod set / map / size / player count, load a save and play more turns, or check what a run logged into stats.db. Also covers turn-count-bounded game runs for memory, performance and AI investigations.
 ---
 
 # Vox Populi DLL development loop
 
-Three actions, one script each. All of them talk to the **modpacked Steam install**, not
-to a Mods-folder setup:
-
 | Action | Command |
 |---|---|
 | Build + install the DLL | `python .claude/skills/vp-dll-dev/scripts/vp_build.py --config debug\|release` |
-| Play a fresh game for N turns | `python .claude/skills/vp-dll-dev/scripts/vp_game.py start --turns N` |
-| Load a save and play N more turns | `python .claude/skills/vp-dll-dev/scripts/vp_game.py load --turns N [--save-turn T]` |
+| Play a fresh game for N turns (modpack) | `python .claude/skills/vp-dll-dev/scripts/vp_game.py start --turns N` |
+| Load a save and play N more turns (modpack) | `python .claude/skills/vp-dll-dev/scripts/vp_game.py load --turns N [--save-turn T]` |
+| Start or load with a chosen mod set (MODS folder) | `python .claude/skills/vp-dll-dev/scripts/vp_modgame.py launch --mods cp,vp,eui ...` |
 | See what got logged | `python .claude/skills/vp-dll-dev/scripts/vp_stats.py games` |
+| Hand the game back to a human | double-click `.claude/skills/vp-dll-dev/reset-to-main-menu.bat` |
 
-Run every command from the repo root. `vp_game.py status` prints all resolved paths and
-runs a preflight check — start there when anything looks off.
+Run every command from the repo root. `vp_game.py status` and `vp_modgame.py status` print
+all resolved paths and run a preflight check - start there when anything looks off.
+
+## Two paradigms: which one is live decides everything
+
+Vox Populi can be installed two ways, and **only one can be active at a time**:
+
+| | `modpack` | `mods` |
+|---|---|---|
+| Where | `Assets/DLC/VP_MODPACK` | `<USER_DIR>/MODS/(1) Community Patch` etc. |
+| The engine sees | DLC. The game is "not modded" | mods, activated through the Mods menu |
+| DLL goes to | the modpack's `(1) Community Patch` | the MODS folder's `(1) Community Patch` |
+| Saves in | `Saves/single` | `ModdedSaves/single` |
+| Launcher | `vp_game.py` | `vp_modgame.py` |
+
+`vp_common.py` **detects** this rather than assuming it (`vp.PARADIGM`, override with
+`VP_PARADIGM`): the modpack wins when both are present, because the DLC layout takes
+precedence in the engine, and "uninstalling" a modpack just means moving its folder away
+while the MODS copies stay behind either way. Everything downstream - `DLL_TARGET`,
+`SAVE_DIRS`, the preflight, `game_session.py`'s human-mode and diplo-shutup targets -
+follows from it. **Check `vp.PARADIGM` before believing any path in this file.**
+
+Never mix the save trees. A `ModdedSaves` save carries a required-mod list that the engine
+reconciles on load, and under the modpack that reconciliation crashes; a `Saves/single`
+save has no mod list for a Mods-folder game to satisfy.
+
+## Starting a game with a chosen mod set: vp_modgame.py
+
+```bash
+python .claude/skills/vp-dll-dev/scripts/vp_modgame.py status
+python .claude/skills/vp-dll-dev/scripts/vp_modgame.py launch --mods cp,vp,eui,infoaddict --new-game --ais 7
+python .claude/skills/vp-dll-dev/scripts/vp_modgame.py launch --mods cp,vp,eui --load "OOM-G88_0280"
+python .claude/skills/vp-dll-dev/scripts/vp_modgame.py launch --mods cp,vp,eui --menu-only
+python .claude/skills/vp-dll-dev/scripts/vp_modgame.py stop
+```
+
+`--mods` takes short aliases (`cp vp eui squads infoaddict unitscaling quickturns
+vernstweaks autoplay ige`) or any substring of a mod's own Name, **in activation order**.
+`--exclusive` (the default) also disables every other enabled mod, so a measurement run
+gets exactly the set asked for and not whatever the player left switched on; `--mods` with
+`status` shows what is installed, with each mod's `AffectsSavedGames`.
+
+`--new-game` chooses the setup that `vp_game.py start` famously cannot: `--map` (a map
+script basename), `--size`, `--ais`, `--minors`, `--speed`, `--era`, `--handicap`,
+`--maxturns`. Verified 2026-09-23: `--map Continents --size WORLDSIZE_STANDARD --ais 7`
+produced exactly 80x52 = 4160 plots with 8 majors and 16 city-states.
+
+Unlike `vp_game.py` it does **not** babysit a turn target. It launches the game detached
+and returns, leaving it up for as long as the experiment needs; `--wait SEC` blocks until
+the game is really in play. Drive turns from there with the civ5-game-ui skill - e.g.
+`vp_lua.py "Game.SetAIAutoPlay(350)"`, which hands the human slot to the AI for that many
+turns and then **gives it back** (the second argument defaults to player 0, unlike the
+`autoplay` mod's `SetAIAutoPlay(1,-1)`, which leaves you a permanent observer).
+
+### How it gets past the Mods menu
+
+The mod set has to be enabled *and activated* before anything can be loaded or started,
+and the `-Automation` Lua state cannot do it - that state is a bare MainState where
+`print`, `pairs`, `PreGame`, `GameInfo` and `debug` are all nil. So the work happens in the
+skill's patched `MainMenu.lua`, which `vp_modgame.py` configures by rewriting five locals
+at the top of it (`loadOnStart`, `saveNameFilter`, `modsToEnable`, `modsExclusive`,
+`newGameSetup`). In that context `Modding`, `PreGame` and `GameInfo` all work, and the mod
+activation plus the whole PreGame setup is a direct copy of what the real Mods browser and
+Advanced Setup screens do.
+
+Two things in there are not obvious and must not be "simplified":
+
+- **`MainMenu`'s own show handler calls `Modding.ActivateDLC()`, which deactivates every
+  mod.** Left alone it would undo the activation on the very next menu pass, so the patch
+  skips it once the wanted set is live.
+- **Activating mods swaps the whole UI out**, so nothing remembered in the file survives.
+  "Are the wanted mods active?" is therefore asked of `Modding.GetActivatedMods()` every
+  time rather than tracked in a variable. (Mind the field names: that call yields `.ID`
+  while `GetEnabledModsByActivationOrder` yields `.ModID`.)
+
+## Getting back to a playable main menu
+
+`reset-to-main-menu.bat` is the one thing here meant to be **double-clicked** rather than run
+from a shell. After a `load` run the install is left in a state where a normal launch never
+reaches the menu, and the reasons are not guessable from the symptom:
+
+- The patched `MainMenu.lua` still has `loadOnStart = true` and a save filter at the top, so the
+  front end auto-loads a save the moment it appears. `restore-lua` undoes this; the bat calls it
+  and then **verifies** the result rather than trusting the exit code.
+- A leftover `CivilizationV_DX11.exe` holds the modpack DLL open and Steam will not start a
+  second copy.
+- If a `TurnByTurn` mutex holder is still alive, the game starts frozen at ~5 fps with the turn
+  counter stuck (see "Freezing a live game" below). The bat cannot fix that from outside, so it
+  detects and reports it instead — otherwise it looks exactly like a hang.
+
+It finishes by reporting which DLL build is installed and offering to launch through Steam.
+Python is used for the restore when it is on PATH, with a direct `*.vpdev-orig` copy as the
+fallback, so the script still works when clicked from a bare desktop session.
+
+Note what it deliberately does *not* change: the modpack's `autoplay` mod still calls
+`SetAIAutoPlay(1, -1)` when a game starts, which hands your slot to the AI and leaves you a
+permanent observer. Reaching the menu is a separate problem from staying in control once you
+leave it.
 
 ## Run game commands in the background. Always.
 
@@ -352,13 +447,78 @@ handler" in the name.
 
 **A turn number only identifies an autosave.** Manual saves are named
 `<Leader>_NNNN <year>` and one left over from an unrelated game collides with the current
-game's turn numbers — and worse, the engine's own `UI.SaveFileList` does not necessarily
-list it, so the filter matches nothing and the game sits at the menu. `--save-turn`
-therefore searches `AutoSave_*` only. Use `--save SUBSTRING` to reach a manual save
-deliberately.
+game's turn numbers. `--save-turn` therefore searches `AutoSave_*` only. Use
+`--save SUBSTRING` to reach a manual save deliberately. (Until 2026-09-21 manual saves could
+not be auto-loaded at all: `UI.SaveFileList`'s third argument selects the autosave list
+*instead of* the manual one, like the Load screen's "show autosaves" checkbox, and the patched
+MainMenu passed `true`. It now asks for both lists; verified by loading
+`OOM-G88_0272 AD-1804 crashpoint` from `Saves\single` - "438 saves visible".)
 
 ## Troubleshooting
 
+- **A background job from an earlier attempt is still alive and talking to the new game.**
+  Every driver here addresses "the running Civ 5", not a particular process, so a waiter
+  left over from a launch you abandoned will happily adopt the game you started afterwards
+  and re-issue its commands. Seen twice: on 2026-09-21 a dead run's driver took a turn in a
+  live game, and on 2026-09-23 a waiter from a killed launch re-armed
+  `Game.SetAIAutoPlay(350)` at turn 150, which would have run the game 150 turns past its
+  target. Kill the old job before starting a new one, and have long-lived drivers exit when
+  the pid they were following is gone. To repair the autoplay case:
+  `vp_lua.py "local t = Game.GetGameTurn() Game.SetAIAutoPlay(<target> - t) return t, Game.GetAIAutoPlay()"`.
+- **A load crashes with `0xc000001d Illegal Instruction` in `CvDllGame::Uninit`.** That is
+  VP's own guard (`CvDllGame.cpp:485`, added 2022 "protect against engine bug"): the EXE
+  shut the game core down while `CvPreGame::gameStarted()` was still true, and the DLL
+  traps rather than continue in a broken state. It is a *symptom* - something tore the
+  half-built game down. On 2026-09-23 the cause was **the save being loaded twice**: with
+  mods active, `Events.PlayerChoseToLoadGame` makes the engine swap the UI out, which
+  **re-executes `MainMenu.lua`** and resets any `local` guard, so a second load fired two
+  seconds into the first. Under the modpack no mods are active, nothing swaps the UI, and
+  the same code was fine for months - this only exists in the MODS paradigm. Look for two
+  `vp-dll-dev: loading` lines in `Lua.log`.
+  Guards that do **not** work, each for its own reason, so nobody retries them: a `local`
+  (reset by the re-execution), `PreGame.GameStarted()` and `PreGame.GetLoadFileName()`
+  (both still clear two seconds in), and `_G` (**nil** in a FrontEnd UI context - indexing
+  it raises `attempt to index global '_G'` and kills the whole chunk, so the load silently
+  never happens). What works is `Modding.Get/SetSystemProperty`, which lives in
+  `Civ5ModsDatabase.db`: the front end stamps a per-launch `loadToken` there when it issues
+  the load, so a re-executed chunk skips while a later launch still loads.
+  The front end now also checks `Modding.CanLoadSavedGame(file)` first, as the real Load
+  Game screen does (0 = loadable, 2 = missing DLC, 3 = DLC not purchased, 4 = missing mods,
+  5 = incompatible mods) and refuses with the reason instead of crashing.
+  To read such a crash: `cdb -z <dump> -y "<folder holding the DLL and its PDB>" -c
+  ".lines -e; .ecxr; ln <eip>; u <eip-0x28> L18; q"` names the source line directly.
+- **The game stops the moment AI autoplay expires.** While the AI is playing, the human
+  sits in an observer slot and is never asked anything; the instant the counter reaches 0
+  and the human slot is seated again, every queued popup lands and the game waits for a
+  click. `CvGame::doTurn` raises `BUTTONPOPUP_WHOS_WINNING` on a turn frequency by itself,
+  so this is the normal case, not bad luck - it stopped the 2026-09-23 baseline dead at
+  turn 350. `python vp_modgame.py unblock` fixes a running game (it unpauses *and* clears
+  popups); `suppress_popups()` does it automatically after every `--wait` and every
+  scenario load. The mechanism is worth knowing: a popup lives in its **own Lua state**, so
+  one chunk reaches every state's environment through `G.Threads` and calls
+  `UIManager:DequeuePopup(ContextPtr)` the way that popup's own close button would, then
+  sets `UI.SetDontShowPopups(true)` so no more are raised. That flag does not survive a new
+  process, so it has to be set per run.
+- **An autoplay run is crawling.** Check quick combat and quick movement:
+  `vp_lua.py "return Game.IsOption('GAMEOPTION_QUICK_COMBAT'), Game.IsOption('GAMEOPTION_QUICK_MOVEMENT')"`.
+  The engine waits on the combat and movement animations before a turn can end, so with
+  them off a run takes several times longer. They are PreGame game options serialized into
+  the save, **not** just the `UserSettings.ini` mirror (`SinglePlayerQuickCombatEnabled`) -
+  which is why editing that file alone does not stick: starting a new game calls
+  `PreGame.ResetGameOptions()`, which clears them. The patched `MainMenu.lua` re-applies
+  them from `OptionsManager` after that reset; a running game can be fixed from the options
+  screen. `game_session.py quick-anim on` sets the ini mirror, which is what a *player* sees
+  in that screen, and is worth setting too so the value the reset restores is the right one.
+- **The game is up, the map is drawn, the UI and the Lua channel answer - and the turn
+  counter never moves.** Ask `Game.IsPaused()` before suspecting a hung AI turn. Every
+  single-player load ends with `LoadScreen.lua` calling
+  `Game.SetPausePlayer(Game.GetActivePlayer())` and waiting for a click on "Begin your
+  journey"; unattended, nobody clicks it. The skill now installs a patched `LoadScreen.lua`
+  (`autoBegin`) that takes the click itself, so this only bites a launch that bypassed
+  `install_lua`. To rescue a game already sitting there:
+  `vp_lua.py --state LoadScreen "Events.LoadScreenClose() UI.SetDontShowPopups(false)"`
+  then `vp_lua.py "Game.SetPausePlayer(-1)"`. Under the modpack it never appeared, because
+  the modpack's `autoplay` mod fires on the same event. Cost 15 minutes on 2026-09-23.
 - **`startup_timeout`** — the game never logged a turn. Usually a modpack/DLL savegame
   mismatch, or the `autoplay` mod missing from the modpack. Check `lua_messages` in the
   result JSON, then ask the user to confirm the modpack.
@@ -371,6 +531,24 @@ deliberately.
   reasons that have nothing to do with the DLL. Try a different, older save to tell an
   unloadable *file* apart from a broken *build*: if another save loads, the file is the
   problem. Only escalate to "confirm the modpack" once a known-good save also crashes.
+  **A late save of a very large map can be unloadable on its own:** if `crashlogs/crashes.log`
+  shows an access violation at `???+0xfffff400` / live `0x00000000` (or a garbage address) and
+  the dump's only frame is `CivilizationV_DX11+0x2a59a5`, the EXE's 4 MB game-to-UI message queue
+  overflowed while the load built the view (the EXE has no bound check). It is not the DLL, not
+  the modpack and not out of memory (~1 GB is still free). Since 2026-09-21 the DLL's
+  `EngineQueueGuard` prevents it by dropping records that do not fit: check
+  `crashlogs\queueguard.log` - it should say `active` at every launch; if it says `off: ...`, the
+  EXE is not the build it recognises and late loads are unprotected again. Seen on the
+  180x113 observer game (GameId 88) from turn 240 on (and 250 only just survived); details in the project memory note
+  `civ5-exe-message-queue-overflow`. What gets dropped is terrain decoration (farm fields east of
+  where the buffer filled); to see the records themselves, create `crashlogs\queueguard.capture`
+  before launching - see `civ5-game-ui/experiments/queue-capture/README.md`.
+- **The auto-load picked a save from the other save tree.** When the modpack folder is present
+  *and* the MODS-folder games have left saves in `ModdedSaves`, the front end lists both trees
+  ("829 saves visible") and takes the newest file whose name contains the filter. On 2026-10-01
+  the filter `AutoSave_Post_0280` matched another game's turn-280 autosave in `ModdedSaves`, and
+  the game exited during the load with no crash record. Check the `vp-dll-dev: selected save`
+  line in `Lua.log`, and give the save a name no other game shares.
 - **`process_died` early** — a hard crash. Look for a fresh `CvMiniDump_*.dmp` in the
   install root; `docs/minidumps.md` covers reading it.
 - **`turn_timeout`** — a genuinely slow turn or a hang. Raise `--turn-timeout` before

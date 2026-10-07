@@ -7,6 +7,7 @@
 	------------------------------------------------------------------------------------------------------- */
 
 #include "CvGameCoreDLLPCH.h"
+#include "MemoryHooks.h"
 #include "CvGlobals.h"
 #include "CvCity.h"
 #include "CvArea.h"
@@ -2330,6 +2331,7 @@ void CvCity::ResetGreatWorkYieldCache()
 //	--------------------------------------------------------------------------------
 void CvCity::doTurn()
 {
+	MEMHOOK_SCOPE(MEMTAG_CITY_TURN);
 	VALIDATE_OBJECT();
 
 	bool bRunningDefenseProcess = false;

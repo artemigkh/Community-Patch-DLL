@@ -6,6 +6,7 @@
 	All rights reserved. 
 	------------------------------------------------------------------------------------------------------- */
 #include "CvGameCoreDLLPCH.h"
+#include "MemoryHooks.h"
 #include "CvGameCoreUtils.h"
 #include "CvTacticalAnalysisMap.h"
 #include "CvMilitaryAI.h"
@@ -612,6 +613,7 @@ void CvTacticalAnalysisMap::Invalidate()
 /// Fill the map with data for this AI player's turn
 void CvTacticalAnalysisMap::RefreshIfOutdated()
 {
+	MEMHOOK_SCOPE(MEMTAG_TACTICAL_MAP);
 	if (IsUpToDate())
 		return;
 

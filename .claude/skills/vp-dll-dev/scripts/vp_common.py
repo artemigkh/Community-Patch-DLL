@@ -6,6 +6,7 @@ if the Steam library or the user profile ever move:
     VP_INSTALL_DIR   Civ 5 install root (contains CivilizationV_DX11.exe)
     VP_USER_DIR      "My Games/Sid Meier's Civilization 5"
     VP_MODPACK_NAME  DLC folder name of the modpack (default VP_MODPACK)
+    VP_PARADIGM      "modpack" or "mods" - how Vox Populi is installed (default: detect)
     VP_REPO_DIR      Community-Patch-DLL checkout (default: derived from this file)
     VP_RUN_DIR       where run logs / result JSON are written
 """
@@ -51,29 +52,68 @@ USER_DIR = _env_path(
 )
 MODPACK_NAME = os.environ.get("VP_MODPACK_NAME", "VP_MODPACK")
 
-EXE_NAME = "CivilizationV_DX11.exe"
+EXE_NAME = os.environ.get("VP_EXE_NAME", "CivilizationV_DX11.exe")  # CivilizationV.exe (DX9) / CivilizationV_Tablet.exe
 EXE = INSTALL_DIR / EXE_NAME
 MODPACK_DIR = INSTALL_DIR / "Assets" / "DLC" / MODPACK_NAME
-DLL_TARGET = MODPACK_DIR / "Mods" / "(1) Community Patch" / "CvGameCore_Expansion2.dll"
-AUTOPLAY_MOD_LUA = MODPACK_DIR / "Mods" / "autoplay" / "autoplay.lua"
+MODS_DIR = USER_DIR / "MODS"
+
+#: Vox Populi can be installed two ways, and only one of them can be live at a time.
+#:
+#: "modpack" - a DLC folder (Assets/DLC/VP_MODPACK) holding pre-merged copies of the mods.
+#:   The engine sees DLC, not mods: nothing is enabled in the Mods menu, the game does not
+#:   consider itself modded, and games save to Saves/single.
+#: "mods" - the ordinary MODS folder, activated through the Mods menu. Mod content is
+#:   merged at activation time, the save carries a required-mod list, and games save to
+#:   ModdedSaves/single.
+#:
+#: Which one is live has to be *detected* rather than assumed, because uninstalling a
+#: modpack means moving its folder away and the MODS copies stay behind either way.
+#: The modpack wins when both are present: the DLC layout takes precedence in the engine.
+def _detect_paradigm():
+    if (MODPACK_DIR / "Mods" / "(1) Community Patch").is_dir():
+        return "modpack"
+    if (MODS_DIR / "(1) Community Patch").is_dir():
+        return "mods"
+    return "modpack"
+
+
+PARADIGM = os.environ.get("VP_PARADIGM") or _detect_paradigm()
+
+#: Root holding the "(1) Community Patch" mod the running game actually loads.
+CP_MOD_DIR = (
+    MODPACK_DIR / "Mods" / "(1) Community Patch"
+    if PARADIGM == "modpack"
+    else MODS_DIR / "(1) Community Patch"
+)
+DLL_TARGET = CP_MOD_DIR / "CvGameCore_Expansion2.dll"
+AUTOPLAY_MOD_LUA = (
+    MODPACK_DIR / "Mods" / "autoplay" / "autoplay.lua"
+    if PARADIGM == "modpack"
+    else MODS_DIR / "autoplay (v 1)" / "autoplay.lua"
+)
 
 MAIN_MENU = INSTALL_DIR / "Assets" / "UI" / "FrontEnd" / "MainMenu.lua"
+#: The load screen ends every single-player load with the game core PAUSED, waiting for
+#: a click on "Begin your journey". Patched to take that click itself.
+LOAD_SCREEN = INSTALL_DIR / "Assets" / "UI" / "FrontEnd" / "LoadScreen.lua"
 FRONT_END = INSTALL_DIR / "Assets" / "UI" / "FrontEnd" / "FrontEnd.lua"
 RUN_AUTOPLAY = INSTALL_DIR / "Assets" / "Automation" / "RunAutoplayGame.lua"
 
 STATS_DB = USER_DIR / "cache" / "stats.db"
 
-#: Save roots. ONLY the plain Saves tree - never ModdedSaves.
+#: Save roots, which follow the paradigm - the two trees must never be mixed.
 #:
-#: The modpack makes Vox Populi look like DLC to the engine rather than like a mod, so
-#: its games save into Saves/single. A save under ModdedSaves carries a mod list in its
-#: header that the engine tries to reconcile on load, and that reconciliation crashes
-#: under the modpack paradigm. Such saves are unloadable here, so they must not even be
-#: offered as candidates.
-SAVE_DIRS = [
-    USER_DIR / "Saves" / "single" / "auto",
-    USER_DIR / "Saves" / "single",
-]
+#: Under the modpack, Vox Populi looks like DLC rather than like a mod, so its games save
+#: into Saves/single. A save under ModdedSaves carries a required-mod list in its header
+#: that the engine tries to reconcile on load, and under the modpack paradigm that
+#: reconciliation crashes: such saves are unloadable there, so they must not even be
+#: offered as candidates. Run the same mods out of the MODS folder instead and it is the
+#: other way round - ModdedSaves is the only tree the game writes.
+SAVE_DIRS = (
+    [USER_DIR / "Saves" / "single" / "auto", USER_DIR / "Saves" / "single"]
+    if PARADIGM == "modpack"
+    else [USER_DIR / "ModdedSaves" / "single" / "auto", USER_DIR / "ModdedSaves" / "single"]
+)
 
 ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
 STATE_DIR = _env_path(
@@ -179,18 +219,23 @@ def preflight(require_modpack=True):
     if not USER_DIR.is_dir():
         problems.append("Civ 5 user dir not found: {}".format(USER_DIR))
     if require_modpack:
-        if not MODPACK_DIR.is_dir():
-            problems.append("Modpack not installed: {}".format(MODPACK_DIR))
-        else:
-            if not DLL_TARGET.parent.is_dir():
-                problems.append(
-                    "Modpack has no '(1) Community Patch' mod: {}".format(DLL_TARGET.parent)
-                )
-            if not AUTOPLAY_MOD_LUA.is_file():
-                problems.append(
-                    "Modpack is missing the autoplay mod ({}); games will stop at the "
-                    "human player's first turn".format(AUTOPLAY_MOD_LUA)
-                )
+        if PARADIGM == "modpack":
+            if not MODPACK_DIR.is_dir():
+                problems.append("Modpack not installed: {}".format(MODPACK_DIR))
+            else:
+                if not CP_MOD_DIR.is_dir():
+                    problems.append(
+                        "Modpack has no '(1) Community Patch' mod: {}".format(CP_MOD_DIR)
+                    )
+                if not AUTOPLAY_MOD_LUA.is_file():
+                    problems.append(
+                        "Modpack is missing the autoplay mod ({}); games will stop at the "
+                        "human player's first turn".format(AUTOPLAY_MOD_LUA)
+                    )
+        elif not CP_MOD_DIR.is_dir():
+            problems.append(
+                "No '(1) Community Patch' mod in the MODS folder: {}".format(CP_MOD_DIR)
+            )
     if psutil is None:
         problems.append("psutil is not installed for this interpreter (pip install psutil)")
     return problems

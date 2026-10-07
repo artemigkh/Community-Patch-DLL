@@ -100,7 +100,7 @@ def install_lua(log):
 
 def restore_lua(log):
     restored = []
-    for dest in (vp.MAIN_MENU, vp.FRONT_END, vp.RUN_AUTOPLAY):
+    for dest in (vp.MAIN_MENU, vp.FRONT_END, vp.RUN_AUTOPLAY, vp.LOAD_SCREEN):
         backup = dest.with_name(dest.name + BACKUP_SUFFIX)
         if backup.is_file():
             dest.write_bytes(backup.read_bytes())

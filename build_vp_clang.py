@@ -259,6 +259,21 @@ CPP = [
     'CvGameCoreDLL_Expansion2\\CvWorldBuilderMapLoader.cpp',
     'CvGameCoreDLL_Expansion2\\SqliteLogger.cpp',
     'CvGameCoreDLL_Expansion2\\MemoryDiagnostics.cpp',
+    'CvGameCoreDLL_Expansion2\\MemoryHooks.cpp',
+    'CvGameCoreDLL_Expansion2\\MemoryImports.cpp',
+    'CvGameCoreDLL_Expansion2\\EngineQueueGuard.cpp',
+]
+
+# Objects that must be handed to the linker BEFORE the static libraries.
+#
+# MemoryHooks.cpp replaces global operator new/delete, and FirePlace\lib\FireWorksWin32.obj defines
+# them too. The link runs with /FORCE:MULTIPLE, where lld-link keeps the FIRST definition it sees, so
+# whichever object is listed earlier wins. Libraries used to come first, which would have left
+# FireWorks' version in place and the instrumentation silently dead - no error, no warning that says
+# so. Listing these first is what makes the replacement take effect; MemHookSummary.HookLive in
+# stats.db is the runtime confirmation that it did.
+LINK_FIRST = [
+    'CvGameCoreDLL_Expansion2\\MemoryHooks.cpp',
 ]
 
 class TaskResult:
@@ -423,6 +438,9 @@ def link_dll(link: str, link_args: list[str], build_dir: Path, out_dir: Path, lo
         out_pdb = out_dir.joinpath(f'{CORE_DLL}.pdb')
         link_response_file.write(f'/OUT:"{out_dll}"\n/PDB:"{out_pdb}"\n')
         link_response_file.write('\n'.join(link_args))
+        for first in LINK_FIRST:
+            first_obj = build_dir.joinpath(first).with_suffix('.obj')
+            link_response_file.write(f'\n"{first_obj}"')
         for lib in LIBS:
             lib_path = PROJECT_DIR.joinpath(lib)
             link_response_file.write(f'\n"{lib_path}"')
@@ -432,6 +450,8 @@ def link_dll(link: str, link_args: list[str], build_dir: Path, out_dir: Path, lo
         pch_obj = build_dir.joinpath(PCH_CPP).with_suffix('.obj')
         link_response_file.write(f'\n"{clang_obj}"\n"{pch_obj}"')
         for cpp in CPP:
+            if cpp in LINK_FIRST:
+                continue    # already emitted ahead of the libraries
             cpp_obj = build_dir.joinpath(cpp).with_suffix('.obj')
             link_response_file.write(f'\n"{cpp_obj}"')
         link_response_file.close()

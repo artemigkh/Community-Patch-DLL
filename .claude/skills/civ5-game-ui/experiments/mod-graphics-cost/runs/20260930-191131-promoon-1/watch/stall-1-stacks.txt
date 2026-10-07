@@ -1,0 +1,969 @@
+
+************* Preparing the environment for Debugger Extensions Gallery repositories **************
+   ExtensionRepository : Implicit
+   UseExperimentalFeatureForNugetShare : true
+   AllowNugetExeUpdate : true
+   NonInteractiveNuget : true
+   AllowNugetMSCredentialProviderInstall : true
+   AllowParallelInitializationOfLocalRepositories : true
+
+   EnableRedirectToV8JsProvider : false
+
+   -- Configuring repositories
+      ----> Repository : LocalInstalled, Enabled: true
+      ----> Repository : UserExtensions, Enabled: true
+
+>>>>>>>>>>>>> Preparing the environment for Debugger Extensions Gallery repositories completed, duration 0.000 seconds
+
+************* Waiting for Debugger Extensions Gallery to Initialize **************
+
+>>>>>>>>>>>>> Waiting for Debugger Extensions Gallery to Initialize completed, duration 0.203 seconds
+   ----> Repository : UserExtensions, Enabled: true, Packages count: 0
+   ----> Repository : LocalInstalled, Enabled: true, Packages count: 29
+
+Microsoft (R) Windows Debugger Version 10.0.26100.1 X86
+Copyright (c) Microsoft Corporation. All rights reserved.
+
+*** wait with pending attach
+
+************* Path validation summary **************
+Response                         Time (ms)     Location
+Deferred                                       srv*
+Symbol search path is: srv*
+Executable search path is: 
+WARNING: Process 12748 is not attached as a debuggee
+         The process can be examined but debug events will not be received
+................................................................
+................................................................
+................................
+Loading unloaded module list
+................................................................
+(31cc.b414): Wake debugger - code 80000007 (first chance)
+eax=00000000 ebx=001112ee ecx=00000000 edx=00000000 esi=00000000 edi=00000000
+eip=75da123c esp=004fc884 ebp=004fc8c8 iopl=0         nv up ei pl nz na pe nc
+cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000206
+win32u!NtUserWaitMessage+0xc:
+75da123c c3              ret
+0:000> .sympath+ C:\Users\Art\Documents\My Games\Sid Meier's Civilization 5\MODS\(1) Community Patch
+Symbol search path is: srv*;C:\Users\Art\Documents\My Games\Sid Meier's Civilization 5\MODS\(1) Community Patch
+Expanded Symbol search path is: cache*;SRV*https://msdl.microsoft.com/download/symbols;c:\users\art\documents\my games\sid meier's civilization 5\mods\(1) community patch
+
+************* Path validation summary **************
+Response                         Time (ms)     Location
+Deferred                                       srv*
+OK                                             C:\Users\Art\Documents\My Games\Sid Meier's Civilization 5\MODS\(1) Community Patch
+0:000> .reload
+Reloading current modules
+................................................................
+................................................................
+................................
+0:000> !runaway 7
+ User Mode Time
+  Thread       Time
+    0:b414     0 days 0:14:14.000
+   29:be34     0 days 0:05:31.437
+   25:ce94     0 days 0:04:36.062
+   26:63d8     0 days 0:04:31.312
+   23:4840     0 days 0:04:27.218
+   24:cb30     0 days 0:04:26.968
+   27:934      0 days 0:04:26.609
+   28:3bb8     0 days 0:04:20.046
+   21:77a0     0 days 0:02:19.640
+   72:c834     0 days 0:00:29.187
+   69:4fc4     0 days 0:00:07.312
+   70:7310     0 days 0:00:06.937
+   22:28dc     0 days 0:00:01.218
+   71:3188     0 days 0:00:00.406
+    4:c36c     0 days 0:00:00.328
+    3:a908     0 days 0:00:00.187
+   68:2624     0 days 0:00:00.109
+   66:926c     0 days 0:00:00.062
+   42:7d00     0 days 0:00:00.031
+   47:1644     0 days 0:00:00.015
+   46:ac3c     0 days 0:00:00.015
+   45:38e4     0 days 0:00:00.015
+   41:c154     0 days 0:00:00.015
+   40:2c9c     0 days 0:00:00.015
+   38:62c4     0 days 0:00:00.015
+   36:c04c     0 days 0:00:00.015
+   33:95e0     0 days 0:00:00.015
+   30:c7ac     0 days 0:00:00.015
+   73:8c80     0 days 0:00:00.000
+   67:9818     0 days 0:00:00.000
+   65:3120     0 days 0:00:00.000
+   64:6564     0 days 0:00:00.000
+   63:b310     0 days 0:00:00.000
+   62:a82c     0 days 0:00:00.000
+   61:ae48     0 days 0:00:00.000
+   60:229c     0 days 0:00:00.000
+   59:16ac     0 days 0:00:00.000
+   58:bf34     0 days 0:00:00.000
+   57:c828     0 days 0:00:00.000
+   56:c018     0 days 0:00:00.000
+   55:8a8c     0 days 0:00:00.000
+   54:3084     0 days 0:00:00.000
+   53:a5b8     0 days 0:00:00.000
+   52:8034     0 days 0:00:00.000
+   51:63dc     0 days 0:00:00.000
+   50:b3c0     0 days 0:00:00.000
+   49:d5c      0 days 0:00:00.000
+   48:a828     0 days 0:00:00.000
+   44:ba38     0 days 0:00:00.000
+   43:d00      0 days 0:00:00.000
+   39:c648     0 days 0:00:00.000
+   37:c5d8     0 days 0:00:00.000
+   35:d08c     0 days 0:00:00.000
+   34:a2a4     0 days 0:00:00.000
+   32:3288     0 days 0:00:00.000
+   31:760      0 days 0:00:00.000
+   20:7040     0 days 0:00:00.000
+   19:af28     0 days 0:00:00.000
+   18:b018     0 days 0:00:00.000
+   17:5fe8     0 days 0:00:00.000
+   16:7868     0 days 0:00:00.000
+   15:d194     0 days 0:00:00.000
+   14:bfe0     0 days 0:00:00.000
+   13:a2ac     0 days 0:00:00.000
+   12:ad20     0 days 0:00:00.000
+   11:bfe4     0 days 0:00:00.000
+   10:cbdc     0 days 0:00:00.000
+    9:7e48     0 days 0:00:00.000
+    8:d3bc     0 days 0:00:00.000
+    7:cda8     0 days 0:00:00.000
+    6:803c     0 days 0:00:00.000
+    5:e40      0 days 0:00:00.000
+    2:698c     0 days 0:00:00.000
+    1:7824     0 days 0:00:00.000
+ Kernel Mode Time
+  Thread       Time
+   28:3bb8     0 days 0:02:04.453
+   27:934      0 days 0:02:00.781
+   26:63d8     0 days 0:01:55.281
+   24:cb30     0 days 0:01:49.828
+   23:4840     0 days 0:01:49.640
+   25:ce94     0 days 0:01:49.312
+    0:b414     0 days 0:01:05.000
+   29:be34     0 days 0:00:52.515
+   21:77a0     0 days 0:00:25.687
+   22:28dc     0 days 0:00:07.625
+   69:4fc4     0 days 0:00:06.828
+   72:c834     0 days 0:00:03.625
+    3:a908     0 days 0:00:01.859
+   70:7310     0 days 0:00:01.640
+   71:3188     0 days 0:00:00.453
+    4:c36c     0 days 0:00:00.281
+   68:2624     0 days 0:00:00.125
+   66:926c     0 days 0:00:00.046
+   47:1644     0 days 0:00:00.015
+   40:2c9c     0 days 0:00:00.015
+   39:c648     0 days 0:00:00.015
+   38:62c4     0 days 0:00:00.015
+   35:d08c     0 days 0:00:00.015
+   34:a2a4     0 days 0:00:00.015
+   32:3288     0 days 0:00:00.015
+    2:698c     0 days 0:00:00.015
+   73:8c80     0 days 0:00:00.000
+   67:9818     0 days 0:00:00.000
+   65:3120     0 days 0:00:00.000
+   64:6564     0 days 0:00:00.000
+   63:b310     0 days 0:00:00.000
+   62:a82c     0 days 0:00:00.000
+   61:ae48     0 days 0:00:00.000
+   60:229c     0 days 0:00:00.000
+   59:16ac     0 days 0:00:00.000
+   58:bf34     0 days 0:00:00.000
+   57:c828     0 days 0:00:00.000
+   56:c018     0 days 0:00:00.000
+   55:8a8c     0 days 0:00:00.000
+   54:3084     0 days 0:00:00.000
+   53:a5b8     0 days 0:00:00.000
+   52:8034     0 days 0:00:00.000
+   51:63dc     0 days 0:00:00.000
+   50:b3c0     0 days 0:00:00.000
+   49:d5c      0 days 0:00:00.000
+   48:a828     0 days 0:00:00.000
+   46:ac3c     0 days 0:00:00.000
+   45:38e4     0 days 0:00:00.000
+   44:ba38     0 days 0:00:00.000
+   43:d00      0 days 0:00:00.000
+   42:7d00     0 days 0:00:00.000
+   41:c154     0 days 0:00:00.000
+   37:c5d8     0 days 0:00:00.000
+   36:c04c     0 days 0:00:00.000
+   33:95e0     0 days 0:00:00.000
+   31:760      0 days 0:00:00.000
+   30:c7ac     0 days 0:00:00.000
+   20:7040     0 days 0:00:00.000
+   19:af28     0 days 0:00:00.000
+   18:b018     0 days 0:00:00.000
+   17:5fe8     0 days 0:00:00.000
+   16:7868     0 days 0:00:00.000
+   15:d194     0 days 0:00:00.000
+   14:bfe0     0 days 0:00:00.000
+   13:a2ac     0 days 0:00:00.000
+   12:ad20     0 days 0:00:00.000
+   11:bfe4     0 days 0:00:00.000
+   10:cbdc     0 days 0:00:00.000
+    9:7e48     0 days 0:00:00.000
+    8:d3bc     0 days 0:00:00.000
+    7:cda8     0 days 0:00:00.000
+    6:803c     0 days 0:00:00.000
+    5:e40      0 days 0:00:00.000
+    1:7824     0 days 0:00:00.000
+ Elapsed Time
+  Thread       Time
+    0:b414     0 days 0:17:09.576
+    1:7824     0 days 0:17:08.348
+    2:698c     0 days 0:16:52.330
+    3:a908     0 days 0:16:52.249
+    4:c36c     0 days 0:16:52.234
+    5:e40      0 days 0:16:52.211
+    6:803c     0 days 0:16:52.211
+    7:cda8     0 days 0:16:52.211
+    8:d3bc     0 days 0:16:52.211
+    9:7e48     0 days 0:16:52.210
+   10:cbdc     0 days 0:16:52.210
+   11:bfe4     0 days 0:16:52.210
+   12:ad20     0 days 0:16:52.210
+   13:a2ac     0 days 0:16:52.210
+   14:bfe0     0 days 0:16:52.210
+   15:d194     0 days 0:16:52.210
+   16:7868     0 days 0:16:52.210
+   17:5fe8     0 days 0:16:52.210
+   18:b018     0 days 0:16:52.210
+   19:af28     0 days 0:16:52.210
+   20:7040     0 days 0:16:52.210
+   21:77a0     0 days 0:16:52.210
+   22:28dc     0 days 0:16:52.210
+   23:4840     0 days 0:16:52.203
+   24:cb30     0 days 0:16:52.203
+   25:ce94     0 days 0:16:52.203
+   26:63d8     0 days 0:16:52.203
+   27:934      0 days 0:16:52.203
+   28:3bb8     0 days 0:16:52.203
+   29:be34     0 days 0:16:52.203
+   30:c7ac     0 days 0:16:50.829
+   31:760      0 days 0:16:50.829
+   32:3288     0 days 0:16:50.829
+   33:95e0     0 days 0:16:50.828
+   34:a2a4     0 days 0:16:50.828
+   35:d08c     0 days 0:16:50.828
+   36:c04c     0 days 0:16:50.828
+   37:c5d8     0 days 0:16:50.828
+   38:62c4     0 days 0:16:50.828
+   39:c648     0 days 0:16:50.828
+   40:2c9c     0 days 0:16:50.828
+   41:c154     0 days 0:16:50.828
+   42:7d00     0 days 0:16:50.828
+   43:d00      0 days 0:16:50.828
+   44:ba38     0 days 0:16:50.828
+   45:38e4     0 days 0:16:50.828
+   46:ac3c     0 days 0:16:50.723
+   47:1644     0 days 0:16:50.723
+   48:a828     0 days 0:16:49.790
+   49:d5c      0 days 0:16:40.696
+   50:b3c0     0 days 0:16:40.696
+   51:63dc     0 days 0:16:40.696
+   52:8034     0 days 0:16:40.696
+   53:a5b8     0 days 0:16:40.696
+   54:3084     0 days 0:16:40.696
+   55:8a8c     0 days 0:16:40.696
+   56:c018     0 days 0:16:40.696
+   57:c828     0 days 0:16:40.696
+   58:bf34     0 days 0:16:40.696
+   59:16ac     0 days 0:16:40.696
+   60:229c     0 days 0:16:40.696
+   61:ae48     0 days 0:16:40.696
+   62:a82c     0 days 0:16:40.696
+   63:b310     0 days 0:16:40.696
+   64:6564     0 days 0:16:40.696
+   65:3120     0 days 0:16:40.696
+   66:926c     0 days 0:16:40.695
+   67:9818     0 days 0:16:39.898
+   68:2624     0 days 0:16:39.888
+   69:4fc4     0 days 0:16:39.782
+   70:7310     0 days 0:16:39.781
+   71:3188     0 days 0:16:39.574
+   72:c834     0 days 0:14:35.621
+   73:8c80     0 days 0:01:27.117
+0:000> ~*kn 40
+
+.  0  Id: 31cc.b414 Suspend: 1 Teb: 002b2000 Unfrozen
+ # ChildEBP RetAddr      
+00 004fc880 76904df9     win32u!NtUserWaitMessage+0xc
+01 004fc8c8 76905244     USER32!DialogBox2+0x1ba
+02 004fc8f8 76925d13     USER32!InternalDialogBox+0x11c
+03 004fc9c4 76924aa2     USER32!SoftModalMessageBox+0x6f3
+04 004fcb20 769255a7     USER32!MessageBoxWorker+0x309
+05 004fcbac 769253de     USER32!MessageBoxTimeoutW+0x187
+06 004fcbe0 769250f5     USER32!MessageBoxTimeoutA+0xae
+07 004fcc00 6fe6e09a     USER32!MessageBoxA+0x45
+08 004fcc44 6fe700c1     apphelp!MbHook_MessageBoxA+0x2a
+*** WARNING: Unable to verify checksum for C:\Users\Art\Documents\My Games\Sid Meier's Civilization 5\MODS\(1) Community Patch\CvGameCore_Expansion2.dll
+09 004fcc68 7eb76e43     apphelp!SrHook_MessageBoxA+0x31
+0a 004fec20 7649aa82     CvGameCore_Expansion2!CustomFilter+0xaf3
+0b 004fecbc 7721e28d     KERNELBASE!UnhandledExceptionFilter+0x182
+0c 004fecc4 7722e582     ntdll!__RtlUserThreadStart+0xbd
+0d 004fecd8 7722da40     ntdll!_EH4_CallFilterFunc+0x12
+0e 004fed04 772325a0     ntdll!_except_handler4_common+0x80
+0f 004fed24 77265be2     ntdll!_except_handler4+0x20
+10 004fed48 77265bb4     ntdll!ExecuteHandler2+0x26
+11 004fee14 7722bf7f     ntdll!ExecuteHandler+0x24
+12 004fee14 00cb0d29     ntdll!KiUserExceptionDispatcher+0xf
+WARNING: Stack unwind information not available. Following frames may be wrong.
+13 004ff678 3f800000     CivilizationV_DX11+0x1e0d29
+14 004ff6dc 4008a5b1     0x3f800000
+15 004ff784 1b871604     0x4008a5b1
+16 004ff790 00cd2477     0x1b871604
+17 004ff7a0 00ff6eb5     CivilizationV_DX11+0x202477
+18 004ff830 75cb5d49     CivilizationV_DX11!std::_Init_locks::operator=+0x6b5
+19 004ff840 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+1a 004ff898 7721e181     ntdll!__RtlUserThreadStart+0x2b
+1b 004ff8a8 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+   1  Id: 31cc.7824 Suspend: 1 Teb: 002d6000 Unfrozen
+ # ChildEBP RetAddr      
+00 098ef66c 77206e57     ntdll!NtWaitForWorkViaWorkerFactory+0xc
+01 098ef830 75cb5d49     ntdll!TppWorkerThread+0x347
+02 098ef840 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+03 098ef898 7721e181     ntdll!__RtlUserThreadStart+0x2b
+04 098ef8a8 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+   2  Id: 31cc.698c Suspend: 1 Teb: 0038e000 Unfrozen
+ # ChildEBP RetAddr      
+00 0a96fbd0 768a8141     win32u!NtUserMsgWaitForMultipleObjectsEx+0xc
+01 0a96fbf4 768b84ef     USER32!MsgWaitForMultipleObjectsEx+0x51
+02 0a96fc10 6f1dcc3d     USER32!MsgWaitForMultipleObjects+0x1f
+03 0a96fc58 6f1dcbca     gdiplus!BackgroundThreadProc+0x4d
+04 0a96fc70 75cb5d49     gdiplus!DllRefCountSafeThreadThunk+0x1a
+05 0a96fc80 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+06 0a96fcd8 7721e181     ntdll!__RtlUserThreadStart+0x2b
+07 0a96fce8 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+   3  Id: 31cc.a908 Suspend: 1 Teb: 00396000 Unfrozen
+ # ChildEBP RetAddr      
+00 0af4f7ac 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 0af4f81c 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 0af4f830 6003e69e     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 0af4f850 604fd286     nvwgf2um!NVDEV_Thunk+0x22abe
+04 0af4f888 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+05 0af4f898 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+06 0af4f8f0 7721e181     ntdll!__RtlUserThreadStart+0x2b
+07 0af4f900 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+   4  Id: 31cc.c36c Suspend: 1 Teb: 0039a000 Unfrozen
+ # ChildEBP RetAddr      
+00 0f54f76c 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 0f54f7dc 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 0f54f7f0 60099a15     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 0f54f8e8 6009821c     nvwgf2um!NVDEV_Thunk+0x7de35
+04 0f54f8f4 604fd286     nvwgf2um!NVDEV_Thunk+0x7c63c
+05 0f54f92c 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 0f54f93c 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 0f54f994 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 0f54f9a4 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+   5  Id: 31cc.e40 Suspend: 1 Teb: 0039e000 Unfrozen
+ # ChildEBP RetAddr      
+00 09fdfa80 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 09fdfaf0 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 09fdfb04 6001b861     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 09fdfb2c 6001b6f0     nvwgf2um!OpenAdapter12+0x1204a1
+04 09fdfb38 604fd286     nvwgf2um!OpenAdapter12+0x120330
+05 09fdfb70 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 09fdfb80 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 09fdfbd8 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 09fdfbe8 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+   6  Id: 31cc.803c Suspend: 2 Teb: 003a2000 Unfrozen
+ # ChildEBP RetAddr      
+00 0a33f834 00000000     ntdll!RtlUserThreadStart
+
+   7  Id: 31cc.cda8 Suspend: 2 Teb: 003a6000 Unfrozen
+ # ChildEBP RetAddr      
+00 0a34ffc4 00000000     ntdll!RtlUserThreadStart
+
+   8  Id: 31cc.d3bc Suspend: 2 Teb: 003aa000 Unfrozen
+ # ChildEBP RetAddr      
+00 0a35fa2c 00000000     ntdll!RtlUserThreadStart
+
+   9  Id: 31cc.7e48 Suspend: 2 Teb: 003ae000 Unfrozen
+ # ChildEBP RetAddr      
+00 0a97f9a4 00000000     ntdll!RtlUserThreadStart
+
+  10  Id: 31cc.cbdc Suspend: 2 Teb: 003b2000 Unfrozen
+ # ChildEBP RetAddr      
+00 0a98fc18 00000000     ntdll!RtlUserThreadStart
+
+  11  Id: 31cc.bfe4 Suspend: 2 Teb: 003b6000 Unfrozen
+ # ChildEBP RetAddr      
+00 0af5fdf8 00000000     ntdll!RtlUserThreadStart
+
+  12  Id: 31cc.ad20 Suspend: 2 Teb: 003ba000 Unfrozen
+ # ChildEBP RetAddr      
+00 0af6fd68 00000000     ntdll!RtlUserThreadStart
+
+  13  Id: 31cc.a2ac Suspend: 2 Teb: 003be000 Unfrozen
+ # ChildEBP RetAddr      
+00 0af7fd18 00000000     ntdll!RtlUserThreadStart
+
+  14  Id: 31cc.bfe0 Suspend: 2 Teb: 003c2000 Unfrozen
+ # ChildEBP RetAddr      
+00 0f7dfc8c 00000000     ntdll!RtlUserThreadStart
+
+  15  Id: 31cc.d194 Suspend: 2 Teb: 003c6000 Unfrozen
+ # ChildEBP RetAddr      
+00 0f82fd4c 00000000     ntdll!RtlUserThreadStart
+
+  16  Id: 31cc.7868 Suspend: 2 Teb: 003ca000 Unfrozen
+ # ChildEBP RetAddr      
+00 0f87fbc4 00000000     ntdll!RtlUserThreadStart
+
+  17  Id: 31cc.5fe8 Suspend: 2 Teb: 003ce000 Unfrozen
+ # ChildEBP RetAddr      
+00 0f8cf8a0 00000000     ntdll!RtlUserThreadStart
+
+  18  Id: 31cc.b018 Suspend: 2 Teb: 003d2000 Unfrozen
+ # ChildEBP RetAddr      
+00 0f91f8c4 00000000     ntdll!RtlUserThreadStart
+
+  19  Id: 31cc.af28 Suspend: 2 Teb: 003d6000 Unfrozen
+ # ChildEBP RetAddr      
+00 0f96fce8 00000000     ntdll!RtlUserThreadStart
+
+  20  Id: 31cc.7040 Suspend: 2 Teb: 003da000 Unfrozen
+ # ChildEBP RetAddr      
+00 0f9bfc28 00000000     ntdll!RtlUserThreadStart
+
+  21  Id: 31cc.77a0 Suspend: 1 Teb: 003de000 Unfrozen
+ # ChildEBP RetAddr      
+00 0fa1f8dc 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 0fa1f94c 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 0fa1f960 5fcd7b42     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 0fa1fc20 5fcd6fbe     nvwgf2um!SetDependencyInfo+0x552d2
+04 0fa1fc48 60171755     nvwgf2um!SetDependencyInfo+0x5474e
+05 0fa1fc54 604fd286     nvwgf2um!NVDEV_Thunk+0x155b75
+06 0fa1fc8c 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+07 0fa1fc9c 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+08 0fa1fcf4 7721e181     ntdll!__RtlUserThreadStart+0x2b
+09 0fa1fd04 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  22  Id: 31cc.28dc Suspend: 1 Teb: 003e2000 Unfrozen
+ # ChildEBP RetAddr      
+00 0fa6fcdc 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 0fa6fd4c 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 0fa6fd60 6001b861     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 0fa6fd88 6001b6f0     nvwgf2um!OpenAdapter12+0x1204a1
+04 0fa6fd94 604fd286     nvwgf2um!OpenAdapter12+0x120330
+05 0fa6fdcc 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 0fa6fddc 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 0fa6fe34 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 0fa6fe44 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  23  Id: 31cc.4840 Suspend: 1 Teb: 003e6000 Unfrozen
+ # ChildEBP RetAddr      
+00 0fca5c88 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 0fca5cf8 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 0fca5d0c 00e91128     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 0fca5d2c 00e91417     CivilizationV_DX11!GetSmallObjectAllocatorInitParams+0xc83b8
+04 00000000 00000000     CivilizationV_DX11!GetSmallObjectAllocatorInitParams+0xc86a7
+
+  24  Id: 31cc.cb30 Suspend: 1 Teb: 003ea000 Unfrozen
+ # ChildEBP RetAddr      
+00 0feebef8 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 0feebf68 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 0feebf7c 00e91128     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 0feebf9c 00e91417     CivilizationV_DX11!GetSmallObjectAllocatorInitParams+0xc83b8
+04 00000000 00000000     CivilizationV_DX11!GetSmallObjectAllocatorInitParams+0xc86a7
+
+  25  Id: 31cc.ce94 Suspend: 1 Teb: 003ee000 Unfrozen
+ # ChildEBP RetAddr      
+00 1d221f88 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 1d221ff8 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 1d22200c 00e91128     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 1d22202c 00e91417     CivilizationV_DX11!GetSmallObjectAllocatorInitParams+0xc83b8
+04 00000000 00000000     CivilizationV_DX11!GetSmallObjectAllocatorInitParams+0xc86a7
+
+  26  Id: 31cc.63d8 Suspend: 1 Teb: 003f2000 Unfrozen
+ # ChildEBP RetAddr      
+00 1d428418 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 1d428488 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 1d42849c 00e91128     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 1d4284bc 00e91417     CivilizationV_DX11!GetSmallObjectAllocatorInitParams+0xc83b8
+04 00000000 00000000     CivilizationV_DX11!GetSmallObjectAllocatorInitParams+0xc86a7
+
+  27  Id: 31cc.934 Suspend: 1 Teb: 003f6000 Unfrozen
+ # ChildEBP RetAddr      
+00 1d62e6f8 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 1d62e768 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 1d62e77c 00e91128     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 1d62e79c 00e91417     CivilizationV_DX11!GetSmallObjectAllocatorInitParams+0xc83b8
+04 00000000 00000000     CivilizationV_DX11!GetSmallObjectAllocatorInitParams+0xc86a7
+
+  28  Id: 31cc.3bb8 Suspend: 1 Teb: 003fa000 Unfrozen
+ # ChildEBP RetAddr      
+00 1d8244c8 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 1d824538 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 1d82454c 00e91128     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 1d82456c 00e91417     CivilizationV_DX11!GetSmallObjectAllocatorInitParams+0xc83b8
+04 00000000 00000000     CivilizationV_DX11!GetSmallObjectAllocatorInitParams+0xc86a7
+
+  29  Id: 31cc.be34 Suspend: 1 Teb: 003fe000 Unfrozen
+ # ChildEBP RetAddr      
+00 1da6a5a8 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 1da6a618 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 1da6a62c 00e91128     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 1da6a64c 00e91417     CivilizationV_DX11!GetSmallObjectAllocatorInitParams+0xc83b8
+04 00000000 00000000     CivilizationV_DX11!GetSmallObjectAllocatorInitParams+0xc86a7
+
+  30  Id: 31cc.c7ac Suspend: 1 Teb: 00202000 Unfrozen
+ # ChildEBP RetAddr      
+00 2614fc10 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 2614fc80 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 2614fc94 6001b861     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 2614fcbc 6001b6f0     nvwgf2um!OpenAdapter12+0x1204a1
+04 2614fcc8 604fd286     nvwgf2um!OpenAdapter12+0x120330
+05 2614fd00 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 2614fd10 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 2614fd68 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 2614fd78 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  31  Id: 31cc.760 Suspend: 1 Teb: 00206000 Unfrozen
+ # ChildEBP RetAddr      
+00 2615f7cc 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 2615f83c 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 2615f850 6001b861     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 2615f878 6001b6f0     nvwgf2um!OpenAdapter12+0x1204a1
+04 2615f884 604fd286     nvwgf2um!OpenAdapter12+0x120330
+05 2615f8bc 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 2615f8cc 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 2615f924 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 2615f934 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  32  Id: 31cc.3288 Suspend: 1 Teb: 0020a000 Unfrozen
+ # ChildEBP RetAddr      
+00 2616fa40 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 2616fab0 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 2616fac4 6001b861     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 2616faec 6001b6f0     nvwgf2um!OpenAdapter12+0x1204a1
+04 2616faf8 604fd286     nvwgf2um!OpenAdapter12+0x120330
+05 2616fb30 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 2616fb40 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 2616fb98 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 2616fba8 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  33  Id: 31cc.95e0 Suspend: 1 Teb: 0020e000 Unfrozen
+ # ChildEBP RetAddr      
+00 275dfa14 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 275dfa84 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 275dfa98 6001b861     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 275dfac0 6001b6f0     nvwgf2um!OpenAdapter12+0x1204a1
+04 275dfacc 604fd286     nvwgf2um!OpenAdapter12+0x120330
+05 275dfb04 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 275dfb14 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 275dfb6c 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 275dfb7c 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  34  Id: 31cc.a2a4 Suspend: 1 Teb: 00212000 Unfrozen
+ # ChildEBP RetAddr      
+00 2762fb34 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 2762fba4 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 2762fbb8 6001b861     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 2762fbe0 6001b6f0     nvwgf2um!OpenAdapter12+0x1204a1
+04 2762fbec 604fd286     nvwgf2um!OpenAdapter12+0x120330
+05 2762fc24 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 2762fc34 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 2762fc8c 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 2762fc9c 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  35  Id: 31cc.d08c Suspend: 1 Teb: 00216000 Unfrozen
+ # ChildEBP RetAddr      
+00 2767fe34 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 2767fea4 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 2767feb8 6001b861     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 2767fee0 6001b6f0     nvwgf2um!OpenAdapter12+0x1204a1
+04 2767feec 604fd286     nvwgf2um!OpenAdapter12+0x120330
+05 2767ff24 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 2767ff34 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 2767ff8c 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 2767ff9c 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  36  Id: 31cc.c04c Suspend: 1 Teb: 0021a000 Unfrozen
+ # ChildEBP RetAddr      
+00 276cfa00 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 276cfa70 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 276cfa84 6001b861     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 276cfaac 6001b6f0     nvwgf2um!OpenAdapter12+0x1204a1
+04 276cfab8 604fd286     nvwgf2um!OpenAdapter12+0x120330
+05 276cfaf0 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 276cfb00 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 276cfb58 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 276cfb68 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  37  Id: 31cc.c5d8 Suspend: 1 Teb: 0021e000 Unfrozen
+ # ChildEBP RetAddr      
+00 2771f940 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 2771f9b0 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 2771f9c4 6001b861     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 2771f9ec 6001b6f0     nvwgf2um!OpenAdapter12+0x1204a1
+04 2771f9f8 604fd286     nvwgf2um!OpenAdapter12+0x120330
+05 2771fa30 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 2771fa40 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 2771fa98 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 2771faa8 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  38  Id: 31cc.62c4 Suspend: 1 Teb: 00222000 Unfrozen
+ # ChildEBP RetAddr      
+00 2776fd44 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 2776fdb4 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 2776fdc8 6001b861     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 2776fdf0 6001b6f0     nvwgf2um!OpenAdapter12+0x1204a1
+04 2776fdfc 604fd286     nvwgf2um!OpenAdapter12+0x120330
+05 2776fe34 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 2776fe44 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 2776fe9c 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 2776feac 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  39  Id: 31cc.c648 Suspend: 1 Teb: 00226000 Unfrozen
+ # ChildEBP RetAddr      
+00 277bfcc8 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 277bfd38 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 277bfd4c 6001b861     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 277bfd74 6001b6f0     nvwgf2um!OpenAdapter12+0x1204a1
+04 277bfd80 604fd286     nvwgf2um!OpenAdapter12+0x120330
+05 277bfdb8 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 277bfdc8 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 277bfe20 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 277bfe30 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  40  Id: 31cc.2c9c Suspend: 1 Teb: 0022a000 Unfrozen
+ # ChildEBP RetAddr      
+00 2780fa68 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 2780fad8 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 2780faec 6001b861     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 2780fb14 6001b6f0     nvwgf2um!OpenAdapter12+0x1204a1
+04 2780fb20 604fd286     nvwgf2um!OpenAdapter12+0x120330
+05 2780fb58 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 2780fb68 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 2780fbc0 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 2780fbd0 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  41  Id: 31cc.c154 Suspend: 1 Teb: 0022e000 Unfrozen
+ # ChildEBP RetAddr      
+00 2785f6f0 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 2785f760 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 2785f774 6001b861     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 2785f79c 6001b6f0     nvwgf2um!OpenAdapter12+0x1204a1
+04 2785f7a8 604fd286     nvwgf2um!OpenAdapter12+0x120330
+05 2785f7e0 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 2785f7f0 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 2785f848 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 2785f858 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  42  Id: 31cc.7d00 Suspend: 1 Teb: 00232000 Unfrozen
+ # ChildEBP RetAddr      
+00 278af8f0 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 278af960 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 278af974 6001b861     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 278af99c 6001b6f0     nvwgf2um!OpenAdapter12+0x1204a1
+04 278af9a8 604fd286     nvwgf2um!OpenAdapter12+0x120330
+05 278af9e0 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 278af9f0 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 278afa48 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 278afa58 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  43  Id: 31cc.d00 Suspend: 1 Teb: 00236000 Unfrozen
+ # ChildEBP RetAddr      
+00 278ff8ec 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 278ff95c 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 278ff970 6001b861     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 278ff998 6001b6f0     nvwgf2um!OpenAdapter12+0x1204a1
+04 278ff9a4 604fd286     nvwgf2um!OpenAdapter12+0x120330
+05 278ff9dc 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 278ff9ec 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 278ffa44 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 278ffa54 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  44  Id: 31cc.ba38 Suspend: 1 Teb: 0023a000 Unfrozen
+ # ChildEBP RetAddr      
+00 2794fb98 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 2794fc08 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 2794fc1c 6001b861     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 2794fc44 6001b6f0     nvwgf2um!OpenAdapter12+0x1204a1
+04 2794fc50 604fd286     nvwgf2um!OpenAdapter12+0x120330
+05 2794fc88 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 2794fc98 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 2794fcf0 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 2794fd00 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  45  Id: 31cc.38e4 Suspend: 1 Teb: 0023e000 Unfrozen
+ # ChildEBP RetAddr      
+00 2799f7e4 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 2799f854 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 2799f868 6001b861     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 2799f890 6001b6f0     nvwgf2um!OpenAdapter12+0x1204a1
+04 2799f89c 604fd286     nvwgf2um!OpenAdapter12+0x120330
+05 2799f8d4 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 2799f8e4 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 2799f93c 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 2799f94c 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  46  Id: 31cc.ac3c Suspend: 1 Teb: 00246000 Unfrozen
+ # ChildEBP RetAddr      
+00 2ae3fac0 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 2ae3fb30 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 2ae3fb44 64c2ebdc     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 2ae3fb64 7564ea3b     WMVCore!WMCreateReader+0xae6c
+04 2ae3fb9c 75cb5d49     ucrtbase!thread_start<unsigned int (__stdcall*)(void *),1>+0x3b
+05 2ae3fbac 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+06 2ae3fc04 7721e181     ntdll!__RtlUserThreadStart+0x2b
+07 2ae3fc14 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  47  Id: 31cc.1644 Suspend: 1 Teb: 0024a000 Unfrozen
+ # ChildEBP RetAddr      
+00 2af7fa58 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 2af7fac8 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 2af7fadc 64c2ebdc     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 2af7fafc 7564ea3b     WMVCore!WMCreateReader+0xae6c
+04 2af7fb34 75cb5d49     ucrtbase!thread_start<unsigned int (__stdcall*)(void *),1>+0x3b
+05 2af7fb44 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+06 2af7fb9c 7721e181     ntdll!__RtlUserThreadStart+0x2b
+07 2af7fbac 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  48  Id: 31cc.a828 Suspend: 1 Teb: 002fa000 Unfrozen
+ # ChildEBP RetAddr      
+00 2b69f750 7639ef5f     ntdll!NtWaitForMultipleObjects+0xc
+01 2b69f8e0 7639edb8     KERNELBASE!WaitForMultipleObjectsEx+0x18f
+02 2b69f8fc 5cd023d4     KERNELBASE!WaitForMultipleObjects+0x18
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 2b69f9d0 5cbca717     nvd3dum!SetDependencyInfo+0x89d24
+04 2b69f9e0 5cedb7b0     nvd3dum+0x14da717
+05 2b69fa18 75cb5d49     nvd3dum!SetDependencyInfo+0x263100
+06 2b69fa28 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 2b69fa80 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 2b69fa90 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  49  Id: 31cc.d5c Suspend: 1 Teb: 0030e000 Unfrozen
+ # ChildEBP RetAddr      
+00 2abef76c 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 2abef7dc 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 2abef7f0 6001b861     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 2abef818 6001b6f0     nvwgf2um!OpenAdapter12+0x1204a1
+04 2abef824 604fd286     nvwgf2um!OpenAdapter12+0x120330
+05 2abef85c 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 2abef86c 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 2abef8c4 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 2abef8d4 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  50  Id: 31cc.b3c0 Suspend: 2 Teb: 00312000 Unfrozen
+ # ChildEBP RetAddr      
+00 2ac3f8b0 00000000     ntdll!RtlUserThreadStart
+
+  51  Id: 31cc.63dc Suspend: 2 Teb: 00316000 Unfrozen
+ # ChildEBP RetAddr      
+00 2ac8fa18 00000000     ntdll!RtlUserThreadStart
+
+  52  Id: 31cc.8034 Suspend: 2 Teb: 0031a000 Unfrozen
+ # ChildEBP RetAddr      
+00 2acdff3c 00000000     ntdll!RtlUserThreadStart
+
+  53  Id: 31cc.a5b8 Suspend: 2 Teb: 00326000 Unfrozen
+ # ChildEBP RetAddr      
+00 2acef838 00000000     ntdll!RtlUserThreadStart
+
+  54  Id: 31cc.3084 Suspend: 2 Teb: 0032a000 Unfrozen
+ # ChildEBP RetAddr      
+00 2b34fa00 00000000     ntdll!RtlUserThreadStart
+
+  55  Id: 31cc.8a8c Suspend: 2 Teb: 0032e000 Unfrozen
+ # ChildEBP RetAddr      
+00 2b39f898 00000000     ntdll!RtlUserThreadStart
+
+  56  Id: 31cc.c018 Suspend: 2 Teb: 00332000 Unfrozen
+ # ChildEBP RetAddr      
+00 2b3efbe0 00000000     ntdll!RtlUserThreadStart
+
+  57  Id: 31cc.c828 Suspend: 2 Teb: 00336000 Unfrozen
+ # ChildEBP RetAddr      
+00 2b3fffb0 00000000     ntdll!RtlUserThreadStart
+
+  58  Id: 31cc.bf34 Suspend: 2 Teb: 0033a000 Unfrozen
+ # ChildEBP RetAddr      
+00 2bb0ff7c 00000000     ntdll!RtlUserThreadStart
+
+  59  Id: 31cc.16ac Suspend: 2 Teb: 0033e000 Unfrozen
+ # ChildEBP RetAddr      
+00 2bb5f814 00000000     ntdll!RtlUserThreadStart
+
+  60  Id: 31cc.229c Suspend: 2 Teb: 00342000 Unfrozen
+ # ChildEBP RetAddr      
+00 2bbafac8 00000000     ntdll!RtlUserThreadStart
+
+  61  Id: 31cc.ae48 Suspend: 2 Teb: 00346000 Unfrozen
+ # ChildEBP RetAddr      
+00 2bbff980 00000000     ntdll!RtlUserThreadStart
+
+  62  Id: 31cc.a82c Suspend: 2 Teb: 0034a000 Unfrozen
+ # ChildEBP RetAddr      
+00 2bc4fcfc 00000000     ntdll!RtlUserThreadStart
+
+  63  Id: 31cc.b310 Suspend: 2 Teb: 0034e000 Unfrozen
+ # ChildEBP RetAddr      
+00 2bc9fb60 00000000     ntdll!RtlUserThreadStart
+
+  64  Id: 31cc.6564 Suspend: 2 Teb: 00352000 Unfrozen
+ # ChildEBP RetAddr      
+00 2bcef9a4 00000000     ntdll!RtlUserThreadStart
+
+  65  Id: 31cc.3120 Suspend: 1 Teb: 00356000 Unfrozen
+ # ChildEBP RetAddr      
+00 2bdbfb60 7639ef5f     ntdll!NtWaitForMultipleObjects+0xc
+01 2bdbfcf0 7639edb8     KERNELBASE!WaitForMultipleObjectsEx+0x18f
+02 2bdbfd0c 60095992     KERNELBASE!WaitForMultipleObjects+0x18
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 2bdbfde4 60171755     nvwgf2um!NVDEV_Thunk+0x79db2
+04 2bdbfdf0 604fd286     nvwgf2um!NVDEV_Thunk+0x155b75
+05 2bdbfe28 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 2bdbfe38 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 2bdbfe90 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 2bdbfea0 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  66  Id: 31cc.926c Suspend: 1 Teb: 0035a000 Unfrozen
+ # ChildEBP RetAddr      
+00 2be0fd70 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 2be0fde0 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 2be0fdf4 6001b861     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 2be0fe1c 6001b6f0     nvwgf2um!OpenAdapter12+0x1204a1
+04 2be0fe28 604fd286     nvwgf2um!OpenAdapter12+0x120330
+05 2be0fe60 75cb5d49     nvwgf2um!NVDEV_Thunk+0x4e16a6
+06 2be0fe70 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+07 2be0fec8 7721e181     ntdll!__RtlUserThreadStart+0x2b
+08 2be0fed8 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  67  Id: 31cc.9818 Suspend: 1 Teb: 00366000 Unfrozen
+ # ChildEBP RetAddr      
+00 2dc5f97c 7639ef5f     ntdll!NtWaitForMultipleObjects+0xc
+01 2dc5fb0c 7639edb8     KERNELBASE!WaitForMultipleObjectsEx+0x18f
+02 2dc5fb28 6c0b308a     KERNELBASE!WaitForMultipleObjects+0x18
+03 2dc5fc58 6c0c4d78     dsound!CThread::TpWaitObjectArray+0x7b
+04 2dc5fc78 6c0b2f35     dsound!CLeapRenderDevice::ThreadProc+0x28
+05 2dc5fc90 6c0b2b6f     dsound!CThread::ThreadLoop+0x46
+06 2dc5fca0 6c0b2f80     dsound!CThread::PrivateThreadProc+0x4e
+07 2dc5fcb0 75cb5d49     dsound!CThread::ThreadStartRoutine+0x20
+08 2dc5fcc0 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+09 2dc5fd18 7721e181     ntdll!__RtlUserThreadStart+0x2b
+0a 2dc5fd28 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  68  Id: 31cc.2624 Suspend: 1 Teb: 0036a000 Unfrozen
+ # ChildEBP RetAddr      
+00 2dd9f89c 7639ef5f     ntdll!NtWaitForMultipleObjects+0xc
+01 2dd9fa2c 7639edb8     KERNELBASE!WaitForMultipleObjectsEx+0x18f
+02 2dd9fa48 6c0b308a     KERNELBASE!WaitForMultipleObjects+0x18
+03 2dd9fb78 6c09bb2b     dsound!CThread::TpWaitObjectArray+0x7b
+04 2dd9fbc8 6c0b2f35     dsound!CDirectSoundAdministrator::ThreadProc+0x3b
+05 2dd9fbe0 6c0b2b6f     dsound!CThread::ThreadLoop+0x46
+06 2dd9fbf0 6c0b2f80     dsound!CThread::PrivateThreadProc+0x4e
+07 2dd9fc04 75cb5d49     dsound!CThread::ThreadStartRoutine+0x20
+08 2dd9fc14 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+09 2dd9fc6c 7721e181     ntdll!__RtlUserThreadStart+0x2b
+0a 2dd9fc7c 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  69  Id: 31cc.4fc4 Suspend: 1 Teb: 0036e000 Unfrozen
+ # ChildEBP RetAddr      
+00 2deff5a4 7639ef5f     ntdll!NtWaitForMultipleObjects+0xc
+01 2deff734 7639edb8     KERNELBASE!WaitForMultipleObjectsEx+0x18f
+02 2deff750 6c0ccf6d     KERNELBASE!WaitForMultipleObjects+0x18
+03 2deff788 6c0ccc46     dsound!CGraphManager::ThreadProc+0x17d
+04 2deff79c 75cb5d49     dsound!CThreadBase::StaticThreadProc+0x26
+05 2deff7ac 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+06 2deff804 7721e181     ntdll!__RtlUserThreadStart+0x2b
+07 2deff814 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  70  Id: 31cc.7310 Suspend: 1 Teb: 00372000 Unfrozen
+ # ChildEBP RetAddr      
+00 2e03f950 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 2e03f9c0 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 2e03f9d4 08901b11     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 2e03fa04 7721e1fb     mss32!AIL_get_preference+0x571
+04 2e03fa5c 7721e181     ntdll!__RtlUserThreadStart+0x2b
+05 2e03fa6c 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  71  Id: 31cc.3188 Suspend: 1 Teb: 00376000 Unfrozen
+ # ChildEBP RetAddr      
+00 2e17fd68 7639e0e8     ntdll!NtWaitForSingleObject+0xc
+01 2e17fdd8 7639e052     KERNELBASE!WaitForSingleObjectEx+0x88
+02 2e17fdec 089070ca     KERNELBASE!WaitForSingleObject+0x12
+WARNING: Stack unwind information not available. Following frames may be wrong.
+03 2e17fe08 75cb5d49     mss32!AIL_WAV_marker_by_name+0xaea
+04 2e17fe18 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+05 2e17fe70 7721e181     ntdll!__RtlUserThreadStart+0x2b
+06 2e17fe80 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  72  Id: 31cc.c834 Suspend: 2 Teb: 0037e000 Unfrozen
+WARNING: Stack pointer is outside the normal stack bounds. Stack unwinding can be inaccurate.
+ # ChildEBP RetAddr      
+00 ac98fe0c 7641a5a3     ntdll!NtSuspendThread+0xc
+01 ac98fe20 00efa3f4     KERNELBASE!SuspendThread+0x13
+WARNING: Stack unwind information not available. Following frames may be wrong.
+02 ac98fe38 75cb5d49     CivilizationV_DX11!GetTempHeap+0x954
+03 ac98fe48 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+04 ac98fea0 7721e181     ntdll!__RtlUserThreadStart+0x2b
+05 ac98feb0 00000000     ntdll!_RtlUserThreadStart+0x1b
+
+  73  Id: 31cc.8c80 Suspend: 1 Teb: 00256000 Unfrozen
+WARNING: Stack pointer is outside the normal stack bounds. Stack unwinding can be inaccurate.
+ # ChildEBP RetAddr      
+00 8410fb2c 77206e57     ntdll!NtWaitForWorkViaWorkerFactory+0xc
+01 8410fcf0 75cb5d49     ntdll!TppWorkerThread+0x347
+02 8410fd00 7721e1fb     KERNEL32!BaseThreadInitThunk+0x19
+03 8410fd58 7721e181     ntdll!__RtlUserThreadStart+0x2b
+04 8410fd68 00000000     ntdll!_RtlUserThreadStart+0x1b
+0:000> .dump /m /o "C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\skills\civ5-game-ui\experiments\mod-graphics-cost\runs\20260930-191131-promoon-1\watch\stall-1-mini.dmp"
+Creating C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\skills\civ5-game-ui\experiments\mod-graphics-cost\runs\20260930-191131-promoon-1\watch\stall-1-mini.dmp - mini user dump
+Dump successfully written
+0:000> qd
+quit:
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\atlmfc.natvis'
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\ObjectiveC.natvis'
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\concurrency.natvis'
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\cpp_rest.natvis'
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\stl.natvis'
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\Windows.Data.Json.natvis'
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\Windows.Devices.Geolocation.natvis'
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\Windows.Devices.Sensors.natvis'
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\Windows.Media.natvis'
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\windows.natvis'
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\winrt.natvis'

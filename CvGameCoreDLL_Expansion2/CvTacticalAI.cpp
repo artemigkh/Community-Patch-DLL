@@ -6,6 +6,7 @@
 	All rights reserved. 
 	------------------------------------------------------------------------------------------------------- */
 #include "CvGameCoreDLLPCH.h"
+#include "MemoryHooks.h"
 #include "CvTacticalAI.h"
 #include "CvTacticalAnalysisMap.h"
 #include "CvGameCoreUtils.h"
@@ -265,6 +266,7 @@ void CvTacticalAI::RecruitUnits()
 /// Update the AI for units
 void CvTacticalAI::Update()
 {
+	MEMHOOK_SCOPE(MEMTAG_TACTICAL_AI);
 	UpdateVisibility();
 	DropOldFocusAreas();
 	FindTacticalTargets();

@@ -47,6 +47,7 @@
 // CURRENT_GAMECORE_VERSION is needed by CustomFilter's crashes.log report even
 // in builds without minidump support (DISABLE_MINIDUMP).
 #include "../commit_id.inc"
+#include "EngineQueueGuard.h"
 #if defined(MOD_DEBUG_MINIDUMP)
 #include <dbghelp.h>
 #endif // defined(MOD_DEBUG_MINIDUMP)
@@ -2880,6 +2881,9 @@ LONG WINAPI CustomFilter(EXCEPTION_POINTERS* ExceptionInfo)
 		_snprintf_s(szStackTrace, _countof(szStackTrace), _TRUNCATE,
 			"Stack (return-address candidates): none found\n");
 
+	char szQueueGuard[256];
+	EngineQueueGuard::FormatCrashLine(szQueueGuard, sizeof(szQueueGuard));
+
 	char szCrashInfo[3072];
 	_snprintf_s(szCrashInfo, _countof(szCrashInfo), _TRUNCATE, 
 		"--Crash details--\n"
@@ -2900,6 +2904,7 @@ LONG WINAPI CustomFilter(EXCEPTION_POINTERS* ExceptionInfo)
 		"Sub2G: 0x%p / %u\n"
 		"Total: 0x%p / %u\n"
 		"DLL-Version: %s\n"
+		"%s"
 #ifdef VPDEBUG
 		"Configuration: DEBUG\n"
 #else
@@ -2924,6 +2929,7 @@ LONG WINAPI CustomFilter(EXCEPTION_POINTERS* ExceptionInfo)
 		largestFreeBlockLowBase, largestFreeBlockLowSize >> 10,
 		largestFreeBlockBase, largestFreeBlockSize >> 10,
 		CURRENT_GAMECORE_VERSION,
+		szQueueGuard,
 		szExeName
 	);
 

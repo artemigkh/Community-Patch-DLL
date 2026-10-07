@@ -426,6 +426,54 @@ inline void RegisterMemFreeBlockHistogramTable()
 // One row per heap-walk turn: in-use vs free-list bytes across every process heap. FreeKB here is
 // memory the process has committed but is not using - intra-heap fragmentation, which the address
 // space walk cannot see. WalkMs records what the measurement itself cost.
+//! Per-heap breakdown of the same walk MemHeapSummary aggregates. Role distinguishes the CRT heap
+//! this DLL allocates from (2) from the Win32 default heap (1) and the host engine's own heaps (0),
+//! which is what separates game-core memory from the engine's pools.
+//! Contents of the largest allocations. HeadWords is the block's leading 32-bit words in hex,
+//! which is what distinguishes a string buffer from a float cache from a pointer graph.
+inline void RegisterMemTopBlockSamplesTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("Rank", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("SizeBytes", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HeapHandle", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Address", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HeadWords", Database::COLTYPE_TEXT));
+		GET_SQLITE_LOGGER().RegisterTable("MemTopBlockSamples", kColumns);
+	}
+}
+
+inline void RegisterMemHeapDetailTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("HeapIndex", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HeapHandle", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Role", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("BusyBlocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("BusyKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("FreeBlocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("FreeKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("OverheadKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("UncommittedKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("LargestBlockKB", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemHeapDetail", kColumns);
+	}
+}
+
 inline void RegisterMemHeapSummaryTable()
 {
 	if (!MOD_SQLITE_LOGGING)
@@ -465,6 +513,154 @@ inline void RegisterMemHeapSizeClassTable()
 		kColumns.push_back(ColumnDef("Blocks", Database::COLTYPE_INT));
 		kColumns.push_back(ColumnDef("TotalKB", Database::COLTYPE_INT));
 		GET_SQLITE_LOGGER().RegisterTable("MemHeapSizeClass", kColumns);
+	}
+}
+
+// One row per turn: whether the import-slot patching is live and what it covers. SelfCheckDll and
+// SelfCheckStrings are the runtime proof that a patched slot actually routes - a failed patch is
+// otherwise indistinguishable from a module that never allocates. PreExistingKB is the CRT heap that
+// was already live when this DLL patched anything, so it belongs to the EXE side by construction.
+inline void RegisterMemImportSummaryTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("Installed", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("SelfCheckDll", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("SelfCheckStrings", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("StringsViaOperatorNew", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("ModulesPatched", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("SlotsPatched", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("PreExistingBlocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("PreExistingKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("PreExistingOverflow", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("PreExistingFreed", Database::COLTYPE_FLOAT));
+		GET_SQLITE_LOGGER().RegisterTable("MemImportSummary", kColumns);
+	}
+}
+
+// One row per module that allocates from the CRT heap. ScopedKB is the part allocated while a DLL
+// subsystem tag was active on the calling thread: for msvcp90 that is the difference between "a
+// string exists" and "the DLL caused a string".
+inline void RegisterMemImportModulesTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("Slot", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Module", Database::COLTYPE_TEXT));
+		kColumns.push_back(ColumnDef("LiveKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("LiveBlocks", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("ScopedKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TotalMB", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("Allocs", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("Frees", Database::COLTYPE_FLOAT));
+		// Aligned allocations are counted but not tracked - their returned pointer is offset into the
+		// block the heap walk reports, so they can never be matched by address. Cumulative, not live.
+		kColumns.push_back(ColumnDef("AlignedMB", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("AlignedAllocs", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("AlignedUntracked", Database::COLTYPE_FLOAT));
+		GET_SQLITE_LOGGER().RegisterTable("MemImportModules", kColumns);
+	}
+}
+
+// The size-class histogram split by heap. The process-wide version cannot say whether a size class
+// sits in the CRT heap the DLL shares with the engine, in Lua's heap, or in the Windows process
+// heap - and those have different owners and different fixes. Rows are written only for non-empty
+// (heap, class) pairs; HeapIndex matches MemHeapDetail.
+inline void RegisterMemHeapClassDetailTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("HeapIndex", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("BucketMaxBytes", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Blocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TotalKB", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemHeapClassDetail", kColumns);
+	}
+}
+
+// Every busy heap block, by who allocated it and how big it is. Owner 0 is this DLL through operator
+// new; owners 1..31 are modules whose CRT import slots MemoryImports patched; PreDLL means the block
+// was already live when the instrument installed, so it belongs to the EXE side by construction; and
+// Unknown means it was allocated after that through a path no instrument sees.
+inline void RegisterMemBlockOwnersTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("Owner", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("OwnerName", Database::COLTYPE_TEXT));
+		kColumns.push_back(ColumnDef("BandMaxBytes", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Blocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TotalKB", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemBlockOwners", kColumns);
+	}
+}
+
+// The same ownership split, per heap. Unknown in the CRT heap is a blind spot worth closing; Unknown
+// in Lua's heap or the Windows process heap is just where those allocators live, since nothing there
+// passes through a patched CRT import. HeapIndex matches MemHeapDetail.
+inline void RegisterMemBlockOwnerHeapTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("Owner", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("OwnerName", Database::COLTYPE_TEXT));
+		kColumns.push_back(ColumnDef("HeapIndex", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Blocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TotalKB", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemBlockOwnerHeap", kColumns);
+	}
+}
+
+// What the unattributed blocks actually hold, from a systematic sample of one block in Stride. These
+// counts cover the sample only: scale by Stride, or read them as proportions. Text is the signature
+// of a string body, which is the largest thing the allocation hook cannot see.
+inline void RegisterMemBlockContentTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("Owner", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("OwnerName", Database::COLTYPE_TEXT));
+		kColumns.push_back(ColumnDef("Content", Database::COLTYPE_TEXT));
+		kColumns.push_back(ColumnDef("SampleBlocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("SampleKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Stride", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemBlockContent", kColumns);
 	}
 }
 
@@ -650,6 +846,94 @@ inline void RegisterMemNewBlocksTable()
 // One row per turn summarising the leak window: how many blocks live in it, how many appeared this
 // turn, and how many bytes each represents. NewBlocks x their size is the per-turn leak rate, direct.
 // HadPrevious is false on the first walk of a session, where "new" has no meaning.
+// One row per turn: what Lua itself says it is holding. LiveBytes is the collector's own figure,
+// so it counts Lua objects only - not the allocator overhead underneath them, and not any state
+// this thread does not belong to. AllocFn identifies whose lua_Alloc is installed, which is how a
+// replaced allocator (see MemLuaAlloc) proves it actually took effect.
+inline void RegisterMemLuaTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("HaveState", Database::COLTYPE_BOOL));
+		kColumns.push_back(ColumnDef("LiveKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("LiveBytes", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("AllocFn", Database::COLTYPE_TEXT));
+		kColumns.push_back(ColumnDef("AllocUd", Database::COLTYPE_TEXT));
+		GET_SQLITE_LOGGER().RegisterTable("MemLua", kColumns);
+	}
+}
+
+// One row per turn from the wrapped Lua allocator. LiveKB here is measured from the allocation
+// stream, so comparing it against MemLua.LiveKB - which is Lua's own collector figure - is the
+// check that the wrapper sees everything: the collector counts Lua objects, this counts the bytes
+// actually requested, so this should be the larger of the two and they should track together.
+inline void RegisterMemLuaAllocTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("Installed", Database::COLTYPE_BOOL));
+		kColumns.push_back(ColumnDef("LiveKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("PeakKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TotalMB", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("LargestBytes", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Allocs", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Frees", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Reallocs", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("SeedKB", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemLuaAlloc", kColumns);
+	}
+}
+
+// One row per size class per turn: where Lua's allocation traffic actually sits by size.
+inline void RegisterMemLuaSizeClassTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("ClassIndex", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("MaxBytes", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Allocs", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TotalKB", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemLuaSizeClass", kColumns);
+	}
+}
+
+// Exact sizes of Lua's large allocations. Worth its own table because the heap census put ~70% of
+// the process heap in the 256-512KB class, and these say whether Lua is a contributor to it.
+inline void RegisterMemLuaBigSizesTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("Slot", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Bytes", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Allocs", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemLuaBigSizes", kColumns);
+	}
+}
+
 inline void RegisterMemBlockWindowTable()
 {
 	if (!MOD_SQLITE_LOGGING)
@@ -688,5 +972,400 @@ inline void RegisterMemAnchorsTable()
 		kColumns.push_back(ColumnDef("AddrHigh", Database::COLTYPE_INT));
 		kColumns.push_back(ColumnDef("SizeKB", Database::COLTYPE_INT));
 		GET_SQLITE_LOGGER().RegisterTable("MemAnchors", kColumns);
+	}
+}
+
+//	----------------------------------------------------------------------------------------------
+//	Allocation-site attribution (MemoryHooks)
+//
+//	The three tables below come from the replaced global operator new/delete rather than from a heap
+//	walk, so unlike every other Mem* table they carry a name for each byte. They cover game-core
+//	allocations only, which is precisely the split heap accounting cannot make.
+//	----------------------------------------------------------------------------------------------
+
+// One row per turn. Half of these columns describe the instrument rather than the game, because a
+// number nobody can check is worth less than a smaller number that comes with its own error bars.
+// HookLive is the important one: it is a runtime proof that our operator new won the link, and if it
+// is 0 then every other row in these three tables is meaningless.
+inline void RegisterMemHookSummaryTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("HookLive", Database::COLTYPE_BOOL));
+		kColumns.push_back(ColumnDef("Tracking", Database::COLTYPE_BOOL));
+		kColumns.push_back(ColumnDef("LiveKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("LiveBlocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("PeakKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TurnKB", Database::COLTYPE_INT));          // allocated this turn
+		kColumns.push_back(ColumnDef("TurnAllocs", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("TurnFrees", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("TotalMB", Database::COLTYPE_FLOAT));       // cumulative churn
+		kColumns.push_back(ColumnDef("TotalAllocs", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("TotalFrees", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("ForeignFrees", Database::COLTYPE_FLOAT));  // blocks we never saw allocated
+		kColumns.push_back(ColumnDef("UntrackedAllocs", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("UntrackedKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("NodesInUse", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("NodesPeak", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("NodePool", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("SitesUsed", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("SitePool", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("SiteOverflows", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("OverheadKB", Database::COLTYPE_INT));      // what this costs to run
+		kColumns.push_back(ColumnDef("ModuleBase", Database::COLTYPE_TEXT));     // hex, for resolving RVAs
+		kColumns.push_back(ColumnDef("ModuleSizeKB", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemHookSummary", kColumns);
+	}
+}
+
+// One row per subsystem per turn. LiveKB answers "who is holding memory right now"; PeakKB answers
+// "who needs memory transiently", which no snapshot-based tool can see at all. The four size-class
+// columns say whether a subsystem's footprint is a handful of buffers or a swarm of nodes - the
+// difference between a fixable allocation pattern and an unavoidable one.
+inline void RegisterMemHookTagsTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("Subsystem", Database::COLTYPE_TEXT));
+		kColumns.push_back(ColumnDef("LiveKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("LiveBlocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("PeakKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TurnKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TurnAllocs", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("TotalMB", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("TotalAllocs", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("TinyKB", Database::COLTYPE_INT));     // < 1KB
+		kColumns.push_back(ColumnDef("SmallKB", Database::COLTYPE_INT));    // 1KB - 64KB
+		kColumns.push_back(ColumnDef("MediumKB", Database::COLTYPE_INT));   // 64KB - 1MB
+		kColumns.push_back(ColumnDef("LargeKB", Database::COLTYPE_INT));    // >= 1MB
+		GET_SQLITE_LOGGER().RegisterTable("MemHookTags", kColumns);
+	}
+}
+
+// The largest call sites by live bytes. Rva is the return address minus the DLL's load base, so it
+// resolves to a source line offline against CvGameCore_Expansion2.pdb:
+//   llvm-symbolizer --obj=CvGameCore_Expansion2.pdb --adjust-vma=0 <Rva>
+// This is what UMDH was supposed to provide and could not.
+inline void RegisterMemHookSitesTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		kColumns.push_back(ColumnDef("Rank", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Rva", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("RvaHex", Database::COLTYPE_TEXT));
+		kColumns.push_back(ColumnDef("Subsystem", Database::COLTYPE_TEXT));
+		kColumns.push_back(ColumnDef("LiveKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("LiveBlocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("AvgBytes", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("PeakKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TotalMB", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("TotalAllocs", Database::COLTYPE_FLOAT));
+		GET_SQLITE_LOGGER().RegisterTable("MemHookSites", kColumns);
+	}
+}
+
+//	----------------------------------------------------------------------------------------------
+//	On-demand memory snapshots (MemoryDiagnostics::PollSnapshotRequest)
+//
+//	Taken while the player sits on a turn, when an outside watcher asks, so a UI action can be
+//	measured without a turn passing. Every table carries SnapSeq + Label: Turn alone cannot tell two
+//	snapshots of the same turn apart. (RunId, SnapSeq) is unique. The MemSnap header row is written
+//	after all of its child rows, so a MemSnap row is the proof that the rest of that snapshot landed.
+//	----------------------------------------------------------------------------------------------
+
+inline void AddMemSnapKeyColumns(TableDef& kColumns)
+{
+	kColumns.push_back(ColumnDef("SnapSeq", Database::COLTYPE_INT));
+	kColumns.push_back(ColumnDef("Label", Database::COLTYPE_TEXT));
+}
+
+inline void RegisterMemSnapTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		AddMemSnapKeyColumns(kColumns);
+		kColumns.push_back(ColumnDef("UnixTime", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TickMs", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TurnSlice", Database::COLTYPE_INT));
+		// Address space, as MemAddressSpace
+		kColumns.push_back(ColumnDef("CommittedKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("ReservedKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("FreeKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("LargestFreeKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("CommittedLowKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("ReservedLowKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("FreeLowKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("LargestFreeLowKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("ImageKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("MappedKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("PrivateKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TotalRegions", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("FreeRegions", Database::COLTYPE_INT));
+		// Process counters
+		kColumns.push_back(ColumnDef("PrivateUsageKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("WorkingSetKB", Database::COLTYPE_INT));
+		// Heaps, as MemHeapSummary. Prefixed: RegisterTable refuses a whole table over one duplicate
+		// column name, and FreeKB already means free address space above.
+		kColumns.push_back(ColumnDef("HeapWalkOk", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Heaps", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HeapBusyBlocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HeapBusyKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HeapFreeBlocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HeapFreeKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HeapOverheadKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HeapUncommittedKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("WalkMs", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("CensusOn", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("CensusLookups", Database::COLTYPE_INT));
+		// Allocation hook, cumulative
+		kColumns.push_back(ColumnDef("HookLive", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HookTracking", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HookLiveKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HookLiveBlocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HookPeakKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HookTotalMB", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("HookTotalAllocs", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("NodesInUse", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("UntrackedAllocs", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("HookOverheadKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("ModulesPatched", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("PreExistingFreed", Database::COLTYPE_FLOAT));
+		// Lua. The availability flags say whether a zero is a measurement or an absence.
+		kColumns.push_back(ColumnDef("LuaState", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("LuaGcKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("LuaAllocInstalled", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("LuaAllocLiveKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("LuaAllocTotalMB", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("LuaAllocs", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("SampleMs", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemSnap", kColumns);
+	}
+}
+
+// Per heap, as MemHeapDetail, plus where the heap sits: BusyLowKB is busy bytes below 0x80000000, and
+// RegionCommittedKB / RegionCommittedLowKB are the segment headers' committed sizes (large blocks
+// allocated outside segments are in BusyKB but not in RegionCommittedKB).
+inline void RegisterMemSnapHeapTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		AddMemSnapKeyColumns(kColumns);
+		kColumns.push_back(ColumnDef("HeapIndex", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HeapHandle", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Role", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("BusyBlocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("BusyKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("BusyLowKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("FreeBlocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("FreeKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("OverheadKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("UncommittedKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Regions", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("RegionCommittedKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("RegionCommittedLowKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("LargestBlockKB", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemSnapHeap", kColumns);
+	}
+}
+
+inline void RegisterMemSnapHeapClassTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		AddMemSnapKeyColumns(kColumns);
+		kColumns.push_back(ColumnDef("HeapIndex", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("ClassMaxBytes", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Blocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TotalKB", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemSnapHeapClass", kColumns);
+	}
+}
+
+// Free heap entries by heap and size class: how much of a heap's free list could serve a request of a
+// given size. LargestBytes is the largest free entry in the class; the largest in the heap is the
+// maximum over its rows.
+inline void RegisterMemSnapHeapFreeTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		AddMemSnapKeyColumns(kColumns);
+		kColumns.push_back(ColumnDef("HeapIndex", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HeapHandle", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("ClassMaxBytes", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Blocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TotalKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("LowKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("LargestBytes", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemSnapHeapFree", kColumns);
+	}
+}
+
+inline void RegisterMemSnapOwnersTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		AddMemSnapKeyColumns(kColumns);
+		kColumns.push_back(ColumnDef("Owner", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("OwnerName", Database::COLTYPE_TEXT));
+		kColumns.push_back(ColumnDef("BandMaxBytes", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Blocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TotalKB", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemSnapOwners", kColumns);
+	}
+}
+
+// HeapHandle is logged beside HeapIndex because a UI action could create a heap mid-turn and shift the
+// order GetProcessHeaps returns; the handle is what identifies a heap across snapshots.
+inline void RegisterMemSnapOwnerHeapTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		AddMemSnapKeyColumns(kColumns);
+		kColumns.push_back(ColumnDef("Owner", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("OwnerName", Database::COLTYPE_TEXT));
+		kColumns.push_back(ColumnDef("HeapIndex", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HeapHandle", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Blocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TotalKB", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemSnapOwnerHeap", kColumns);
+	}
+}
+
+inline void RegisterMemSnapHookTagsTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		AddMemSnapKeyColumns(kColumns);
+		kColumns.push_back(ColumnDef("Subsystem", Database::COLTYPE_TEXT));
+		kColumns.push_back(ColumnDef("LiveKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("LiveBlocks", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("PeakKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TotalMB", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("TotalAllocs", Database::COLTYPE_FLOAT));
+		GET_SQLITE_LOGGER().RegisterTable("MemSnapHookTags", kColumns);
+	}
+}
+
+// Table-side totals per allocating module. Live figures drift above the walk (see MemBlockOwners); the
+// cumulative TotalMB / AlignedMB differences between two snapshots are the churn in between.
+inline void RegisterMemSnapModulesTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		AddMemSnapKeyColumns(kColumns);
+		kColumns.push_back(ColumnDef("Module", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("ModuleName", Database::COLTYPE_TEXT));
+		kColumns.push_back(ColumnDef("LiveKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("LiveBlocks", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("TotalMB", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("TotalAllocs", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("TotalFrees", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("AlignedMB", Database::COLTYPE_FLOAT));
+		kColumns.push_back(ColumnDef("AlignedAllocs", Database::COLTYPE_FLOAT));
+		GET_SQLITE_LOGGER().RegisterTable("MemSnapModules", kColumns);
+	}
+}
+
+inline void RegisterMemSnapFreeBlocksTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		AddMemSnapKeyColumns(kColumns);
+		kColumns.push_back(ColumnDef("BucketMaxKB", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Regions", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("TotalKB", Database::COLTYPE_INT));
+		GET_SQLITE_LOGGER().RegisterTable("MemSnapFreeBlocks", kColumns);
+	}
+}
+
+inline void RegisterMemSnapTopBlocksTable()
+{
+	if (!MOD_SQLITE_LOGGING)
+		return;
+
+	static bool bRegistered = false;
+	if (!bRegistered)
+	{
+		bRegistered = true;
+		TableDef kColumns;
+		AddMemSnapKeyColumns(kColumns);
+		kColumns.push_back(ColumnDef("Rank", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Bytes", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("HeapHandle", Database::COLTYPE_INT));
+		kColumns.push_back(ColumnDef("Address", Database::COLTYPE_TEXT));
+		kColumns.push_back(ColumnDef("Head", Database::COLTYPE_TEXT));
+		GET_SQLITE_LOGGER().RegisterTable("MemSnapTopBlocks", kColumns);
 	}
 }

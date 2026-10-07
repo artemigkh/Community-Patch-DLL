@@ -7,6 +7,7 @@
 	------------------------------------------------------------------------------------------------------- */
 
 #include "CvGameCoreDLLPCH.h"
+#include "MemoryHooks.h"
 #include "CvGameCoreUtils.h"
 #include "CvInternalGameCoreUtils.h"
 #include "CvGame.h"
@@ -35,6 +36,7 @@
 #include "CvTypes.h"
 #include "SqliteLoggerRegistrations.h"
 #include "MemoryDiagnostics.h"
+#include "EngineQueueGuard.h"
 #include "CvDllNetMessageExt.h"
 
 #include "cvStopWatch.h"
@@ -1620,6 +1622,13 @@ bool ExternalPause()
 //	---------------------------------------------------------------------------
 void CvGame::update()
 {
+	// Ahead of every early return, so a watcher can snapshot memory whatever screen the player is on.
+	MemoryDiagnostics::PollSnapshotRequest();
+	// Development tooling: run a Lua chunk an outside process asked for (see CvLuaSupport.h).
+	LuaSupport::PollExternalLuaRequest();
+	// One log line after a load that overfilled the EXE's UI message queue (see EngineQueueGuard.h).
+	EngineQueueGuard::ReportDrops();
+
 	if(IsWaitingForBlockingInput())
 	{
 		if(!GC.GetEngineUserInterface()->isDiploActive())
@@ -10979,6 +10988,7 @@ void CvGame::Serialize(Game& game, Visitor& visitor)
 //	--------------------------------------------------------------------------------
 void CvGame::Read(FDataStream& kStream)
 {
+	MEMHOOK_SCOPE(MEMTAG_SERIALIZE);
 	int iI = 0;
 
 	reset(NO_HANDICAP);

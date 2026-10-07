@@ -7,6 +7,7 @@
 	------------------------------------------------------------------------------------------------------- */
 
 #include "CvGameCoreDLLPCH.h"
+#include "MemoryHooks.h"
 #include "CvGlobals.h"
 #include "CvArea.h"
 #include "CvMap.h"
@@ -10108,6 +10109,7 @@ ArtStyleTypes CvPlayer::getArtStyleType() const
 //	---------------------------------------------------------------------------
 void CvPlayer::doTurn()
 {
+	MEMHOOK_SCOPE(MEMTAG_PLAYER_TURN);
 	// Time building of these maps
 
 	PRECONDITION(isAlive(), "isAlive is expected to be true");
@@ -45961,6 +45963,7 @@ void CvPlayer::Serialize(Player& player, Visitor& visitor)
 //
 void CvPlayer::Read(FDataStream& kStream)
 {
+	MEMHOOK_SCOPE(MEMTAG_SERIALIZE);
 	// Init data before load
 	reset();
 

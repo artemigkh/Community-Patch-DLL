@@ -14,6 +14,7 @@
 //  PURPOSE: Group of functions to load in the xml files for Civilization 5
 //
 #include "CvGameCoreDLLPCH.h"
+#include "MemoryHooks.h"
 #include <algorithm>
 #include "CvDllDatabaseUtility.h"
 #include "CvDllContext.h"
@@ -114,6 +115,7 @@ void* CvDllDatabaseUtility::operator new(size_t bytes)
 //------------------------------------------------------------------------------
 bool CvDllDatabaseUtility::CacheGameDatabaseData()
 {
+	MEMHOOK_SCOPE(MEMTAG_XML_LOAD);
 	//Do not cache everything if we don't need to.
 	if(!m_bGameDatabaseNeedsCaching)
 		return true;

@@ -10,6 +10,8 @@
 #include "ICvDLLUserInterface.h"
 #include "Win32/FDebugHelper.h"
 #include "CvDllContext.h"
+#include "MemoryImports.h"
+#include "EngineQueueGuard.h"
 
 // must be included after all other headers
 #include "LintFree.h"
@@ -17,6 +19,13 @@
 //------------------------------------------------------------------------------
 extern "C" ICvGameContext1* DllGetGameContext()
 {
+	// The engine's first call into this DLL, and the earliest point outside the loader lock - which
+	// is what MemoryImports needs, since enumerating modules under it can deadlock. Everything the
+	// process has allocated up to here is recorded as pre-existing, i.e. the EXE side's.
+	MemoryImports::Install();
+	// Well before any save is loaded, which is when the EXE's UI message queue can overrun.
+	EngineQueueGuard::Install();
+
 	return CvDllGameContext::GetSingleton();
 }
 //------------------------------------------------------------------------------

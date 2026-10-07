@@ -73,3 +73,6 @@ umdh-snapshots/
 
 # scratch files from the vp-dll-dev skill
 .claude/tmp/
+
+# Captured experiment data (large, machine-generated)
+.claude/skills/civ5-game-ui/experiments/*/data/
