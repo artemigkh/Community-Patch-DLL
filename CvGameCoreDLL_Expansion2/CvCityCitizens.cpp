@@ -2569,10 +2569,11 @@ void CvCityCitizens::DoAlterWorkingPlot(int iIndex)
 			//do not call isCanWorkWithOverride()
 			else if (pPlot->getOwner() == GetOwner() && !pPlot->isBlockaded(GetOwner()))
 			{
+				// NULL if the plot has no owning city (see CvPlot::setImprovementType); then this city just takes it
 				CvCity* pOC = pPlot->getOwningCity();
 
 				// Can't take away plots from cities which were just conquered
-				if (pOC->IsResistance() || pOC->IsIgnoreCityForHappiness())
+				if (pOC && (pOC->IsResistance() || pOC->IsIgnoreCityForHappiness()))
 					return;
 
 				pPlot->setOwningCityOverride(GetCity());
