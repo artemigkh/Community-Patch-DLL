@@ -48,8 +48,8 @@ State: options being evaluated against a stand-in D3D11 app in `nofocus/`.
 
 ## Tooling
 
-State: blocked — the download/install of Ghidra, JDK, ghidra-mcp, RenderDoc and Sysinternals was refused by the
-permission check; asking Art.
+State: installing (Art approved 2026-11-09 the portable installs under `C:\Users\Art\tools`: Temurin JDK 21,
+Ghidra, ghidra-mcp + `.mcp.json`, RenderDoc, Sysinternals, MinHook source). Details will be in `tooling/TOOLING.md`.
 
 Present on the machine: VS 2022 Community (`C:\Program Files\Microsoft Visual Studio\2022\Community`, vcvarsall),
 Windows SDK 10.0.22621.0 and 10.0.26100.0, LLVM clang-cl (`C:\Program Files\LLVM\bin`, -m32 and -m64 verified for
