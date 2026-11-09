@@ -94,7 +94,44 @@ yet). DX11 VAs at ImageBase 0x400000; the same code is in the DX9 and Tablet EXE
 
 ## Running experiments without stealing Art's focus
 
-State: options being evaluated against a stand-in D3D11 app in `nofocus/`.
+State: **tool built and tested on a stand-in D3D11 app; not yet run on the real game** (`nofocus/README.md`).
+
+**Choice: normal desktop + an in-process focus guard injected while the game is still suspended + DWM cloaking.**
+`nofocus/civ_bg.py launch -- <vp_modgame.py launch args>` starts the EXE suspended with `SW_SHOWNOACTIVATE`
+(`bin/bg_helper32.exe`), loads `bin/focus_guard.dll` before the first instruction, then resumes. The guard hooks
+user32 only (never the CEG-protected EXE image): SetForegroundWindow / SetActiveWindow / BringWindowToTop /
+SwitchToThisWindow / ClipCursor become no-ops, a WH_CBT hook vetoes every activation of a game window,
+ShowWindow/SetWindowPos lose activate/raise, the game's global WH_KEYBOARD_LL hook (it swallows Alt+Enter in every
+app) is not installed, and Art's physical keys are hidden from GetAsyncKeyState. The window is cloaked
+(`DWMWA_CLOAK`) and parked off-screen: it keeps rendering, PrintWindow returns live frames, it covers nothing.
+Input: posted window messages (`key`, `click`, `move`, `wheel`); game actions: the Lua channel (`lua`). `watch N`
+monitors foreground/visibility every 20 ms and exits 5 on a slip.
+
+Why (Ghidra on the EXE): `SetForegroundWindow` is used only by the single-instance check; `SetActiveWindow` runs at
+every window-mode set (startup); hotkeys arrive as window messages (GetAsyncKeyState only for Ctrl/Alt during
+mouse handling; no GetKeyState, raw input or DirectInput), so posted keys should work.
+
+| Option (stand-in) | Renders | PrintWindow | Keys / clicks | Focus taken |
+|---|---|---|---|---|
+| Normal desktop, no guard | yes | yes | yes / yes | **yes**, at launch and during the run |
+| Minimised + guard | **no** (100% occluded) | fails | yes / yes | no |
+| Off-screen + guard | ~32 fps | yes | yes / yes | no |
+| **Cloak + off-screen + guard (default)** | **~32 fps** | **yes** | **yes / yes** | **no** |
+| Cloak + bottom of z-order + guard | 165 fps | yes | yes / yes | no |
+| Separate desktop (CreateDesktop) | **no**: every Present occluded | all white | yes | impossible (kept as a Lua-only mode) |
+| VMware VM | desk only: rejected (one Steam game per account at a time, full install inside, 8-12 GB guest RAM, different address-space numbers) | | | |
+| RDP / second session | impossible on Home edition | | | |
+| Guard compiled into the VP DLL | too late: the DLL loads after the window and the startup SetActiveWindow | | | |
+
+Residual cases: Steam relaunching the EXE (new process without the guard), system-modal assert boxes (visible,
+no focus) and WerFault/crash dialogs (other process), `front` (on purpose), exclusive fullscreen (refused), GPU
+cost of background rendering, antivirus may dislike a suspended start + remote thread.
+
+**Incident during development:** the stand-in (not the game) took Art's foreground window three times on
+2026-11-09: 17:27:26 for ~12 s, and twice for a few seconds around 17:47 (fallback tests where the guard arrived
+after the stand-in's own SetForegroundWindow). Windows' foreground lock did not prevent it on this machine; hence
+the guard must be loaded before the first instruction, and `--no-guard` / late injection are never used while Art
+works.
 
 ## Tooling
 
