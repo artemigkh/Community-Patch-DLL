@@ -30,6 +30,27 @@ free block, free blocks >= 1 / 16 MB, free below 2 GB; one-shot or CSV every N s
 
 ### Owners of the 118.75 MB (0x26) and 59.38 MB (0x25) blocks
 
+State: instrument built (debug + release), self-tested offline, **not yet run live** (`alloc-trace/README.md`).
+
+- **Instrument:** `EngineAllocTrace.{h,cpp}` chains thunks in front of the EXE's msvcr90 import slots (malloc,
+  _aligned_malloc, realloc, free, _aligned_free) instead of an inline hook at 0x82c090: PR #13379 reports that
+  Steam's CEG hashes ~80% of `.text` (a patched byte crashes later), and the allocator's first instruction is
+  1 byte, so a 5-byte jump cannot be written atomically. When the return address is the known spot inside the
+  engine allocator (`0x82c090`, `operator new(size, count, file, line, tag, tag2)`, 1,536 callers) or FFastVector's
+  aligned new (`0x813a80`, 749 callers), it reads the real caller, file, line and tags from the allocator's frame.
+  Opt-in: `<install>\crashlogs\allocTrace.enabled` (content = threshold, default 1M); log
+  `crashlogs\allocTrace.log`; `alloc-trace/summarize.py` groups it. Offline self-test calls the EXE's own
+  allocators in a test process: passes for DX11, DX9 and Tablet. Misses everything allocated before the game DLL
+  loads (EXE startup to main menu).
+- **Static candidate (medium confidence, ~50%): the FluidFOW particle grid**, `FluidParticles.cpp` lines 718/723
+  (function 0x729c40): aligned `cells × 4096` and `cells × 2048` back to back, 118.75 MB / 4096 = 59.375 MB / 2048
+  = exactly 30,400 cells, freed together at 0x70f790. **It is under DisableSystems bit 15 (FluidFOW)**: 0x468efd
+  calls the per-game FluidFOW init only when the bit is set. Against: the 0x26/0x25 contents are unexplained and the
+  cell formula `(W/64+3)×(H/64+23)` does not fit both maps cleanly. Ruled out: the Nexus terrain-editor pools at
+  0x590f00 (fixed sizes), terrain blend/sampler job arrays; no memset with 0x25/0x26 exists in the EXE.
+- **Shell helper loader:** `ShellHelperLoader.{h,cpp}` loads the DLL named on the first line of
+  `<install>\crashlogs\shell.helper` once, from DllGetGameContext; result in `crashlogs\shell.log`.
+
 ### Memory left in the shell, and what still works
 
 ## Gate 3: the server can draw into the shell

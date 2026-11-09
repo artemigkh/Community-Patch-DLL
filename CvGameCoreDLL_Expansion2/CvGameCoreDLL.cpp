@@ -12,6 +12,8 @@
 #include "CvDllContext.h"
 #include "MemoryImports.h"
 #include "EngineQueueGuard.h"
+#include "EngineAllocTrace.h"
+#include "ShellHelperLoader.h"
 
 // must be included after all other headers
 #include "LintFree.h"
@@ -25,6 +27,11 @@ extern "C" ICvGameContext1* DllGetGameContext()
 	MemoryImports::Install();
 	// Well before any save is loaded, which is when the EXE's UI message queue can overrun.
 	EngineQueueGuard::Install();
+	// Opt-in diagnostics (crashlogs\allocTrace.enabled): chains in front of the EXE's allocator import
+	// slots, so it must come after MemoryImports, whose thunks it forwards to.
+	EngineAllocTrace::Install();
+	// Opt-in (crashlogs\shell.helper): load one developer helper DLL into the process.
+	ShellHelperLoader::LoadOnce();
 
 	return CvDllGameContext::GetSingleton();
 }
@@ -55,6 +62,7 @@ BOOL APIENTRY DllMain(HANDLE hModule,
 		break;
 	case DLL_PROCESS_DETACH:
 		OutputDebugString("DLL_PROCESS_DETACH\n");
+		EngineAllocTrace::Uninstall();
 		timeEndPeriod(1);
 		CvDllGameContext::DestroySingleton();
 		GC.setDLLIFace(NULL);

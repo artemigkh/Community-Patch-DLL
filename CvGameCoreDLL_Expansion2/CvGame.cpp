@@ -37,6 +37,7 @@
 #include "SqliteLoggerRegistrations.h"
 #include "MemoryDiagnostics.h"
 #include "EngineQueueGuard.h"
+#include "EngineAllocTrace.h"
 #include "CvDllNetMessageExt.h"
 
 #include "cvStopWatch.h"
@@ -1628,6 +1629,8 @@ void CvGame::update()
 	LuaSupport::PollExternalLuaRequest();
 	// One log line after a load that overfilled the EXE's UI message queue (see EngineQueueGuard.h).
 	EngineQueueGuard::ReportDrops();
+	// Turn marker and log flush for the opt-in EXE allocation trace (see EngineAllocTrace.h).
+	EngineAllocTrace::OnGameUpdate(getGameTurn());
 
 	if(IsWaitingForBlockingInput())
 	{
