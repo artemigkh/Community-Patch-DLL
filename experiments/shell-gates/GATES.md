@@ -42,6 +42,35 @@ State: prototype (x64 server, x86 compositor DLL, x86 stand-in host) being built
 
 ### Camera ownership (static analysis)
 
+State: **static analysis done** (`camera/CAMERA.md`, disassembly + read-only Ghidra decompile; nothing run live
+yet). DX11 VAs at ImageBase 0x400000; the same code is in the DX9 and Tablet EXEs (signatures in section 6).
+
+- **No existing DLL interface or Lua function returns camera, matrices or picking data**, only setters
+  (`lookAt`, `centerCamera`, ...). So the DLL has to read EXE memory, but no EXE code needs to change.
+- **(a) Camera state, confirmed.** `g_Civ5App = *(void**)0xCC8E74` (already inside PR #13379's verified
+  signature at 0x47BA70); `[g_Civ5App+0xC0]` = GameViewState, `FCamera` at +0x48: FOV deg +0x50, aspect +0x54,
+  camera-to-world 4x4 +0x78 (position at +0xA8), near/far +0x118/+0x11C; target +0x120, zoom +0x140
+  (= (20/3)·ln(Z/50), limits 11..20.5), view mode +0x758 (1 = 3D, 2 = Strategic View). Yaw/pitch exist only as
+  matrix rows.
+- **(b) Exact matrices, confirmed.** `GameViewState::UpdateViews` (0x51DF70, main thread, once per 3D frame) ->
+  `FCamera::GetViewProj` (0x8E4A80, D3DXMatrixPerspectiveFovRH) writes fixed globals: projection 0xDA12D0, views
+  0xDA1310 + 64·i (count at 0xD90FA4; up to 3 for map wrap, ±world width at 0xD90FE4), inverse views 0xDA1410,
+  frustum planes 0xDA1510. The UI anchors (flags, banners) are projected with exactly these through
+  `D3DXVec3Project`. Caveat: the leader screen and other scenes reuse the same globals.
+- **(c) World/hex/screen, pipeline confirmed, constants need a live read.** Hex -> world 0x6851C0 (matrix
+  0xD91030, scale/offset 0xD91318..), world -> hex via 0xD90FF0 + cube rounding; mouse picking 0x6668F0
+  unprojects the cursor onto a flat ground plane; the result (two int16 at InterfaceBuddy+0x90) is
+  `UI.GetMouseOverHex`. Hex pitch 64 units in x, rows ~55.4 (inferred).
+- **Read path, in order of preference:** (1) swap the map camera object's vtable pointer on the heap (slot 2
+  `GetViewProj`, thiscall `ret 8`) for a DLL thunk: per-frame callback with the final matrices on the main thread,
+  heap-only write (respects PR #13379's no-.text rule); also fires from picking, not in Strategic View;
+  (2) poll the globals from a DLL thread with read-twice checks (one frame of lag); (3) find the view-projection
+  constant buffer by content in the D3D11 context (`*(0x3010584)`) for a RenderDoc cross-check.
+- **Implication for Gate 3:** camera ownership is not a blocker. The EXE keeps owning the camera (input, zoom,
+  Lua `UI.LookAt`) and the DLL forwards the matrices to the server each frame; the server renders with them. Open:
+  Strategic View's own camera (object at 0x1A0ADA0), whether other scenes overwrite the globals mid-frame, and the
+  runtime grid constants.
+
 ## Running experiments without stealing Art's focus
 
 State: options being evaluated against a stand-in D3D11 app in `nofocus/`.
