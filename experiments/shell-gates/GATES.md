@@ -55,11 +55,45 @@ State: instrument built (debug + release), self-tested offline, **not yet run li
 
 ## Gate 3: the server can draw into the shell
 
-State: prototype (x64 server, x86 compositor DLL, x86 stand-in host) being built in `compositor/`.
+State: **prototype built and measured on a stand-in host; not yet run in the game** (`compositor/README.md`).
 
 ### Prototype
 
-### Measurements
+- `shell_server.exe` (x64): D3D11 device on the adapter chosen by LUID; animated hex grid + spinning quad +
+  frame-counter barcode at 60 Hz (or free-running) into a BGRA8 texture with
+  `SHARED_NTHANDLE | SHARED_KEYEDMUTEX`, exported by name (`Local\VPShellWorld_<pid>_<gen>`); header section
+  `Local\VPShellSection` (texture name, size, frame counter, QPC stamp, heartbeat, client resize requests).
+- `shell_composite.dll` (x86): DllMain only starts a thread; swap-chain vtable via a dummy device; the immediate
+  context's hooks are patched from the real context at the first Present. Insertion modes `clear` (after the
+  first back-buffer clear), `nthclear`, `omset`, `exec` (after the N-th ExecuteCommandList), `present`. Opens the
+  texture with `OpenSharedResourceByName`, AcquireSync(1, 0), copies, ReleaseSync(0), draws a fullscreen triangle,
+  restores all touched pipeline state; SEH around every hook; live-reloaded ini; `.shot` / `.trace` trigger files;
+  one stats line per second. Loaded in the game by the DLL's `crashlogs\shell.helper` loader.
+- `test_host.exe` (x86 stand-in): blit/flip, 1-3 buffers, RGBA/BGRA/sRGB, MSAA, vsync on/off, deferred-context
+  clears, scripted minimise/resize/ResizeBuffers.
+
+### Measurements (stand-in host, RTX 4080, 2560x1440, server 60 Hz, the game sharing the GPU)
+
+| Mode | Host frame time mean (ms) | p99 (ms) |
+|---|---|---|
+| No DLL | 0.0927 | 0.296 |
+| DLL loaded, hooks off | 0.0944 | 0.310 |
+| Passthrough (hooks, no draw) | 0.0927 | 0.291 |
+| Composite, insert=clear | 0.0873 | 0.289 |
+| Composite, insert=present | 0.0877 | 0.290 |
+
+- Mode differences are below the run-to-run spread. Direct cost: CPU ~5 µs/frame + 0.13 ms AcquireSync per new
+  server frame; GPU 14 µs draw, ~70 µs with the 14.7 MB copy. At 165 Hz vsync: 6.10 ms vs 6.08 ms passthrough.
+- Latency server frame -> host Present: 3-4 ms mean / 6-8 ms p99 at 60 Hz (0 dropped); 0.3 / 0.8 ms free-running.
+- Placement correct (above the clear, under the UI) for blit and flip, 4x MSAA, sRGB, DLL before or after the
+  device. With the clear on a deferred context `clear` never fires; `exec` works.
+- Minimise/restore, window resize, ResizeBuffers 1920x1080 <-> 2560x1440 (new texture in use within 0.25 s),
+  server kill (last frame kept, stale after 1 s) and relaunch (reopened within 0.3 s): all fine.
+- 10-minute soak with 29 resizes: private bytes, handles and video memory flat in both processes.
+- **Found:** on Windows 11 the immediate context has a per-object heap vtable and the runtime restores the
+  ClearRenderTargetView slot inside every Present and ResizeBuffers; the DLL re-patches after both.
+- Not done: exclusive-fullscreen toggle (would take focus); ResizeBuffers1 / ClearView /
+  OMSetRenderTargetsAndUnorderedAccessViews / ResolveSubresource insertion points; UAV/stream-out state restore.
 
 ### Camera ownership (static analysis)
 
