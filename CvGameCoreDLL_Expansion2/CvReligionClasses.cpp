@@ -7918,7 +7918,7 @@ int CvReligionAI::ScoreBelief(CvBeliefEntry* pEntry, CvWeightedVector<int> viPlo
 			//Increase based on nearby cities that lack our faith.
 			iSpreadTemp *= iNumNearbyCities;
 			//Divide by estimated total # of cities on map.
-			iSpreadTemp /= GC.getMap().getWorldInfo().GetEstimatedNumCities();
+			iSpreadTemp /= max(1, GC.getMap().getWorldInfo().GetEstimatedNumCities());
 
 			if (iReligionsEnhancedPercent <= 50 || iSpreadTemp >= 25)
 				ShouldSpread = true;
@@ -10083,7 +10083,7 @@ int CvReligionAI::ScoreBeliefForPlayer(CvBeliefEntry* pEntry, bool bReturnConque
 			//Increase based on nearby cities that lack our faith.
 			iSpreadTemp *= max(1, iNumNearbyCities);
 			//Divide by estimated total # of cities on map.
-			iSpreadTemp /= GC.getMap().getWorldInfo().GetEstimatedNumCities();
+			iSpreadTemp /= max(1, GC.getMap().getWorldInfo().GetEstimatedNumCities());
 		}
 
 		iSpreadTemp += iSpreadYieldsLocal;
