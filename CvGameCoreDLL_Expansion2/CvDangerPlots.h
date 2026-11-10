@@ -55,9 +55,10 @@ public:
 
 	void push_back(const T& value)
 	{
+		const T copy(value); // value may refer to an element that grow() moves
 		if (m_uSize == m_uCapacity)
 			grow(m_uCapacity * 2 > 4 ? m_uCapacity * 2 : 4);
-		new (data() + m_uSize) T(value);
+		new (data() + m_uSize) T(copy);
 		m_uSize++;
 	}
 
