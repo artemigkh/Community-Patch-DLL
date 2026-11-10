@@ -3246,7 +3246,7 @@ vector<OptionWithScore<pair<CvUnit*, BuilderDirective>>> CvHomelandAI::GetWeight
 	{
 		BuilderDirective eDirective = *it;
 		if (ignoredDirectives.find(eDirective) != ignoredDirectives.end())
-			aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(make_pair<CvUnit*, BuilderDirective>(NULL, eDirective), INT_MIN));
+			aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(pair<CvUnit*, BuilderDirective>(NULL, eDirective), INT_MIN));
 
 		const CvPlot* pDirectivePlot = GC.getMap().plot(eDirective.m_sX, eDirective.m_sY);
 		if (m_workedPlots.find(pDirectivePlot->GetPlotIndex()) != m_workedPlots.end())
@@ -3254,20 +3254,20 @@ vector<OptionWithScore<pair<CvUnit*, BuilderDirective>>> CvHomelandAI::GetWeight
 
 		if (eDirective.m_eBuild == NO_BUILD)
 		{
-			aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(make_pair<CvUnit*, BuilderDirective>(NULL, eDirective), INT_MIN));
+			aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(pair<CvUnit*, BuilderDirective>(NULL, eDirective), INT_MIN));
 			continue;
 		}
 
 		// If the score is lower than the best weighted score we have found, it will never be better than the best weighted score
 		if (GetDirectiveWeight(eDirective, 0, 0) <= iBestWeightedScore)
 		{
-			aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(make_pair<CvUnit*, BuilderDirective>(NULL, eDirective), INT_MIN));
+			aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(pair<CvUnit*, BuilderDirective>(NULL, eDirective), INT_MIN));
 			continue;
 		}
 
 		if (!IsBestDirectiveForPlot(eDirective, aDirectives))
 		{
-			aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(make_pair<CvUnit*, BuilderDirective>(NULL, eDirective), INT_MIN));
+			aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(pair<CvUnit*, BuilderDirective>(NULL, eDirective), INT_MIN));
 			continue;
 		}
 
@@ -3326,7 +3326,7 @@ vector<OptionWithScore<pair<CvUnit*, BuilderDirective>>> CvHomelandAI::GetWeight
 		if (iBestBuilderWeightedScore > iBestWeightedScore)
 			iBestWeightedScore = iBestBuilderWeightedScore;
 
-		aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(make_pair<CvUnit*, BuilderDirective>(pBestBuilder, eDirective), iBestBuilderWeightedScore));
+		aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(pair<CvUnit*, BuilderDirective>(pBestBuilder, eDirective), iBestBuilderWeightedScore));
 	}
 
 	std::stable_sort(aWeightedDirectives.begin(), aWeightedDirectives.end());

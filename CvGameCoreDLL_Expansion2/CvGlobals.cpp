@@ -2632,6 +2632,11 @@ static bool IsRangeReadable(const void* p, SIZE_T n)
 // address-space exhaustion. Returns the number of frames appended.
 static int AppendStackScan(char* szOut, size_t cchOut, const CONTEXT* pCtx, int nMax)
 {
+#if !defined(_M_IX86)
+	// x64: the scan below reads 32-bit registers and DWORD stack slots; ported by epic 1000 (issue 1002).
+	(void)szOut; (void)cchOut; (void)pCtx; (void)nMax;
+	return 0;
+#else
 	size_t used = strlen(szOut);
 	int nFound = 0;
 
@@ -2679,6 +2684,7 @@ static int AppendStackScan(char* szOut, size_t cchOut, const CONTEXT* pCtx, int 
 	}
 	szOut[used] = '\0';
 	return nFound;
+#endif
 }
 
 LONG WINAPI CustomFilter(EXCEPTION_POINTERS* ExceptionInfo)

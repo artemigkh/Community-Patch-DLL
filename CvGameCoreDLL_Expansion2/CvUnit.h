@@ -387,6 +387,14 @@ struct SUnitIDValueContainer
 	}
 };
 
+#if defined(_MSC_VER) && _MSC_VER >= 1900
+// Modern STL (x64 build): std::swap is noexcept-qualified, so an explicit specialisation
+// must repeat that spec; an ADL overload is what the modern STL looks up anyway.
+inline void swap(SUnitIDValueContainer& a, SUnitIDValueContainer& b)
+{
+	a.swap(b);
+}
+#else
 namespace std {
 	template<>
 	inline void swap(SUnitIDValueContainer& a, SUnitIDValueContainer& b)
@@ -394,6 +402,7 @@ namespace std {
 		a.swap(b);
 	}
 }
+#endif
 
 enum AreaEffectType
 {
