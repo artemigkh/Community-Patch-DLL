@@ -1,0 +1,28 @@
+adapter 0 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7 VRAM 16048 MB
+adapter 1 'Microsoft Basic Render Driver' LUID 000000000000F569 VRAM 0 MB (software)
+device: 64-bit, FL b000, ExtendedResourceSharing 1, SharedResourceTier 3 (hr 0x00000000)
+[ 0] bgra8_1mip_ntkm            opened: 256x256 mips 1 arr 1 BGRA8 ms 1 usage 0 bind 0x28 cpu 0x0 misc 0x900 bytes 262144; keyed mutex acquired; contents MATCH
+[ 1] bc1_mips_ntkm              opened: 256x256 mips 9 arr 1 BC1 ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x900 bytes 43704; keyed mutex acquired; contents MATCH
+[ 2] bc3_mips_ntkm              opened: 256x256 mips 9 arr 1 BC3 ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x900 bytes 87408; keyed mutex acquired; contents MATCH
+[ 3] bc1_mips_nt_nokm           opened: 256x256 mips 9 arr 1 BC1 ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x802 bytes 43704; keyed mutex none; contents MATCH
+[ 4] bc1_mips_legacy_shared     opened: 256x256 mips 9 arr 1 BC1 ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x2 bytes 43704; keyed mutex none; contents MATCH
+[ 5] bc1_mips_IMMUTABLE_ntkm    OPEN FAILED 0x80070057
+[ 6] bc1_mips_IMMUTABLE_nt      OPEN FAILED 0x80070057
+[ 7] rgba8_array4_mips_ntkm     opened: 128x128 mips 8 arr 4 RGBA8 ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x900 bytes 349520; keyed mutex acquired; contents MATCH
+[ 8] bc3_array4_mips_ntkm       opened: 128x128 mips 8 arr 4 BC3 ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x900 bytes 87488; keyed mutex acquired; contents MATCH
+[ 9] bc1_cube_mips_ntkm         OPEN FAILED 0x80070057
+[10] rgba16f_1mip_ntkm          opened: 128x128 mips 1 arr 1 RGBA16F ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x900 bytes 131072; keyed mutex acquired; contents MATCH
+[11] rgba16_unorm_ntkm          opened: 128x128 mips 1 arr 1 RGBA16 ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x900 bytes 131072; keyed mutex acquired; contents MATCH
+[12] r16f_1mip_ntkm             opened: 128x128 mips 1 arr 1 R16F ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x900 bytes 32768; keyed mutex acquired; contents MATCH
+[13] a8_1mip_ntkm               opened: 128x128 mips 1 arr 1 A8 ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x900 bytes 16384; keyed mutex acquired; contents MATCH
+[14] r32f_1mip_ntkm             opened: 128x128 mips 1 arr 1 R32F ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x900 bytes 65536; keyed mutex acquired; contents MATCH
+[15] vb_1MB_ntkm                OPEN FAILED 0x80070057
+[16] vb_1MB_nt                  OPEN FAILED 0x80070057
+[17] vb_1MB_legacy_shared       opened: buffer 1048576 bytes bind 0x1 misc 0x2; keyed mutex none; contents MATCH
+[18] ib_256KB_legacy_shared     opened: buffer 262144 bytes bind 0x2 misc 0x2; keyed mutex none; contents MATCH
+[19] vb_IMMUTABLE_legacy        OPEN FAILED 0x80070057
+[20] vb_DYNAMIC_legacy          OPEN FAILED 0x80070057
+[21] bc1_cube_legacy_shared     opened: 64x64 mips 7 arr 6 BC1 ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x6 bytes 16464; keyed mutex none; contents MATCH
+[22] bc1_mips_IMMUTABLE_legacy  OPEN FAILED 0x80070057
+[23] srvbuf_1MB_nt              OPEN FAILED 0x80070057
+VRAM usage of this process: before opening 8444 KB, after 8520 KB
