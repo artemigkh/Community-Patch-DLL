@@ -42514,7 +42514,100 @@ void CvPlayer::setReplayDataValue(const CvString& strDataset, unsigned int uiTur
 		it = m_ReplayData.find(strDataset);
 	}
 
-	it->second[uiTurn] = iValue;
+	it->second.set(uiTurn, iValue);
+}
+
+//	--------------------------------------------------------------------------------
+// Index of the first entry whose turn is not less than uiTurn.
+CvReplayTurnData::size_type CvReplayTurnData::lowerBound(unsigned int uiTurn) const
+{
+	size_type uiFirst = 0;
+	size_type uiLast = m_entries.size();
+	while (uiFirst < uiLast)
+	{
+		size_type uiMid = uiFirst + (uiLast - uiFirst) / 2;
+		if (m_entries[uiMid].first < uiTurn)
+			uiFirst = uiMid + 1;
+		else
+			uiLast = uiMid;
+	}
+	return uiFirst;
+}
+
+CvReplayTurnData::const_iterator CvReplayTurnData::find(unsigned int uiTurn) const
+{
+	size_type uiIndex = lowerBound(uiTurn);
+	if (uiIndex < m_entries.size() && m_entries[uiIndex].first == uiTurn)
+		return m_entries.begin() + uiIndex;
+	return m_entries.end();
+}
+
+void CvReplayTurnData::set(unsigned int uiTurn, int iValue)
+{
+	if (m_entries.empty() || m_entries.back().first < uiTurn)
+	{
+		m_entries.push_back(value_type(uiTurn, iValue));
+		return;
+	}
+
+	size_type uiIndex = lowerBound(uiTurn);
+	if (uiIndex < m_entries.size() && m_entries[uiIndex].first == uiTurn)
+		m_entries[uiIndex].second = iValue;
+	else
+		m_entries.insert(m_entries.begin() + uiIndex, value_type(uiTurn, iValue));
+}
+
+void CvReplayTurnData::insert(unsigned int uiTurn, int iValue)
+{
+	if (m_entries.empty() || m_entries.back().first < uiTurn)
+	{
+		m_entries.push_back(value_type(uiTurn, iValue));
+		return;
+	}
+
+	size_type uiIndex = lowerBound(uiTurn);
+	if (uiIndex == m_entries.size() || m_entries[uiIndex].first != uiTurn)
+		m_entries.insert(m_entries.begin() + uiIndex, value_type(uiTurn, iValue));
+}
+
+// Same bytes as the std::map<unsigned int, int> this type replaced (FStlContainerSerialization.h):
+// the entry count as size_t, then turn and value of each entry in ascending turn order.
+FDataStream& operator<<(FDataStream& saveTo, const CvReplayTurnData& readFrom)
+{
+	size_t count = readFrom.m_entries.size();
+	saveTo << count;
+	for (CvReplayTurnData::const_iterator it = readFrom.m_entries.begin(); it != readFrom.m_entries.end(); ++it)
+	{
+		saveTo << it->first;
+		saveTo << it->second;
+	}
+	return saveTo;
+}
+
+// Loads like std::map<unsigned int, int>: the first entry for a turn wins, entries end up sorted.
+FDataStream& operator>>(FDataStream& loadFrom, CvReplayTurnData& writeTo)
+{
+	writeTo.m_entries.clear();
+	size_t count = 0;
+	loadFrom >> count;
+
+	//failsafe - may be pointless but let's try
+	if (count == 0xFFFFFFFF)
+		return loadFrom;
+
+	// one block for the usual case; a corrupt count must not turn into a huge allocation
+	if (count <= 0x10000)
+		writeTo.m_entries.reserve(count);
+
+	for (size_t i = 0; i < count; ++i)
+	{
+		unsigned int uiTurn = 0;
+		int iValue = 0;
+		loadFrom >> uiTurn;
+		loadFrom >> iValue;
+		writeTo.insert(uiTurn, iValue);
+	}
+	return loadFrom;
 }
 
 int CvPlayer::getYieldPerTurnHistory(YieldTypes eYield, int iNumTurns, bool bIgnoreInstant) const

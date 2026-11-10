@@ -126,6 +126,36 @@ struct SPlayerActiveEspionageEvent
 	int iAmount;
 };
 
+// The history of one replay dataset: (turn, value) pairs sorted by turn, at most one per turn.
+// It reads like the std::map<unsigned int, int> it replaces (begin/end/find/size iterate in
+// ascending turn order) and is saved in the same format, but it is one heap block instead of
+// one map node per turn. New turns are almost always appended at the end.
+class CvReplayTurnData
+{
+public:
+	typedef std::pair<unsigned int, int> value_type;
+	typedef std::vector<value_type>::size_type size_type;
+	typedef std::vector<value_type>::const_iterator const_iterator;
+
+	const_iterator begin() const { return m_entries.begin(); }
+	const_iterator end() const { return m_entries.end(); }
+	size_type size() const { return m_entries.size(); }
+	bool empty() const { return m_entries.empty(); }
+
+	const_iterator find(unsigned int uiTurn) const;
+	// Sets the value for a turn, replacing the old one if the turn is already present.
+	void set(unsigned int uiTurn, int iValue);
+	// Adds the value only if the turn is not present yet, like std::map::insert.
+	void insert(unsigned int uiTurn, int iValue);
+
+	friend FDataStream& operator<<(FDataStream& saveTo, const CvReplayTurnData& readFrom);
+	friend FDataStream& operator>>(FDataStream& loadFrom, CvReplayTurnData& writeTo);
+
+private:
+	size_type lowerBound(unsigned int uiTurn) const;
+	std::vector<value_type> m_entries;
+};
+
 class CvPlayer
 {
 	friend class CvPlayerPolicies;
@@ -134,7 +164,7 @@ private:
 	CvPlayer& operator=(const CvPlayer&); //hide assignment operator
 
 public:
-	typedef std::map<unsigned int, int> TurnData;
+	typedef CvReplayTurnData TurnData;
 
 	CvPlayer();
 	virtual ~CvPlayer();
