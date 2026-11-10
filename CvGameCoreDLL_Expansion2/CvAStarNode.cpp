@@ -22,6 +22,7 @@ void CvAStarNode::clear()
 	m_bIsStopNode = false;
 	m_pParent = NULL;
 
-	m_apChildren.clear();
+	m_iFirstChild = 0;
+	m_iNumChildren = 0;
 	m_kCostCacheData.clear();
 }
