@@ -23,6 +23,7 @@ void CvAStarNode::clear()
 	m_iOpenListIndex = -1;
 	m_pParent = NULL;
 
-	m_apChildren.clear();
+	m_iFirstChild = 0;
+	m_iNumChildren = 0;
 	m_kCostCacheData.clear();
 }
