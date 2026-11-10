@@ -258,6 +258,10 @@ protected:
 	std::vector<CvAStarNode*> m_openNodes;
 	std::vector<CvAStarNode*> m_closedNodes;
 
+	//children of all nodes in the current search, each node's children stored contiguously
+	//(one buffer per pathfinder instead of one heap block per node)
+	std::vector<CvAStarNode*> m_childNodes;
+
 	// The best node - just popped from open nodes. walking backwards from here gives the current path
 	CvAStarNode* m_pBest;
 

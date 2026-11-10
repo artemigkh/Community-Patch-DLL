@@ -8275,6 +8275,13 @@ void CvWorldInfo::readFrom(FDataStream& loadFrom)
 	CvBaseInfo::readFrom(loadFrom);
 	CvStreamLoadVisitor serialVisitor(loadFrom);
 	Serialize(*this, serialVisitor);
+
+	// EstimatedNumCities is not serialized, so take it from the database entry of this world size
+	Database::SingleResult kResult;
+	if(GetID() != NO_WORLDSIZE && DB.SelectAt(kResult, "Worlds", GetID()))
+	{
+		m_iEstimatedNumCities = kResult.GetInt("EstimatedNumCities");
+	}
 }
 
 // A special reader for version 0 (pre-versioning)

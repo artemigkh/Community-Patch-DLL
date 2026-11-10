@@ -1068,7 +1068,7 @@ struct AttackKey
 		return iAttackerId == rhs.iAttackerId &&
 			iAttackerPlot == rhs.iAttackerPlot &&
 			iDefenderId == rhs.iDefenderId &&
-			iGarrisonId == rhs.iGarrisonId;
+			iGarrisonId == rhs.iGarrisonId &&
 			iPrevSelfDamage == rhs.iPrevSelfDamage &&
 			iPrevUnitDamage == rhs.iPrevUnitDamage &&
 			iPrevCityDamage == rhs.iPrevCityDamage;
@@ -1354,6 +1354,7 @@ protected:
 
 	virtual void wipeDerived()
 	{
+		vector<CvTacticalPosition*>().swap(childPositions);
 		tactPlotLookup.wipe();
 		tactPlots.wipe();
 		enemyPlots.wipe();
@@ -1465,6 +1466,7 @@ protected:
 
 	virtual void wipeDerived()
 	{
+		vector<CvSupportPosition*>().swap(childPositions);
 		finalCombatPositionUnits.wipe();
 	}
 

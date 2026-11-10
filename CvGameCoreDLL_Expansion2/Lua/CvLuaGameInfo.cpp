@@ -100,9 +100,12 @@ int CvLuaGameInfo::pRegisterTypesInfo(lua_State* L)
 	lua_pushvalue(L, -1);
 	lua_setglobal(L, "GameInfoTypes");
 
+	// Insert in type name order, not in hash map order, so the table is built the same way by every build
 	const CvGlobals::InfosMap& kInfosMap = GC.GetInfoTypes();
-	for(CvGlobals::InfosMap::const_iterator it = kInfosMap.begin();
-	        it != kInfosMap.end(); ++ it)
+	std::vector< std::pair<std::string, int> > vTypes(kInfosMap.begin(), kInfosMap.end());
+	std::sort(vTypes.begin(), vTypes.end());
+	for(std::vector< std::pair<std::string, int> >::const_iterator it = vTypes.begin();
+	        it != vTypes.end(); ++ it)
 	{
 		lua_pushinteger(L, (*it).second);
 		lua_setfield(L, -2, (*it).first.c_str());
