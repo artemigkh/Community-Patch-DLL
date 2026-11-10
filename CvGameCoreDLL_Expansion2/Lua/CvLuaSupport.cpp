@@ -18,6 +18,7 @@
 #include "../CvGameCoreDLLPCH.h"
 #include "../CustomMods.h"
 #include "CvLuaSupport.h"
+#include "../InstanceNames.h"
 #include "CvLuaEnums.h"
 #include "CvLuaFractal.h"
 #include "CvLuaGameInfo.h"
@@ -466,8 +467,7 @@ bool LuaSupport::CallAccumulator(_In_ ICvEngineScriptSystem1* pkScriptSystem, _I
 namespace
 {
 
-const char* const LUAEXEC_REQUEST_EVENT = "Local\\VPLuaExec";
-const char* const LUAEXEC_DONE_EVENT = "Local\\VPLuaExecDone";
+// Event names: Local\VPLuaExec and Local\VPLuaExecDone, with "_<id>" under VP_INSTANCE (InstanceNames.h).
 const wchar_t* const LUAEXEC_REQUEST_FILE = L"luaexec_request.lua";
 const wchar_t* const LUAEXEC_RESULT_FILE = L"luaexec_result.txt";
 const wchar_t* const LUAEXEC_ENABLE_FILE = L"luaexec.enabled";
@@ -762,8 +762,8 @@ void LuaSupport::PollExternalLuaRequest()
 	if (s_hRequest == NULL)
 	{
 		// Created rather than opened, so either side may start first.
-		s_hRequest = CreateEventA(NULL, FALSE, FALSE, LUAEXEC_REQUEST_EVENT);
-		s_hDone = CreateEventA(NULL, FALSE, FALSE, LUAEXEC_DONE_EVENT);
+		s_hRequest = CreateEventA(NULL, FALSE, FALSE, InstanceNames::Get().szLuaExecRequest);
+		s_hDone = CreateEventA(NULL, FALSE, FALSE, InstanceNames::Get().szLuaExecDone);
 		if (s_hRequest == NULL)
 			return;
 	}

@@ -57,6 +57,7 @@ bool CallAccumulator(_In_ ICvEngineScriptSystem1* pkScriptSystem, _In_z_ const c
 //	     lines at the top: "--@id=<token>" (echoed back) and "--@state=<StateName>" (default: Main)
 //	  2. set the event Local\VPLuaExec
 //	  3. wait on Local\VPLuaExecDone, then read luaexec_result.txt; its first line echoes the id
+//	With VP_INSTANCE=<id> in the game's environment both event names end in "_<id>" (InstanceNames.h).
 //	Runs from the top of CvGame::update, so it works whenever a game is loaded - on the player's turn,
 //	with any screen open - and never in the front end.
 //	OPT-IN: off until luaexec.enabled exists in the cache folder (checked every ~2 s, so it can be switched

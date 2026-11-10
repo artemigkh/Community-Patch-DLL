@@ -76,6 +76,7 @@ extern "C" __declspec(dllimport) long __stdcall CoCreateGuid(GUID* pguid);
 
 #include "CvSpanSerialization.h"
 #include "CvEnumMapSerialization.h"
+#include "InstanceNames.h"
 
 //updated by pre-build hook
 #include "../commit_id.inc"
@@ -1595,7 +1596,7 @@ bool ExternalPause()
 	bool bPause = false;
 
 	// wait for an external mutex if it exists to make it easier to see what the AI is doing
-	HANDLE hMutex = ::OpenMutex(SYNCHRONIZE, FALSE, "TurnByTurn");
+	HANDLE hMutex = ::OpenMutex(SYNCHRONIZE, FALSE, InstanceNames::Get().szTurnByTurn);	// "TurnByTurn", or "TurnByTurn_<id>" under VP_INSTANCE
 	if (hMutex != NULL)
 	{
 		if (::WaitForSingleObject(hMutex, 0) == WAIT_OBJECT_0)

@@ -517,6 +517,7 @@ bool SampleHeaps(HeapStats& kOut, bool bAdvanceBaseline = true);
 //	  2. set the auto-reset event Local\VPMemSnapshot
 //	  3. wait on Local\VPMemSnapshotDone; memsnap_done.txt then holds a one-line summary that echoes
 //	     SnapSeq and Label - check them, so a stale signal cannot pair with the wrong request
+//	With VP_INSTANCE=<id> in the game's environment both event names end in "_<id>" (InstanceNames.h).
 //	Send one request at a time: two requests that arrive before a tick merge into one. The request file
 //	is deleted once read, so a request without a fresh label is logged as "unlabelled".
 //

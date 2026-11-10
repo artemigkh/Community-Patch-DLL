@@ -14,6 +14,7 @@
 #include "EngineQueueGuard.h"
 #include "EngineAllocTrace.h"
 #include "ShellHelperLoader.h"
+#include "InstanceNames.h"
 
 // must be included after all other headers
 #include "LintFree.h"
@@ -32,6 +33,8 @@ extern "C" ICvGameContext1* DllGetGameContext()
 	EngineAllocTrace::Install();
 	// Opt-in (crashlogs\shell.helper): load one developer helper DLL into the process.
 	ShellHelperLoader::LoadOnce();
+	// Reads VP_INSTANCE once and logs the instruments' kernel-object names (crashlogs\instruments.log).
+	InstanceNames::Get();
 
 	return CvDllGameContext::GetSingleton();
 }

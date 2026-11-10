@@ -7,6 +7,7 @@
 #include "CvGameCoreDLLUtil.h"
 #include "MemoryHooks.h"
 #include "MemoryImports.h"
+#include "InstanceNames.h"
 
 extern "C" {
 #include <lua.h>
@@ -2156,8 +2157,7 @@ void LogTurn()
 namespace
 {
 
-const char* const SNAPSHOT_REQUEST_EVENT = "Local\\VPMemSnapshot";
-const char* const SNAPSHOT_DONE_EVENT = "Local\\VPMemSnapshotDone";
+// Event names: Local\VPMemSnapshot and Local\VPMemSnapshotDone, with "_<id>" under VP_INSTANCE (InstanceNames.h).
 const char* const SNAPSHOT_REQUEST_FILE = "memsnap_request.txt";
 const char* const SNAPSHOT_DONE_FILE = "memsnap_done.txt";
 const int SNAPSHOT_LABEL_CHARS = 96;
@@ -2593,8 +2593,8 @@ void PollSnapshotRequest()
 
 		// Created rather than opened, so it does not matter whether the game or the watcher starts
 		// first. Auto-reset: one request, one snapshot.
-		s_hRequest = CreateEventA(NULL, FALSE, FALSE, SNAPSHOT_REQUEST_EVENT);
-		s_hDone = CreateEventA(NULL, FALSE, FALSE, SNAPSHOT_DONE_EVENT);
+		s_hRequest = CreateEventA(NULL, FALSE, FALSE, InstanceNames::Get().szMemSnapshotRequest);
+		s_hDone = CreateEventA(NULL, FALSE, FALSE, InstanceNames::Get().szMemSnapshotDone);
 	}
 
 	if (s_hRequest == NULL || WaitForSingleObject(s_hRequest, 0) != WAIT_OBJECT_0)
