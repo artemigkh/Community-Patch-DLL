@@ -931,6 +931,23 @@ static void VerifyPatches(bool quiet)
 			if (!quiet || g_slotRewritesTotal == 0)
 				Log("vtbl %p slot %u was rewritten by someone (now %p, our orig %p) - re-patching%s", p.vtbl, p.slot, cur, p.orig,
 					quiet ? " (further rewrites are counted in stats, not logged)" : "");
+			// Only a slot the runtime itself restored (new value inside the original's module, e.g. d3d11 swapping
+			// between its own implementations) is re-asserted. A value from another module is another hooker
+			// (Steam overlay, capture tools) that chained on top of us and will call our hook through its saved
+			// pointer: re-patching it and chaining to it would make the two hooks call each other for ever
+			// (seen live 2026-11-09: 174 nested Hook_Present frames after a resolution change, stack overflow).
+			HMODULE mCur = nullptr, mOrig = nullptr;
+			GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCWSTR)cur, &mCur);
+			GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCWSTR)p.orig, &mOrig);
+			if (!mCur || mCur != mOrig)
+			{
+				wchar_t name[MAX_PATH] = L"?";
+				if (mCur) GetModuleFileNameW(mCur, name, MAX_PATH);
+				Log("vtbl %p slot %u taken over by %p (%ls) - leaving it chained on top of our hook", p.vtbl, p.slot, cur, name);
+				p.active = 0;
+				LeaveCriticalSection(&g_patchLock);
+				continue;
+			}
 			if (cur != p.orig) Log("  note: new target %p differs from our saved original %p - chaining to the new one", cur, p.orig);
 			p.orig = cur;
 			WriteSlot(&p.vtbl[p.slot], p.hook);

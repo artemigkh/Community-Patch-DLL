@@ -56,14 +56,47 @@ cursor: 85,22 / 83,23 / 86,21), end of turn (forced 352 -> 353 in 24 s): **all p
 peace offer, two Bismarck dialogs) stall the AI turn; `tools/wait_turn.py --answer N` answers them with a posted
 click on the bottom (neutral / REFUSE) button.
 
-### Re-run of the decisive configuration (instrumented)
+### Re-run of the decisive configuration B4 (instrumented)
 
 Instrumentation: `tools/addrspace.py` (read-only: private bytes, working set, committed / reserved / free, largest
-free block, free blocks >= 1 / 16 MB, free below 2 GB; one-shot or CSV every N s).
+free block, free blocks >= 1 / 16 MB, free below 2 GB; one-shot or CSV every N s; full series in
+`live/mem_base.csv`, `live/mem_b4.csv`). Same DLL, same save, same no-focus mode as the baseline;
+`tools/disable_systems.py set B4`.
+
+| Moment | Baseline private | **B4 private** | Δ | Baseline largest free | **B4 largest free** | Δ |
+|---|---|---|---|---|---|---|
+| t350, right after load | 2,122 | **1,676** | **-446** | 1,054 | **1,500** | **+446** |
+| t351 | 2,167 | 1,721 | -446 | 995 | 1,436 | +441 |
+| t353 | 2,211 | **1,757** | **-454** | 901 | **1,281** | **+380** |
+
+Working set at load: 1,848 -> 1,476 MB. Free below 2 GB stays ~26-30 MB in both (the low half is saturated
+either way: the saving lands above 2 GB). Growth over three AI turns: +89 MB baseline, +81 MB B4.
+
+**Functional, B4** (`live/checklist_b4.json`, `live/checklist_b4_t353.json`): status, city screen open / up /
+closed, unit select + LookAt, minimap / unit-flag / city-banner contexts, hex picking by posted mouse moves
+(identical hexes to the baseline), and **three full AI turns 350 -> 353 with combat, movement, city growth and
+diplomacy** (86 s and 26 s turns, AI leader screens answered by posted click), wonder popup (Alcatraz) rendered and
+closed by posted click: **all pass**. Lua.log: 323 lines, only the two VPUI_loader.lua errors that every run shows.
+No crash, no crashes.log entry. What it looks like: `live/b4_loaded.png` (map black with dark red patches, units,
+flags, banners, HUD, city list, notifications all drawn), `live/b4_t353.png`.
 
 ### Owners of the 118.75 MB (0x26) and 59.38 MB (0x25) blocks
 
-State: instrument built (debug + release), self-tested offline, **not yet run live** (`alloc-trace/README.md`).
+State: **named, live-confirmed: the FluidFOW particle grid.**
+
+Live (allocation trace on, threshold 1 MB, `live/allocTrace_base.log` / `live/allocTrace_b4.log`):
+- Baseline load of the huge save: `FluidParticles.cpp:718` **48.24 MB** + `:723` **24.12 MB** (+ `:719` 1.51 MB),
+  aligned 128, one call chain, allocated during the load (main thread), the largest live engine blocks; not
+  reallocated over three turns on this map. Exactly the 2:1 pair, sized `cells × 4096` / `cells × 2048` with cells
+  depending on the map, so the 118.75 / 59.38 MB pair of the other (180x113) game is the same grid on a bigger
+  map.
+- **B4 (FluidFOW = 1): zero FluidParticles allocations**; the whole 73.9 MB set is gone.
+- Caveat: right after the load both blocks are ~90% zero bytes, so the 0x26 / 0x25 dominant byte of the old
+  census was not reproduced here (that census was a late game; the content is simulation state).
+- Other large live engine blocks (both configs): `UIManager.cpp:3580` 6 × 4 MB, FFastVector 15-19 MB,
+  `Terrain.h:79` 8.7 MB, CommandStream 14 MB, D3D11Renderer 5.4 MB, cvLandmarkLibrary 3.9 MB.
+
+Instrument notes:
 
 - **Instrument:** `EngineAllocTrace.{h,cpp}` chains thunks in front of the EXE's msvcr90 import slots (malloc,
   _aligned_malloc, realloc, free, _aligned_free) instead of an inline hook at 0x82c090: PR #13379 reports that
@@ -86,6 +119,32 @@ State: instrument built (debug + release), self-tested offline, **not yet run li
 
 ### Memory left in the shell, and what still works
 
+- **Left in the shell (B4, huge save t353):** 1,757 MB private (instrumented DLL; ~1,545-1,620 MB with the plain
+  DLL by the probes' figure), 1,281 MB largest free block, ~1,480 MB free of the 4 GB space. That is the shell
+  with the DLL **still in-process**: the DLL's own ~300 MB at t344 (earlier census) would also leave in the full
+  architecture.
+- **Still running in the shell:** Terrain, Unit, LandmarkSystem, River, Arrows (cannot be switched off by
+  config), LeaderHead and Audio (kept on purpose). Their cost is not separable with config; Terrain.h:79 alone is
+  8.7 MB of large blocks, unit Granny models are in `granny_file.cpp` (4 MB live, 14 MB churn).
+- **Works:** all UI (HUD, city list, notifications, city screen, popups, leader screens), unit flags, city
+  banners, plot tooltip, selection, camera LookAt, hex picking by mouse, AI turns with combat, end of turn.
+- **Does not work / not shown:** the map surface (black), minimap (black), city meshes, forests, particles,
+  borders (Overlay); FOW look. These are exactly what a server-rendered world texture must supply.
+
+### Gate 1 verdict: **GO WITH CONDITIONS**
+
+The shell survives without the switchable half of its world: the huge t350 save loads, plays three AI turns and
+keeps every UI and input path working, with 446-454 MB less committed and a 380-446 MB larger free block. The
+conditions:
+1. **Config alone stops at ~450 MB.** Terrain, Unit, LandmarkSystem, River and Arrows crash the load when
+   disabled, because the EXE keeps dispatching world messages to them (Terrain/River via the message-queue
+   dispatcher EXE+0x2a59a5, Unit at mod activation). Removing them needs DLL-side stubs: null-object systems or a
+   filter on those queue types (the EngineQueueGuard machinery already sits on that queue). Each is its own small
+   reverse-engineering task, sized after a Ghidra pass on the five crash sites.
+2. **FluidFOW is the one big win** (two thirds of the saving: 73.9 MB of grid at load plus the 8 × 24 MB per-thread
+   particle blocks); it is also the owner of the "0x26/0x25" pair.
+3. Not exercised: StrategicView entry, YieldIcons toggle, a unit move by mouse order, multiplayer, save from the
+   shell (all low-risk UI paths; to do in the next pass).
 ## Gate 3: the server can draw into the shell
 
 State: **prototype built and measured on a stand-in host; not yet run in the game** (`compositor/README.md`).
