@@ -42571,10 +42571,11 @@ void CvReplayTurnData::insert(unsigned int uiTurn, int iValue)
 }
 
 // Same bytes as the std::map<unsigned int, int> this type replaced (FStlContainerSerialization.h):
-// the entry count as size_t, then turn and value of each entry in ascending turn order.
+// the entry count as a 32-bit unsigned int, then turn and value of each entry in ascending turn order.
 FDataStream& operator<<(FDataStream& saveTo, const CvReplayTurnData& readFrom)
 {
-	size_t count = readFrom.m_entries.size();
+	// The count is 32 bits in the save format, whatever the width of size_t
+	unsigned int count = static_cast<unsigned int>(readFrom.m_entries.size());
 	saveTo << count;
 	for (CvReplayTurnData::const_iterator it = readFrom.m_entries.begin(); it != readFrom.m_entries.end(); ++it)
 	{
@@ -42588,7 +42589,7 @@ FDataStream& operator<<(FDataStream& saveTo, const CvReplayTurnData& readFrom)
 FDataStream& operator>>(FDataStream& loadFrom, CvReplayTurnData& writeTo)
 {
 	writeTo.m_entries.clear();
-	size_t count = 0;
+	unsigned int count = 0;
 	loadFrom >> count;
 
 	//failsafe - may be pointless but let's try
@@ -42599,7 +42600,7 @@ FDataStream& operator>>(FDataStream& loadFrom, CvReplayTurnData& writeTo)
 	if (count <= 0x10000)
 		writeTo.m_entries.reserve(count);
 
-	for (size_t i = 0; i < count; ++i)
+	for (unsigned int i = 0; i < count; ++i)
 	{
 		unsigned int uiTurn = 0;
 		int iValue = 0;
