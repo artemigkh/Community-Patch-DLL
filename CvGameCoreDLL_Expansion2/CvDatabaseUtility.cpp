@@ -122,7 +122,7 @@ void CvDatabaseUtility::Initialize2DArray(int**& ppArray, const size_t iCount1, 
 		return;
 	}
 
-	unsigned int iNumBytes = iCount1 * sizeof(int*) + iCount1 * iCount2 * sizeof(int);
+	size_t iNumBytes = iCount1 * sizeof(int*) + iCount1 * iCount2 * sizeof(int);
 	unsigned char* pData = FNEW(unsigned char[iNumBytes], c_eCiv5GameplayDLL, 0);
 	ppArray = (int**)pData;
 	ppArray[0] = (int*)(pData + iCount1 * sizeof(int*));
