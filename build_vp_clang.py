@@ -264,6 +264,7 @@ CPP = [
     'CvGameCoreDLL_Expansion2\\EngineQueueGuard.cpp',
     'CvGameCoreDLL_Expansion2\\EngineAllocTrace.cpp',
     'CvGameCoreDLL_Expansion2\\ShellHelperLoader.cpp',
+    'CvGameCoreDLL_Expansion2\\ViewMaskSync.cpp',
 ]
 
 # Objects that must be handed to the linker BEFORE the static libraries.

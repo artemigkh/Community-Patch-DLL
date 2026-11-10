@@ -77,6 +77,7 @@ extern "C" __declspec(dllimport) long __stdcall CoCreateGuid(GUID* pguid);
 #include "CvSpanSerialization.h"
 #include "CvEnumMapSerialization.h"
 #include "InstanceNames.h"
+#include "ViewMaskSync.h"
 
 //updated by pre-build hook
 #include "../commit_id.inc"
@@ -1632,6 +1633,8 @@ void CvGame::update()
 	EngineQueueGuard::ReportDrops();
 	// Turn marker and log flush for the opt-in EXE allocation trace (see EngineAllocTrace.h).
 	EngineAllocTrace::OnGameUpdate(getGameTurn());
+	// Opt-in: keep the EXE's per-view system mask within config.ini's [DisableSystems] (see ViewMaskSync.h).
+	ViewMaskSync::OnGameUpdate(getGameTurn());
 
 	if(IsWaitingForBlockingInput())
 	{

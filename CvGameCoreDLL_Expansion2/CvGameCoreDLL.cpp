@@ -14,6 +14,7 @@
 #include "EngineQueueGuard.h"
 #include "EngineAllocTrace.h"
 #include "ShellHelperLoader.h"
+#include "ViewMaskSync.h"
 #include "InstanceNames.h"
 
 // must be included after all other headers
@@ -35,6 +36,8 @@ extern "C" ICvGameContext1* DllGetGameContext()
 	ShellHelperLoader::LoadOnce();
 	// Reads VP_INSTANCE once and logs the instruments' kernel-object names (crashlogs\instruments.log).
 	InstanceNames::Get();
+	// Opt-in (crashlogs\viewmask.enabled): the EXE's per-view system mask honours [DisableSystems] (ViewMaskSync.h).
+	ViewMaskSync::Install();
 
 	return CvDllGameContext::GetSingleton();
 }
