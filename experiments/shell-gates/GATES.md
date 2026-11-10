@@ -1,25 +1,45 @@
 # Shell architecture: Gates 1 and 3
 
-Status: **IN PROGRESS** (2026-11-09). This file is kept current; the "State" line of each section says where it stands.
+Status: **DONE** (2026-11-09 22:30): both gates have a verdict. Install restored: config.ini (sha256
+7b53b17c3935702d...), `MODS\(1) Community Patch\CvGameCore_Expansion2.dll` (262AEE88...), GraphicsSettingsDX11.ini,
+front-end Lua (`vp_modgame.py restore-lua`), no marker files left in `<install>\crashlogs` (instrument logs moved to
+`live/`). Backups: `C:\Users\Art\Documents\shell-gates-backup`. Saves untouched (the game wrote its own autosaves).
+Side effect to know: `vp_modgame launch --mods cp,vp,eui` runs with `--exclusive`, i.e. other mods are left
+disabled in the mods database (as in the parent session's probes).
+
+**How to run a live experiment without losing focus** (details in `nofocus/README.md`):
+```
+cd experiments/shell-gates/nofocus
+build.bat                                                     # once
+python civ_bg.py launch -- --mods cp,vp,eui --load VP8P-HUGE_0350 --wait 900
+python civ_bg.py watch 3600                                   # optional: alarm on any focus/visibility slip
+python civ_bg.py shot out.png --scale 0.5 | key ESC | click 0.5 0.5 | move 0.3 0.4 | lua "return Game.GetGameTurn()"
+python ../tools/end_turn.py && python ../tools/wait_turn.py <turn> --answer 12 --stall 45
+python civ_bg.py stop
+```
+`--park bottom` renders at full frame rate (still cloaked); default parks off-screen (~32 fps).
 
 The shell architecture: the 32-bit EXE keeps window, 2D UI (Lua VM + Controls), audio, netcode, save/load and asset
 loading, with its world-rendering subsystems switched off (`[DisableSystems]` in config.ini); a 64-bit server owns
 game state and renders the world into a shared D3D11 texture that the EXE composites under its UI.
 Feasibility study: https://claude.ai/artifact/Ebo4vHqPXFU9tKpisduAoG.
 
-Branch: `claude/shell-gates-d8e422`, fast-forwarded to `f181104a2` (memory-diagnostics = master + the DLL that is
-installed in the game: Lua channel, MemoryImports, EngineQueueGuard), so experiment DLLs match the installed mods.
+Branch: `claude/shell-gates-d8e422`: `f181104a2` (memory-diagnostics: Lua channel, MemoryImports, EngineQueueGuard)
+merged with `Release-5.4.8` (the installed mods and the save are 5.4.8), plus EngineAllocTrace and
+ShellHelperLoader. All live runs used that release DLL, installed over Art's 5.4.8 DLL (backed up, restored at
+the end).
 
 ## Verdicts
 
 | Gate | Verdict | One line |
 |---|---|---|
-| 1. The shell survives without its world | pending | waiting for the probe results |
-| 3. The server can draw into the shell | pending | prototype under construction |
+| 1. The shell survives without its world | **GO WITH CONDITIONS** | B4 (17 keys) frees ~450 MB on the huge t350 save and plays AI turns with every UI path working; Terrain/Unit/Landmark/River/Arrows need DLL-side stubs before they can go |
+| 3. The server can draw into the shell | **GO WITH CONDITIONS** | a 64-bit server's texture composites under the units and UI inside the live game at no measurable frame cost, 2.5 ms latency, survives resolution change, minimise, server restart and AI turns; insertion point and overlay coexistence need hardening |
+| No-focus experiments | **DONE** | `nofocus/civ_bg.py`: suspended launch + in-process focus guard + cloak; every live run of this session ran without taking Art's focus |
 
 ## Gate 1: the shell survives without its world
 
-State: waiting for the parent session's probes (each DisableSystems key alone, then two combined configurations).
+State: **verdict written** (below), from the forwarded probes plus an instrumented baseline and B4 re-run.
 
 ### Probe results (forwarded)
 
@@ -147,7 +167,7 @@ conditions:
    shell (all low-risk UI paths; to do in the next pass).
 ## Gate 3: the server can draw into the shell
 
-State: **prototype built and measured on a stand-in host; not yet run in the game** (`compositor/README.md`).
+State: **verdict written** (below): prototype measured on a stand-in host, then live in the game in B4.
 
 ### Prototype
 
@@ -187,6 +207,82 @@ State: **prototype built and measured on a stand-in host; not yet run in the gam
 - Not done: exclusive-fullscreen toggle (would take focus); ResizeBuffers1 / ClearView /
   OMSetRenderTargetsAndUnorderedAccessViews / ResolveSubresource insertion points; UAV/stream-out state restore.
 
+### Live in the game (B4, huge save t350, 2026-11-09 21:25-22:20)
+
+Setup: `shell_server.exe --rate 60` (x64, RTX 4080 by LUID); `shell_composite.dll` loaded by the DLL's
+`crashlogs\shell.helper` loader at DllGetGameContext; game started by `civ_bg.py launch --park bottom` (cloaked,
+full frame rate). Logs: `live/` and `C:\Users\Art\Documents\shell-gates-live\shell_composite*.log`.
+
+- **What the frame looks like:** blit-model swap chain, 1 buffer, R8G8B8A8_UNORM 2554x1411, no MSAA, windowed. The
+  immediate context never clears the back buffer: the game records on deferred contexts and submits
+  ExecuteCommandLists (2 per frame on the load screen, ~47 in game). So `insert=clear` never fires
+  (`missed_ins` = every frame) and the insertion point is an ExecuteCommandList index.
+- **Sharing works in-process:** `insert=present` covers the whole frame with the server's world
+  (`live/g3_present.png`); the server texture was resized to the back buffer on request.
+- **Under the UI:** scanning `nth` 1-48 (`tools/scan_exec.py`, `live/scan/`): after list <= 33 the world is
+  overdrawn (the scene's clear is in an early list), from 34 on the world shows with units, flags, banners and
+  HUD on top (`live/scan/compare_34_47.png`). The boundary 33/34 was stable in this view, but the ORDER of the later
+  lists varies frame to frame (units and leftover red Terrain patches move between indices; at 47 units are
+  covered), and the list count depends on the scene. A fixed index is a prototype hack (condition 1).
+- **Cost (60 s per mode, 3 interleaved rounds, `live/g3_ab.txt`):**
+
+| Mode | fps | frame time mean | p99 max | composite CPU | AcquireSync | latency mean / p99 | GPU copy / draw |
+|---|---|---|---|---|---|---|---|
+| passthrough (hooks, no draw) | 284 | 3.561 ms | 7.56 | - | - | - | - |
+| composite, exec 34 | 283 | 3.565 ms | 6.63 | 0.16 ms | 0.61 ms | 2.50 / 6.48 ms | 0.27 / 0.017 ms |
+| composite, present | 279 | 3.605 ms | 6.91 | 0.22 ms | 0.85 ms | 1.72 / 4.80 ms | 0.15 / 0.020 ms |
+
+  The difference is inside the run-to-run noise (stand-in: the same). "off" removes the hooks, so the DLL has no
+  numbers for it; on the stand-in off = passthrough.
+- **Robustness:** minimise/restore without activation: composite continued, 0 missed. Window resize from outside:
+  the game does not call ResizeBuffers (it stretches), composite unaffected. Server killed: stale after 1 s, last
+  frame kept; relaunched: new texture opened 0.1 s after its first heartbeat. **The game's own resolution change
+  (2560x1440 -> 1920x1080 -> back, via OptionsManager on the main thread):** the game creates a NEW swap chain
+  (and window); the compositor retargets after 2 s and the server delivers the new size in 0.25 s
+  (`live/g3_after_reschange_1080.png`: world under the UI at 1914x1051), and back. Getting there cost four crashes
+  (below). AI turns 350 -> 352 with the composite on (four AI diplomacy screens answered by posted click).
+- **Bugs found and fixed live:**
+  1. Calling `CommitResolutionOptions` from the Lua channel deadlocks the game (game-core thread holds the engine
+     lock and calls SetWindowPos, which waits on the main thread, which waits on the lock; cdb `!cs`). Not a
+     compositor bug: such calls must run on the main thread (`Events.LocalMachineAppUpdate` one-shot).
+  2. **Present-hook recursion with Steam's overlay (3 crashes, stack overflow, dumps in
+     `%LOCALAPPDATA%\CrashDumps`):** when the game creates a new swap chain, gameoverlayrenderer.dll re-hooks Present
+     and records the function it finds in the vtable slot (our hook) as its original; from then on
+     dxgi -> overlay -> our hook -> dxgi -> ... recursed 122-178 deep. A control run with the compositor's hooks off
+     survived the same resolution change. Fix: hook `IDXGIFactory::CreateSwapChain` / `CreateSwapChainForHwnd`
+     and step our swap-chain slots aside while the game creates a swap chain, so the overlay records dxgi's own
+     function (plus: never chain to a foreign module that rewrites our slot; step aside during the original
+     Present). With that, the resolution change round trip passed.
+- **Soak (22:09-22:25, 15.5 min, composite exec 34, two AI turns 350 -> 352 with four diplomacy screens, then
+  idle):** 934 per-second stats lines, 1 missed insertion, 0 stale seconds, 0 DISABLED; frame time 3.5-5 ms
+  idle (spikes to ~200 ms only inside AI turns and leader screens, as without the composite). Game private
+  1,663 -> 1,734 MB (+70 MB over two AI turns, the same growth as B4 without the compositor: +81 MB over three),
+  largest free block 1,477 -> 1,421 MB (`live/mem_g3_soak_game.csv`). Server flat: 87 MB private, 464 handles at
+  start and end. Game handles 1,855, responding.
+
+### Gate 3 verdict: **GO WITH CONDITIONS**
+
+A 64-bit process can draw the world into the live 32-bit shell: the shared NT-handle + keyed-mutex texture opens
+inside the game's own device, composites under the units, flags, banners and HUD, costs nothing measurable at
+~280 fps (+0.004 ms frame time, 0.16 ms CPU, ~0.3 ms GPU copy), arrives 2.5 ms after the server finished it, and
+survives minimise, server restarts, AI turns, a 15-minute soak and (after the fix) the game's own resolution
+change. Camera matrices are readable per frame (static analysis, below). Conditions:
+1. **A real insertion point.** The game renders on deferred contexts; "after ExecuteCommandList #34" works for
+   this view only. The robust form: hook `ID3D11Device::CreateDeferredContext` and the deferred contexts'
+   `ClearRenderTargetView`/`OMSetRenderTargets`, tag the command list that clears the back buffer (and the one
+   that starts the UI pass), and insert after that list. A RenderDoc capture of one frame (B4) should come first
+   to name the lists. Once Terrain and Unit are stubbed (Gate 1 condition 1), the composite must also go UNDER
+   the units' pass but over the scene clear, which needs exactly this.
+2. **Coexistence with injectors.** Vtable patching fights inline hookers (Steam overlay; likely also RTSS, Discord,
+   capture tools). The CreateSwapChain step-aside fixed the overlay case seen here; for a product, use inline
+   hooks (MinHook, installed under `C:\Users\Art\tools\minhook-v1.3.4`) or put the composite into the EXE's own
+   render path via the DLL instead of D3D hooks.
+3. **The 2 s retarget gap** after a resolution change shows a black world for two seconds; adopt the new swap
+   chain from the CreateSwapChain hook directly.
+4. Not tested: exclusive fullscreen, alt-tab with the real focus (only minimise/restore without activation was
+   possible without stealing Art's focus), multi-monitor moves, a second GPU, and drawing with the game's real
+   camera matrices (the server draws a test scene).
+
 ### Camera ownership (static analysis)
 
 State: **static analysis done** (`camera/CAMERA.md`, disassembly + read-only Ghidra decompile; nothing run live
@@ -220,7 +316,10 @@ yet). DX11 VAs at ImageBase 0x400000; the same code is in the DX9 and Tablet EXE
 
 ## Running experiments without stealing Art's focus
 
-State: **tool built and tested on a stand-in D3D11 app; not yet run on the real game** (`nofocus/README.md`).
+State: **done and used for every live run of this session** (menu test, baseline, B4, seven Gate 3 launches): the
+game never took the foreground or became visible; keys, clicks, mouse moves (hex picking), screenshots and the
+Lua channel all worked on the cloaked window. Residual: the game process stays alive in Task Manager, and a crash
+leaves WER/crash dialogs of other processes (none appeared on screen this session).
 
 **Choice: normal desktop + an in-process focus guard injected while the game is still suspended + DWM cloaking.**
 `nofocus/civ_bg.py launch -- <vp_modgame.py launch args>` starts the EXE suspended with `SW_SHOWNOACTIVATE`

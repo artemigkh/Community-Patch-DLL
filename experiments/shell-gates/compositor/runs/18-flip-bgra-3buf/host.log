@@ -1,0 +1,12 @@
+17:33:20.066 ==== test_host start pid 6772 label '18-flip-bgra-3buf' swap flip(FLIP_DISCARD) buffers 3 format 87 msaa 1 vsync 1 load after size 1280x720 bb 0x0
+17:33:20.253 device FL b000 on 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:33:20.257 mem start: private=23.78 MB working=29.58 MB video_local=8.25 MB handles=349
+17:33:20.420 LoadLibraryW('C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\shell_composite.dll') after device creation (frame N) -> 66950000 (err 0) in 1.80 ms
+17:33:21.260 1s: frames 168 mean 5.926 ms max 7.206 ms bb 1280x720
+17:33:22.266 1s: frames 166 mean 6.059 ms max 6.249 ms bb 1280x720
+17:33:23.271 1s: frames 166 mean 6.056 ms max 6.307 ms bb 1280x720
+17:33:24.277 1s: frames 166 mean 6.057 ms max 6.363 ms bb 1280x720
+17:33:25.282 1s: frames 166 mean 6.058 ms max 6.462 ms bb 1280x720
+17:33:26.288 1s: frames 166 mean 6.057 ms max 6.234 ms bb 1280x720
+17:33:27.264 summary label=18-flip-bgra-3buf frames=661 mean=6.0577 p50=6.0563 p99=6.2342 max=6.462 fps=165.1
+17:33:27.264 mem end: private=33.07 MB working=34.10 MB video_local=27.03 MB handles=405

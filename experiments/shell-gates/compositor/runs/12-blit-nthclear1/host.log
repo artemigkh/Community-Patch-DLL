@@ -1,0 +1,12 @@
+17:32:30.551 ==== test_host start pid 39992 label '12-blit-nthclear1' swap blit(DISCARD) buffers 1 format 28 msaa 1 vsync 1 load after size 1280x720 bb 0x0
+17:32:30.787 device FL b000 on 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:32:30.789 mem start: private=24.28 MB working=29.48 MB video_local=8.25 MB handles=333
+17:32:30.998 LoadLibraryW('C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\shell_composite.dll') after device creation (frame N) -> 66950000 (err 0) in 0.98 ms
+17:32:31.790 1s: frames 131 mean 7.582 ms max 12.186 ms bb 1280x720
+17:32:32.796 1s: frames 166 mean 6.062 ms max 9.223 ms bb 1280x720
+17:32:33.800 1s: frames 166 mean 6.058 ms max 8.884 ms bb 1280x720
+17:32:34.807 1s: frames 166 mean 6.053 ms max 9.965 ms bb 1280x720
+17:32:35.813 1s: frames 164 mean 6.133 ms max 10.359 ms bb 1280x720
+17:32:36.817 1s: frames 166 mean 6.064 ms max 10.094 ms bb 1280x720
+17:32:37.793 summary label=12-blit-nthclear1 frames=658 mean=6.0755 p50=6.0982 p99=9.3673 max=10.359 fps=164.6
+17:32:37.793 mem end: private=32.61 MB working=33.58 MB video_local=23.34 MB handles=396

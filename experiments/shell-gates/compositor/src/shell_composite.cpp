@@ -1068,6 +1068,43 @@ typedef void(STDMETHODCALLTYPE* PFN_ClearRTV)(ID3D11DeviceContext*, ID3D11Render
 typedef void(STDMETHODCALLTYPE* PFN_OMSetRT)(ID3D11DeviceContext*, UINT, ID3D11RenderTargetView* const*, ID3D11DepthStencilView*);
 
 
+// While the original Present runs, our vtable slot is set back to the original, so any Present that DXGI or
+// another hooker (Steam overlay) issues through the vtable from inside it takes exactly the path it takes
+// without us. Seen live 2026-11-09: after the game's resolution change created a new swap chain,
+// dxgi -> gameoverlayrenderer -> Hook_Present -> dxgi -> ... recursed 122 times until the stack overflowed;
+// the overlay's own re-entry guard does not see through our hook.
+static Patch* FindPatch(void** vtbl, unsigned slot)
+{
+	LONG n = g_nPatches;
+	for (LONG i = 0; i < n; ++i)
+		if (g_patches[i].vtbl == vtbl && g_patches[i].slot == slot) return &g_patches[i];
+	return nullptr;
+}
+
+struct SlotStepAside
+{
+	Patch* p;
+	explicit SlotStepAside(void* obj, unsigned slot) : p(FindPatch(*(void***)obj, slot))
+	{
+		if (p && p->active && p->vtbl[p->slot] == p->hook) WriteSlot(&p->vtbl[p->slot], p->orig);
+		else p = nullptr;
+	}
+	~SlotStepAside()
+	{
+		if (p && p->active && p->vtbl[p->slot] == p->orig) WriteSlot(&p->vtbl[p->slot], p->hook);
+	}
+};
+
+static void SafeOnPresent(IDXGISwapChain* sc)
+{
+	__try { OnPresent(sc); }
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		InterlockedExchange(&g_disabled, 1);
+		Log("EXCEPTION 0x%08X in Present hook - composite disabled", GetExceptionCode());
+	}
+}
+
 static HRESULT STDMETHODCALLTYPE Hook_Present(IDXGISwapChain* sc, UINT sync, UINT flags)
 {
 	PFN_Present orig = (PFN_Present)FindOrig(sc, VT_SwapChain_Present);
@@ -1075,17 +1112,17 @@ static HRESULT STDMETHODCALLTYPE Hook_Present(IDXGISwapChain* sc, UINT sync, UIN
 	if (!t_inPresent && !(flags & DXGI_PRESENT_TEST))
 	{
 		t_inPresent = 1;
-		__try { OnPresent(sc); }
-		__except (EXCEPTION_EXECUTE_HANDLER)
+		SafeOnPresent(sc);
+		HRESULT hr;
 		{
-			InterlockedExchange(&g_disabled, 1);
-			Log("EXCEPTION 0x%08X in Present hook - composite disabled", GetExceptionCode());
+			SlotStepAside aside(sc, VT_SwapChain_Present);
+			hr = orig(sc, sync, flags);
 		}
-		HRESULT hr = orig(sc, sync, flags);
 		if (sc == g_target) VerifyPatches(true);
 		t_inPresent = 0;
 		return hr;
 	}
+	SlotStepAside aside(sc, VT_SwapChain_Present);
 	return orig(sc, sync, flags);
 }
 
@@ -1096,17 +1133,17 @@ static HRESULT STDMETHODCALLTYPE Hook_Present1(IDXGISwapChain1* sc, UINT sync, U
 	if (!t_inPresent && !(flags & DXGI_PRESENT_TEST))
 	{
 		t_inPresent = 1;
-		__try { OnPresent(sc); }
-		__except (EXCEPTION_EXECUTE_HANDLER)
+		SafeOnPresent((IDXGISwapChain*)sc);
+		HRESULT hr;
 		{
-			InterlockedExchange(&g_disabled, 1);
-			Log("EXCEPTION 0x%08X in Present1 hook - composite disabled", GetExceptionCode());
+			SlotStepAside aside(sc, VT_SwapChain1_Present1);
+			hr = orig(sc, sync, flags, pp);
 		}
-		HRESULT hr = orig(sc, sync, flags, pp);
 		if ((IDXGISwapChain*)sc == g_target) VerifyPatches(true);
 		t_inPresent = 0;
 		return hr;
 	}
+	SlotStepAside aside(sc, VT_SwapChain1_Present1);
 	return orig(sc, sync, flags, pp);
 }
 
@@ -1240,6 +1277,7 @@ static void InstallContextHooks(ID3D11DeviceContext* ctx)
 // Swap-chain vtables from a dummy device on a hidden window
 // ===========================================================================
 static void** g_scVtbl[2];
+static void** g_facVtbl;   // DXGI factory vtable (CreateSwapChain hooks, see Hook_CreateSwapChain)
 
 static LRESULT CALLBACK DummyWndProc(HWND h, UINT m, WPARAM w, LPARAM l) { return DefWindowProcW(h, m, w, l); }
 
@@ -1279,6 +1317,7 @@ static bool FindSwapChainVtables()
 					sc1->Release();
 				}
 			}
+			if (f2) g_facVtbl = *(void***)f2;
 			SafeRelease(f2); SafeRelease(ad); SafeRelease(xd);
 			Log("swap-chain vtables: blit %p, flip %p%s", g_scVtbl[0], g_scVtbl[1], g_scVtbl[0] == g_scVtbl[1] ? " (same)" : "");
 			sc->Release(); ctx->Release(); dev->Release();
@@ -1291,6 +1330,56 @@ static bool FindSwapChainVtables()
 	return ok;
 }
 
+// ---------------------------------------------------------------------------
+// Swap-chain creation: step out of the swap-chain slots while the game creates a swap chain.
+// Steam's overlay (gameoverlayrenderer.dll) re-hooks Present when a swap chain is created and keeps the
+// function it finds in the vtable slot as its "original". If that is our hook, every later Present loops
+// hook -> dxgi (overlay detour) -> overlay -> our hook ... until the stack overflows (three crashes on
+// 2026-11-09 at the game's own resolution change, which creates a new swap chain). With the slots clean
+// during creation the overlay records dxgi's own function, and our hook goes back on top afterwards.
+static const unsigned VT_Factory_CreateSwapChain = 10;        // IUnknown 3 + IDXGIObject 4 + EnumAdapters, MakeWindowAssociation, GetWindowAssociation
+static const unsigned VT_Factory2_CreateSwapChainForHwnd = 15; // + CreateSoftwareAdapter, EnumAdapters1, IsCurrent, IsWindowedStereoEnabled
+typedef HRESULT(STDMETHODCALLTYPE* PFN_CreateSwapChain)(IDXGIFactory*, IUnknown*, DXGI_SWAP_CHAIN_DESC*, IDXGISwapChain**);
+typedef HRESULT(STDMETHODCALLTYPE* PFN_CreateSwapChainForHwnd)(IDXGIFactory2*, IUnknown*, HWND, const DXGI_SWAP_CHAIN_DESC1*, const DXGI_SWAP_CHAIN_FULLSCREEN_DESC*, IDXGIOutput*, IDXGISwapChain1**);
+
+static void SwapChainSlotsAside(bool aside)
+{
+	EnterCriticalSection(&g_patchLock);
+	LONG n = g_nPatches;
+	for (LONG i = 0; i < n; ++i)
+	{
+		Patch& p = g_patches[i];
+		if (!p.active || (p.vtbl != g_scVtbl[0] && p.vtbl != g_scVtbl[1])) continue;
+		if (aside && p.vtbl[p.slot] == p.hook) WriteSlot(&p.vtbl[p.slot], p.orig);
+		else if (!aside && p.vtbl[p.slot] == p.orig) WriteSlot(&p.vtbl[p.slot], p.hook);
+	}
+	LeaveCriticalSection(&g_patchLock);
+}
+
+static HRESULT STDMETHODCALLTYPE Hook_CreateSwapChain(IDXGIFactory* f, IUnknown* dev, DXGI_SWAP_CHAIN_DESC* d, IDXGISwapChain** out)
+{
+	PFN_CreateSwapChain orig = (PFN_CreateSwapChain)FindOrig(f, VT_Factory_CreateSwapChain);
+	if (!orig) return DXGI_ERROR_INVALID_CALL;
+	SwapChainSlotsAside(true);
+	HRESULT hr = orig(f, dev, d, out);
+	SwapChainSlotsAside(false);
+	Log("CreateSwapChain %ux%u hwnd %p -> 0x%08X sc %p (swap-chain slots stepped aside during creation)",
+		d ? d->BufferDesc.Width : 0, d ? d->BufferDesc.Height : 0, d ? d->OutputWindow : nullptr, hr, out ? *out : nullptr);
+	return hr;
+}
+
+static HRESULT STDMETHODCALLTYPE Hook_CreateSwapChainForHwnd(IDXGIFactory2* f, IUnknown* dev, HWND w, const DXGI_SWAP_CHAIN_DESC1* d,
+	const DXGI_SWAP_CHAIN_FULLSCREEN_DESC* fs, IDXGIOutput* o, IDXGISwapChain1** out)
+{
+	PFN_CreateSwapChainForHwnd orig = (PFN_CreateSwapChainForHwnd)FindOrig(f, VT_Factory2_CreateSwapChainForHwnd);
+	if (!orig) return DXGI_ERROR_INVALID_CALL;
+	SwapChainSlotsAside(true);
+	HRESULT hr = orig(f, dev, w, d, fs, o, out);
+	SwapChainSlotsAside(false);
+	Log("CreateSwapChainForHwnd %ux%u hwnd %p -> 0x%08X (swap-chain slots stepped aside during creation)", d ? d->Width : 0, d ? d->Height : 0, w, hr);
+	return hr;
+}
+
 static bool InstallSwapChainHooks()
 {
 	if (!g_scVtbl[0] && !FindSwapChainVtables()) return false;
@@ -1301,6 +1390,11 @@ static bool InstallSwapChainHooks()
 		PatchSlot(vt, VT_SwapChain_Present, (void*)&Hook_Present, "IDXGISwapChain::Present");
 		PatchSlot(vt, VT_SwapChain_ResizeBuffers, (void*)&Hook_ResizeBuffers, "IDXGISwapChain::ResizeBuffers");
 		PatchSlot(vt, VT_SwapChain1_Present1, (void*)&Hook_Present1, "IDXGISwapChain1::Present1");
+	}
+	if (g_facVtbl)
+	{
+		PatchSlot(g_facVtbl, VT_Factory_CreateSwapChain, (void*)&Hook_CreateSwapChain, "IDXGIFactory::CreateSwapChain");
+		PatchSlot(g_facVtbl, VT_Factory2_CreateSwapChainForHwnd, (void*)&Hook_CreateSwapChainForHwnd, "IDXGIFactory2::CreateSwapChainForHwnd");
 	}
 	// re-activate context hooks of an already adopted device
 	if (g_ctx) InstallContextHooks(g_ctx);

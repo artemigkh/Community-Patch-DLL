@@ -1,0 +1,28 @@
+17:33:04.432 [19076] ==== shell_composite.dll loaded into pid 8164 'C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\test_host.exe' (DLL dir C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\)
+17:33:04.432 [19076] config: mode=composite insert=clear nth=1 timeout=0 blend=opaque section=Local\VPShellSection request_resize=1 trace_frames=2
+17:33:04.432 [19076] vtable slots: Present 8 ResizeBuffers 13 Present1 22 ClearRTV 50 OMSetRT 33
+17:33:04.487 [19076] swap-chain vtables: blit 712A20EC, flip 712A20EC (same)
+17:33:04.507 [19076] patch IDXGISwapChain::Present: vtbl 712A20EC slot 8 orig 71351170 -> hook 66952FC0 ok
+17:33:04.507 [19076] patch IDXGISwapChain::ResizeBuffers: vtbl 712A20EC slot 13 orig 712CC230 -> hook 66953140 ok
+17:33:04.507 [19076] patch IDXGISwapChain1::Present1: vtbl 712A20EC slot 22 orig 712EBD00 -> hook 66952E40 ok
+17:33:04.518 [18220] host adapter 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:33:04.520 [18220] adopted swap chain 0F4C5428: 1280x720 fmt 29 buffers 1 effect 0 samples 1 windowed 1 flags 0x2 hwnd 006B17B4 'VP shell test host'; device 00B45224 FL b000 ctx 031B00E0 (ctx type 0)
+17:33:04.520 [18220] back buffer resource 00B449A4 1280x720 fmt 29 samples 1
+17:33:04.520 [18220] patch ID3D11DeviceContext::ClearRenderTargetView: vtbl 031B00E4 slot 50 orig 7110A780 -> hook 66952C10 ok
+17:33:04.520 [18220] patch ID3D11DeviceContext::OMSetRenderTargets: vtbl 031B00E4 slot 33 orig 711046F0 -> hook 66952D20 ok
+17:33:04.520 [18220] trace: ---- Present #0 (clears 0, omsets 0 this frame)
+17:33:04.524 [18220] vtbl 031B00E4 slot 50 was rewritten by someone (now 7110A780, our orig 7110A780) - re-patching (further rewrites are counted in stats, not logged)
+17:33:04.524 [18220] trace:   clear #1 rtv 00B6E100 res 00B449A4 1280x720 viewfmt 29 samples 1 dsv 00000000  <== BACK BUFFER
+17:33:04.524 [18220] composite resources created
+17:33:04.524 [18220] opened section 'Local\VPShellSection'
+17:33:04.526 [18220] opened shared texture 'Local\VPShellWorld_11796_1' 1920x1080 fmt 87 (server pid 11796 gen 1)
+17:33:04.526 [18220] requested server texture 1280x720 (server has 1920x1080)
+17:33:04.526 [18220] trace:   omset #1 rtv 00B6E100 res 00B449A4 1280x720 viewfmt 29 samples 1 dsv 00000000  <== BACK BUFFER
+17:33:04.526 [18220] trace: ---- Present #1 (clears 1, omsets 1 this frame)
+17:33:04.783 [18220] opened shared texture 'Local\VPShellWorld_11796_2' 1280x720 fmt 87 (server pid 11796 gen 2)
+17:33:05.523 [18220] stats el=1005ms mode=composite ins=clear frames=143 ft_mean=7.075 ft_p99=12.932 ft_max=13.781 comp_n=142 comp_mean=0.2801 comp_p99=0.9044 comp_max=1.0794 acq_n=79 acq_mean=0.4143 acq_p99=0.6687 no_new=63 lat_n=46 lat_mean=4.26 lat_p99=9.81 age_mean=37.12 srv_new=46 srv_drop=0 dup=96 timeouts=33 missed_ins=1 slot_rewrites=142 clears_pf=1.0 stale=0 srv=11796/2 tex=1280x720 bb=1280x720
+17:33:06.530 [18220] stats el=1007ms mode=composite ins=clear frames=156 ft_mean=6.453 ft_p99=9.988 ft_max=11.625 comp_n=156 comp_mean=0.1852 comp_p99=0.6734 comp_max=0.7905 acq_n=61 acq_mean=0.3663 acq_p99=0.6133 no_new=95 lat_n=61 lat_mean=4.25 lat_p99=9.65 age_mean=8.80 srv_new=61 srv_drop=0 dup=95 timeouts=0 missed_ins=0 slot_rewrites=156 clears_pf=1.0 stale=0 srv=11796/2 tex=1280x720 bb=1280x720
+17:33:07.534 [18220] stats el=1004ms mode=composite ins=clear frames=160 ft_mean=6.278 ft_p99=10.797 ft_max=11.433 comp_n=160 comp_mean=0.1528 comp_p99=0.5905 comp_max=0.6146 acq_n=60 acq_mean=0.3206 acq_p99=0.5225 no_new=100 lat_n=60 lat_mean=4.41 lat_p99=9.66 age_mean=8.98 srv_new=60 srv_drop=0 dup=100 timeouts=0 missed_ins=0 slot_rewrites=160 clears_pf=1.0 stale=0 srv=11796/2 tex=1280x720 bb=1280x720
+17:33:08.536 [18220] stats el=1001ms mode=composite ins=clear frames=150 ft_mean=6.675 ft_p99=12.344 ft_max=13.911 comp_n=150 comp_mean=0.1821 comp_p99=0.6456 comp_max=1.0658 acq_n=60 acq_mean=0.3674 acq_p99=0.7096 no_new=90 lat_n=60 lat_mean=4.32 lat_p99=9.87 age_mean=8.76 srv_new=60 srv_drop=0 dup=90 timeouts=0 missed_ins=0 slot_rewrites=150 clears_pf=1.0 stale=0 srv=11796/2 tex=1280x720 bb=1280x720
+17:33:09.540 [18220] stats el=1004ms mode=composite ins=clear frames=156 ft_mean=6.435 ft_p99=11.906 ft_max=12.253 comp_n=156 comp_mean=0.1595 comp_p99=0.5633 comp_max=0.7043 acq_n=60 acq_mean=0.3338 acq_p99=0.5128 no_new=96 lat_n=60 lat_mean=4.71 lat_p99=10.74 age_mean=9.18 srv_new=60 srv_drop=0 dup=96 timeouts=0 missed_ins=0 slot_rewrites=156 clears_pf=1.0 stale=0 srv=11796/2 tex=1280x720 bb=1280x720
+17:33:10.540 [18220] stats el=1001ms mode=composite ins=clear frames=149 ft_mean=6.720 ft_p99=12.179 ft_max=12.726 comp_n=149 comp_mean=0.1785 comp_p99=0.6698 comp_max=0.7414 acq_n=61 acq_mean=0.3478 acq_p99=0.5790 no_new=88 lat_n=61 lat_mean=4.68 lat_p99=11.52 age_mean=8.94 srv_new=61 srv_drop=0 dup=88 timeouts=0 missed_ins=0 slot_rewrites=149 clears_pf=1.0 stale=0 srv=11796/2 tex=1280x720 bb=1280x720

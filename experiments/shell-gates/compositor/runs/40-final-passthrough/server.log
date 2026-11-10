@@ -1,0 +1,14 @@
+18:07:49.982 shell_server start pid 37228 size 1920x1080 rate 60.0 gpu-sync 1
+18:07:49.996 adapter 0: 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7 VRAM 16048 MB
+18:07:49.996 adapter 1: 'Microsoft Basic Render Driver' LUID 000000000000F569 VRAM 0 MB (software)
+18:07:49.996 using adapter 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+18:07:50.227 device created, feature level b100
+18:07:50.227 section 'Local\VPShellSection' created
+18:07:50.229 texture generation 1: 1920x1080 BGRA8 shared as 'Local\VPShellWorld_37228_1'
+18:07:50.229 mem start: private=59.27 MB working=34.14 MB video_local=8.25 MB
+18:07:51.229 1s: rendered 61 published 61 overwritten(unconsumed) 60 skipped 0 | acquire max 0.81 ms | client consumed total 0 | gen 1 1920x1080
+18:07:52.229 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.31 ms | client consumed total 0 | gen 1 1920x1080
+18:07:53.228 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.18 ms | client consumed total 0 | gen 1 1920x1080
+18:07:54.229 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.21 ms | client consumed total 0 | gen 1 1920x1080
+18:07:55.229 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.19 ms | client consumed total 0 | gen 1 1920x1080
+18:07:56.229 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.13 ms | client consumed total 0 | gen 1 1920x1080

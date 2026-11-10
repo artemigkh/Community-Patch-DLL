@@ -1,0 +1,27 @@
+17:45:52.227 ==== test_host start pid 45464 label 'composite_clear' swap blit(DISCARD) buffers 1 format 28 msaa 1 vsync 0 load after size 1280x720 bb 2560x1440
+17:45:52.401 device FL b000 on 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:45:52.403 mem start: private=23.85 MB working=29.30 MB video_local=8.25 MB handles=333
+17:45:52.415 LoadLibraryW('C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\shell_composite.dll') after device creation (frame N) -> 63030000 (err 0) in 1.20 ms
+17:45:53.403 1s: frames 11162 mean 0.090 ms max 5.294 ms bb 2560x1440
+17:45:54.403 1s: frames 11081 mean 0.090 ms max 0.777 ms bb 2560x1440
+17:45:55.404 1s: frames 12258 mean 0.082 ms max 0.581 ms bb 2560x1440
+17:45:56.403 1s: frames 11571 mean 0.086 ms max 0.874 ms bb 2560x1440
+17:45:57.404 1s: frames 10795 mean 0.093 ms max 3.182 ms bb 2560x1440
+17:45:58.404 1s: frames 10135 mean 0.099 ms max 0.735 ms bb 2560x1440
+17:45:59.405 1s: frames 11558 mean 0.087 ms max 0.745 ms bb 2560x1440
+17:46:00.405 1s: frames 11198 mean 0.089 ms max 0.712 ms bb 2560x1440
+17:46:01.404 1s: frames 10657 mean 0.094 ms max 1.070 ms bb 2560x1440
+17:46:02.404 mem periodic: private=34.48 MB working=35.30 MB video_local=56.50 MB handles=390
+17:46:02.404 1s: frames 11310 mean 0.088 ms max 0.683 ms bb 2560x1440
+17:46:03.404 1s: frames 10826 mean 0.092 ms max 0.649 ms bb 2560x1440
+17:46:04.404 1s: frames 10656 mean 0.094 ms max 0.721 ms bb 2560x1440
+17:46:05.405 1s: frames 11799 mean 0.085 ms max 0.618 ms bb 2560x1440
+17:46:06.404 1s: frames 12317 mean 0.081 ms max 0.660 ms bb 2560x1440
+17:46:07.405 1s: frames 12970 mean 0.077 ms max 0.618 ms bb 2560x1440
+17:46:08.404 1s: frames 11314 mean 0.088 ms max 0.738 ms bb 2560x1440
+17:46:09.405 1s: frames 12509 mean 0.080 ms max 0.505 ms bb 2560x1440
+17:46:10.404 1s: frames 12170 mean 0.082 ms max 0.587 ms bb 2560x1440
+17:46:11.404 1s: frames 12110 mean 0.083 ms max 0.722 ms bb 2560x1440
+17:46:12.403 mem periodic: private=34.48 MB working=35.75 MB video_local=56.50 MB handles=390
+17:46:12.406 summary label=composite_clear frames=195974 mean=0.0867 p50=0.0679 p99=0.2844 max=3.182 fps=11527.8
+17:46:12.406 mem end: private=34.48 MB working=35.75 MB video_local=56.50 MB handles=390

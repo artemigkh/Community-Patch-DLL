@@ -1,0 +1,36 @@
+17:38:30.661 ==== test_host start pid 52780 label 'nodll' swap blit(DISCARD) buffers 1 format 28 msaa 1 vsync 0 load none size 1280x720 bb 2560x1440
+17:38:30.952 device FL b000 on 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:38:30.953 mem start: private=24.37 MB working=29.40 MB video_local=8.25 MB handles=333
+17:38:31.955 1s: frames 5671 mean 0.176 ms max 7.094 ms bb 2560x1440
+17:38:32.955 1s: frames 6121 mean 0.163 ms max 1.210 ms bb 2560x1440
+17:38:33.955 1s: frames 5905 mean 0.169 ms max 0.995 ms bb 2560x1440
+17:38:34.955 1s: frames 5509 mean 0.182 ms max 1.557 ms bb 2560x1440
+17:38:35.955 1s: frames 5782 mean 0.173 ms max 0.927 ms bb 2560x1440
+17:38:36.955 1s: frames 6016 mean 0.166 ms max 1.272 ms bb 2560x1440
+17:38:37.955 1s: frames 6538 mean 0.153 ms max 0.892 ms bb 2560x1440
+17:38:38.955 1s: frames 5950 mean 0.168 ms max 0.899 ms bb 2560x1440
+17:38:39.955 1s: frames 5488 mean 0.182 ms max 1.391 ms bb 2560x1440
+17:38:40.954 mem periodic: private=29.80 MB working=31.07 MB video_local=27.06 MB handles=374
+17:38:40.954 1s: frames 7476 mean 0.134 ms max 1.040 ms bb 2560x1440
+17:38:41.955 1s: frames 9845 mean 0.102 ms max 0.772 ms bb 2560x1440
+17:38:42.956 1s: frames 10627 mean 0.094 ms max 2.755 ms bb 2560x1440
+17:38:43.956 1s: frames 7876 mean 0.127 ms max 2.339 ms bb 2560x1440
+17:38:44.957 1s: frames 8113 mean 0.123 ms max 4.630 ms bb 2560x1440
+17:38:45.957 1s: frames 9258 mean 0.108 ms max 1.447 ms bb 2560x1440
+17:38:46.957 1s: frames 9511 mean 0.105 ms max 1.399 ms bb 2560x1440
+17:38:47.956 1s: frames 9851 mean 0.102 ms max 1.087 ms bb 2560x1440
+17:38:48.957 1s: frames 9309 mean 0.107 ms max 1.348 ms bb 2560x1440
+17:38:49.956 1s: frames 10046 mean 0.100 ms max 1.333 ms bb 2560x1440
+17:38:50.955 mem periodic: private=29.86 MB working=32.50 MB video_local=27.06 MB handles=384
+17:38:50.957 1s: frames 8018 mean 0.125 ms max 33.826 ms bb 2560x1440
+17:38:51.957 1s: frames 9639 mean 0.104 ms max 6.514 ms bb 2560x1440
+17:38:52.957 1s: frames 10133 mean 0.099 ms max 1.932 ms bb 2560x1440
+17:38:53.957 1s: frames 8681 mean 0.115 ms max 1.306 ms bb 2560x1440
+17:38:54.958 1s: frames 8356 mean 0.120 ms max 1.247 ms bb 2560x1440
+17:38:55.957 1s: frames 10225 mean 0.098 ms max 1.301 ms bb 2560x1440
+17:38:56.958 1s: frames 10452 mean 0.096 ms max 2.612 ms bb 2560x1440
+17:38:57.957 1s: frames 8715 mean 0.115 ms max 1.324 ms bb 2560x1440
+17:38:58.958 1s: frames 9818 mean 0.102 ms max 1.110 ms bb 2560x1440
+17:38:59.957 1s: frames 8656 mean 0.115 ms max 1.591 ms bb 2560x1440
+17:39:00.958 summary label=nodll frames=228676 mean=0.1181 p50=0.0786 p99=0.4284 max=33.826 fps=8469.4
+17:39:00.958 mem end: private=30.04 MB working=32.94 MB video_local=27.06 MB handles=388
