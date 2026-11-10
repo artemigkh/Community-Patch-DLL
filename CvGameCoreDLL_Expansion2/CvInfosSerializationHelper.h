@@ -569,7 +569,7 @@ void WriteHashedDataArray(FDataStream& kStream, TData* paArray, uint uiArraySize
 template<typename TType, typename TData>
 void WriteDataArray(FDataStream& kStream, const std::vector<TData>& aArray)
 {
-	kStream << aArray.size();
+	kStream << (uint)aArray.size(); // 32-bit in the save format (D10)
 
 	for(uint iI = 0; iI < aArray.size(); iI++)
 	{
@@ -585,7 +585,7 @@ void WriteDataArray(FDataStream& kStream, const std::vector<TData>& aArray)
 template<typename TType, typename TData>
 void WriteHashedDataArray(FDataStream& kStream, const std::vector<TData>& aArray)
 {
-	kStream << aArray.size();
+	kStream << (uint)aArray.size(); // 32-bit in the save format (D10)
 
 	for(uint iI = 0; iI < aArray.size(); iI++)
 	{
@@ -643,7 +643,7 @@ void WriteHashedDataArray(FDataStream& kStream, TData** ppaArray, uint uiSubArra
 template<typename TType>
 void WriteTypeArray(FDataStream& kStream, const std::vector<TType>& aiArray)
 {
-	kStream << aiArray.size();
+	kStream << (uint)aiArray.size(); // 32-bit in the save format (D10)
 
 	for(uint iI = 0; iI < aiArray.size(); iI++)
 	{
@@ -655,7 +655,7 @@ void WriteTypeArray(FDataStream& kStream, const std::vector<TType>& aiArray)
 template<typename TType>
 void WriteHashedTypeArray(FDataStream& kStream, const std::vector<TType>& aiArray)
 {
-	kStream << aiArray.size();
+	kStream << (uint)aiArray.size(); // 32-bit in the save format (D10)
 
 	for(uint iI = 0; iI < aiArray.size(); iI++)
 	{
