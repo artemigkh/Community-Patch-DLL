@@ -594,6 +594,14 @@ bool endsWith(const char* str, const char* ending)
 }
 void CvDllGame::InitExeStuff()
 {
+#if defined(VP_OUT_OF_PROCESS)
+	// Out of process (the 64-bit server), no Civ V EXE hosts the DLL: there is no
+	// binary variant to detect and no EXE memory to reach. BIN_UNKNOWN keeps
+	// CvGame::IsExeWantForceResyncAvailable() false, so the force-resync pointer
+	// is never dereferenced. The shell-side proxy would have to write the EXE's
+	// flag on the server's behalf (epic 1000, issue 1002 inventory).
+	m_pGame->SetExeBinType(BIN_UNKNOWN);
+#else
 	// Runtime interoperability layer for multiplayer synchronization features
 	// 
 	// This function establishes communication with the host application to enable
@@ -638,7 +646,7 @@ void CvDllGame::InitExeStuff()
 		// preferred base (observed at 0x000E0000) - so convert to an RVA first
 		// and add it to the actual base. This avoids the transient wraparound
 		// of computing (baseAddr - 0x400000) when baseAddr < 0x400000.
-		DWORD baseAddr = (DWORD) GetModuleHandleA(NULL);
+		UINT_PTR baseAddr = (UINT_PTR) GetModuleHandleA(NULL);
 		DWORD headersOffset = 0x400000;
 
 		// The force-resync flag - a byte flag polled and cleared by the RNG sync
@@ -699,4 +707,5 @@ void CvDllGame::InitExeStuff()
 			VirtualProtect((void*)(hookResultAddress), 16, old_protect, &old_protect);
 		}
 	}*/
+#endif // VP_OUT_OF_PROCESS
 }
