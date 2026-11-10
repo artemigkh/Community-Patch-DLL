@@ -17860,9 +17860,9 @@ void CvPlayer::changeTotalPopulation(int iChange)
 	ASSERT(getTotalPopulation() >= 0);
 }
 
-long CvPlayer::getRealPopulation() const
+long long CvPlayer::getRealPopulation() const
 {
-	__int64 iTotalPopulation = 0;
+	long long iTotalPopulation = 0;
 	int iLoop = 0;
 
 	for(const CvCity* pLoopCity = firstCity(&iLoop); pLoopCity != NULL; pLoopCity = nextCity(&iLoop))
@@ -17870,12 +17870,7 @@ long CvPlayer::getRealPopulation() const
 		iTotalPopulation += pLoopCity->getRealPopulation();
 	}
 
-	if(iTotalPopulation > INT_MAX)
-	{
-		iTotalPopulation = INT_MAX;
-	}
-
-	return ((long)(iTotalPopulation));
+	return iTotalPopulation;
 }
 
 int CvPlayer::getHighestPopulation() const
