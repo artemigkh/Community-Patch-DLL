@@ -896,7 +896,7 @@ protected:
 	bool m_bTutorialEverAttacked;
 	bool m_bEverRightClickMoved;
 	bool m_bCombatWarned;
-	std::tr1::unordered_set<size_t> m_AdvisorMessagesViewed;
+	std::tr1::unordered_set<uint> m_AdvisorMessagesViewed;
 	// slewis - tutorial values
 
 	HandicapTypes m_eHandicap;
@@ -959,8 +959,8 @@ protected:
 
 	Database::Results* m_pDiploResponseQuery;
 
-	std::vector<size_t> m_aszDestroyedCities;
-	std::vector<size_t> m_aszGreatPeopleBorn;
+	std::vector<uint> m_aszDestroyedCities;
+	std::vector<uint> m_aszGreatPeopleBorn;
 
 	CvRandom m_mapRand;
 	CvRandom m_jonRand;
