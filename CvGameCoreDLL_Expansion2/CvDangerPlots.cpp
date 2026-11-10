@@ -6,6 +6,7 @@
 	All rights reserved. 
 	------------------------------------------------------------------------------------------------------- */
 #include "CvGameCoreDLLPCH.h"
+#include "MemoryHooks.h"
 #include "CvDangerPlots.h"
 #include "CvGameCoreUtils.h"
 #include "CvAStar.h"
@@ -112,6 +113,7 @@ bool CvDangerPlots::UpdateDangerSingleUnit(const CvUnit* pLoopUnit, bool bIgnore
 /// Updates the danger plots values to reflect threats across the map
 void CvDangerPlots::UpdateDanger()
 {
+	MEMHOOK_SCOPE(MEMTAG_DANGER_PLOTS);
 	//we call this function in three situations
 	// * save game loaded (need to reconstruct m_DangerPlots). do not change m_knownUnits / m_vanishedUnits --> called from ui thread!
 	// * new turn (enemy units moved). update both both m_knownUnits / m_vanishedUnits

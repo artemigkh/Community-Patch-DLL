@@ -1,0 +1,27 @@
+18:06:11.038 ==== test_host start pid 15900 label '37-gpu-split-novsync' swap blit(DISCARD) buffers 1 format 28 msaa 1 vsync 0 load after size 1280x720 bb 2560x1440
+18:06:11.219 device FL b000 on 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+18:06:11.220 mem start: private=23.59 MB working=28.93 MB video_local=8.25 MB handles=331
+18:06:11.232 LoadLibraryW('C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\shell_composite.dll') after device creation (frame N) -> 5B300000 (err 0) in 1.58 ms
+18:06:12.221 1s: frames 9836 mean 0.102 ms max 5.229 ms bb 2560x1440
+18:06:13.220 1s: frames 11694 mean 0.086 ms max 0.490 ms bb 2560x1440
+18:06:14.221 1s: frames 11654 mean 0.086 ms max 0.550 ms bb 2560x1440
+18:06:15.220 1s: frames 10895 mean 0.092 ms max 1.072 ms bb 2560x1440
+18:06:16.221 1s: frames 12345 mean 0.081 ms max 0.741 ms bb 2560x1440
+18:06:17.220 1s: frames 12127 mean 0.082 ms max 0.539 ms bb 2560x1440
+18:06:18.220 1s: frames 11845 mean 0.084 ms max 0.569 ms bb 2560x1440
+18:06:19.221 1s: frames 11943 mean 0.084 ms max 0.505 ms bb 2560x1440
+18:06:20.220 1s: frames 11454 mean 0.087 ms max 0.528 ms bb 2560x1440
+18:06:21.221 mem periodic: private=33.43 MB working=35.39 MB video_local=56.46 MB handles=390
+18:06:21.221 1s: frames 11750 mean 0.085 ms max 0.817 ms bb 2560x1440
+18:06:22.221 1s: frames 11919 mean 0.084 ms max 0.541 ms bb 2560x1440
+18:06:23.220 1s: frames 11955 mean 0.084 ms max 0.520 ms bb 2560x1440
+18:06:24.221 1s: frames 11977 mean 0.083 ms max 0.553 ms bb 2560x1440
+18:06:25.220 1s: frames 11480 mean 0.087 ms max 0.858 ms bb 2560x1440
+18:06:26.221 1s: frames 11940 mean 0.084 ms max 0.543 ms bb 2560x1440
+18:06:27.220 1s: frames 12033 mean 0.083 ms max 0.734 ms bb 2560x1440
+18:06:28.220 1s: frames 12184 mean 0.082 ms max 0.488 ms bb 2560x1440
+18:06:29.221 1s: frames 12156 mean 0.082 ms max 0.483 ms bb 2560x1440
+18:06:30.220 1s: frames 12495 mean 0.080 ms max 0.617 ms bb 2560x1440
+18:06:31.220 mem periodic: private=33.43 MB working=35.84 MB video_local=56.46 MB handles=390
+18:06:31.223 summary label=37-gpu-split-novsync frames=202300 mean=0.0840 p50=0.0666 p99=0.2604 max=1.072 fps=11900.1
+18:06:31.223 mem end: private=33.43 MB working=35.84 MB video_local=56.46 MB handles=390

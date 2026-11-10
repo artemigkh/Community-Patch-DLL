@@ -15,6 +15,7 @@
 //
 
 #include "CvGameCoreDLLPCH.h"
+#include "MemoryHooks.h"
 #include "CvGameCoreUtils.h"
 #include "CvAStar.h"
 #include "ICvDLLUserInterface.h"
@@ -346,6 +347,7 @@ int CvAStar::udFunc(CvAStarConst2Func func, const CvAStarNode* param1, const CvA
 // private method - not threadsafe!
 bool CvAStar::FindPathWithCurrentConfiguration(int iXstart, int iYstart, int iXdest, int iYdest)
 {
+	MEMHOOK_SCOPE(MEMTAG_PATHFINDER);
 	if (!IsInitialized(iXstart, iYstart, iXdest, iYdest))
 		return false;
 

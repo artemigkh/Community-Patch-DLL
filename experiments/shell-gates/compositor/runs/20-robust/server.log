@@ -1,0 +1,52 @@
+17:33:52.660 shell_server start pid 11420 size 1920x1080 rate 60.0
+17:33:52.672 adapter 0: 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7 VRAM 16048 MB
+17:33:52.673 adapter 1: 'Microsoft Basic Render Driver' LUID 000000000000F569 VRAM 0 MB (software)
+17:33:52.673 using adapter 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:33:52.922 device created, feature level b100
+17:33:52.923 section 'Local\VPShellSection' created
+17:33:52.923 texture generation 1: 1920x1080 BGRA8 shared as 'Local\VPShellWorld_11420_1'
+17:33:52.923 mem start: private=60.66 MB working=33.81 MB video_local=8.25 MB
+17:33:53.808 client requested 1280x720 (seq 1)
+17:33:53.808 texture generation 2: 1280x720 BGRA8 shared as 'Local\VPShellWorld_11420_2'
+17:33:53.808 client pid 20416, client adapter LUID 000000000000E0D7
+17:33:53.924 1s: rendered 61 published 61 overwritten(unconsumed) 59 skipped 0 | acquire max 1.15 ms | client consumed total 1 | gen 2 1280x720
+17:33:54.940 1s: rendered 61 published 61 overwritten(unconsumed) 7 skipped 0 | acquire max 0.21 ms | client consumed total 55 | gen 2 1280x720
+17:33:55.958 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.19 ms | client consumed total 116 | gen 2 1280x720
+17:33:56.958 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.20 ms | client consumed total 176 | gen 2 1280x720
+17:33:57.957 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.18 ms | client consumed total 236 | gen 2 1280x720
+17:33:58.974 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.22 ms | client consumed total 297 | gen 2 1280x720
+17:33:59.990 1s: rendered 61 published 61 overwritten(unconsumed) 11 skipped 0 | acquire max 0.19 ms | client consumed total 347 | gen 2 1280x720
+17:34:01.007 1s: rendered 61 published 61 overwritten(unconsumed) 28 skipped 0 | acquire max 0.22 ms | client consumed total 380 | gen 2 1280x720
+17:34:02.007 1s: rendered 60 published 60 overwritten(unconsumed) 29 skipped 0 | acquire max 0.17 ms | client consumed total 411 | gen 2 1280x720
+17:34:02.924 mem periodic: private=66.44 MB working=35.95 MB video_local=24.20 MB
+17:34:03.024 1s: rendered 61 published 61 overwritten(unconsumed) 16 skipped 0 | acquire max 0.29 ms | client consumed total 456 | gen 2 1280x720
+17:34:04.024 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.20 ms | client consumed total 516 | gen 2 1280x720
+17:34:05.041 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.20 ms | client consumed total 577 | gen 2 1280x720
+17:34:05.574 client requested 1024x640 (seq 2)
+17:34:05.574 texture generation 3: 1024x640 BGRA8 shared as 'Local\VPShellWorld_11420_3'
+17:34:06.041 1s: rendered 60 published 60 overwritten(unconsumed) 14 skipped 0 | acquire max 0.17 ms | client consumed total 623 | gen 3 1024x640
+17:34:07.058 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.21 ms | client consumed total 684 | gen 3 1024x640
+17:34:08.057 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.17 ms | client consumed total 744 | gen 3 1024x640
+17:34:08.574 client requested 1920x1080 (seq 3)
+17:34:08.574 texture generation 4: 1920x1080 BGRA8 shared as 'Local\VPShellWorld_11420_4'
+17:34:09.074 1s: rendered 61 published 61 overwritten(unconsumed) 14 skipped 0 | acquire max 0.23 ms | client consumed total 791 | gen 4 1920x1080
+17:34:10.074 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.20 ms | client consumed total 851 | gen 4 1920x1080
+17:34:11.091 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.26 ms | client consumed total 912 | gen 4 1920x1080
+17:34:11.574 client requested 2560x1440 (seq 4)
+17:34:11.574 texture generation 5: 2560x1440 BGRA8 shared as 'Local\VPShellWorld_11420_5'
+17:34:12.108 1s: rendered 61 published 61 overwritten(unconsumed) 14 skipped 0 | acquire max 0.15 ms | client consumed total 959 | gen 5 2560x1440
+17:34:12.941 mem periodic: private=86.01 MB working=36.13 MB video_local=52.95 MB
+17:34:13.124 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.23 ms | client consumed total 1020 | gen 5 2560x1440
+17:34:14.124 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.14 ms | client consumed total 1080 | gen 5 2560x1440
+17:34:14.575 client requested 1280x720 (seq 5)
+17:34:14.575 texture generation 6: 1280x720 BGRA8 shared as 'Local\VPShellWorld_11420_6'
+17:34:15.141 1s: rendered 61 published 61 overwritten(unconsumed) 14 skipped 0 | acquire max 0.21 ms | client consumed total 1127 | gen 6 1280x720
+17:34:16.157 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.14 ms | client consumed total 1188 | gen 6 1280x720
+17:34:17.174 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.14 ms | client consumed total 1249 | gen 6 1280x720
+17:34:18.174 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.16 ms | client consumed total 1309 | gen 6 1280x720
+17:34:19.191 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.24 ms | client consumed total 1370 | gen 6 1280x720
+17:34:20.191 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.19 ms | client consumed total 1430 | gen 6 1280x720
+17:34:21.191 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.16 ms | client consumed total 1490 | gen 6 1280x720
+17:34:22.207 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.17 ms | client consumed total 1551 | gen 6 1280x720
+17:34:22.941 mem periodic: private=86.27 MB working=36.38 MB video_local=41.70 MB
+17:34:23.224 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.27 ms | client consumed total 1612 | gen 6 1280x720

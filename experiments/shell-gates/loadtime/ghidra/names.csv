@@ -1,0 +1,30 @@
+va,name (DX11 EXE, TimeDateStamp 0x546CD0A8, preferred base 0x400000; static, 2026-11-10)
+0x403170,LoadGameState::Update (state machine; state at [this+0x10]; jump table 0x403684)
+0x591200,LoadGameState::Enter (QPC start at +0x5B8; loads FrontEnd/LoadScreen context)
+0x494160,LoadGameState::Exit (posts LoadGameState_TOTAL)
+0x42fcc0,LoadGameState::StartInitStuffOnMap (vtable +0x18; walks every plot via ICvMap1/ICvPlot1; posts queue-B records 0x32/0x41/0x83; sets state 5)
+0x60abb0,LoadGameState::StartInitTerrainFromGameplayMap (vtable +0x1C; terrain bake)
+0x4686c0,GameViewState::StartupGame (per-game system startups + InGame Lua context; ends with queue-B pump 0x785AF0 and 4 MB pump 0x459D20)
+0x6436a0,GameViewState::Startup (state 1)
+0x4fb9f0,queue-B 'has pending records' (state 5 polls it on 0x2A10E08 + idx*0x4C)
+0x785af0,queue-B pump (0x2A10200; growable buffers; called from the frame at 0x4B4029)
+0x63aba0,queue-B dispatcher
+0x63e530,queue listener trampoline (-> 0x8668E0 listener walk)
+0x8668e0,queue listener list walk
+0x5ad360,queue-A pump (0x2A0FF80)
+0x7052b0,queue-C pump (0x2A0F480)
+0x459d20,g_EventSystemLocalMachine pump (4 MB double buffer 0x1A0E400)
+0x6a5970,g_EventSystemLocalMachine dispatcher
+0x5ca5e0,g_EventSystemLocalMachine record alloc (no bound check)
+0x5183f0,SystemInit record handler (writes system_init.log line)
+0x748fc0,farm field decal builder (ART_DEF_IMPROVEMENT_FARM; queue-B listener, 10-01 capture)
+0x583ce0,route decal builder inner (TerrainDecalSystem.cpp)
+0x7ad6c0,TerrainDecalSystem type-3 (farm polygon) handler
+0x6b8e50,SetActiveDLCandMods (mod activation; Reload*System restarts)
+0x6caa50,LoadUnitLibraries via Database
+0x6bb810,TerrainSystem StartGPUInitWork
+0x546110,CreateTreeShadows
+0x51df70,GameViewState::UpdateViews (camera)
+0x6fba80,GameViewState per-frame update (view mask [GVS+0x1B4])
+0x78e0a0,Multiplayer Init(Host)
+0x4b3f41,frame function body (entry not located; pumps: 0x4B3FDC queue A, 0x4B4029 queue B, 0x4B405D queue C, 0x4B4067 4 MB queue)

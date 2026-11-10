@@ -1,0 +1,5 @@
+mode                          n_s    fps  ft_mean ft_p99max comp_mean acq_mean lat_mean lat_p99 gpu_copy gpu_draw missed
+off:exec:34 no rows
+passthrough:exec:34            60    284    3.561     7.564    0.0000   0.0000     0.00    0.00   0.0000   0.0000      0
+composite:exec:34              60    283    3.565     6.633    0.1633   0.6059     2.50    6.48   0.2721   0.0174      0
+composite:present:1            60    279    3.605     6.912    0.2171   0.8520     1.72    4.80   0.1462   0.0195      0

@@ -1,0 +1,3 @@
+17:36:29.679 [41500] ==== shell_composite.dll loaded into pid 21196 'C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\test_host.exe' (DLL dir C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\)
+17:36:29.679 [41500] config: mode=off insert=clear nth=1 timeout=0 blend=opaque section=Local\VPShellSection request_resize=1 trace_frames=2
+17:36:29.679 [41500] vtable slots: Present 8 ResizeBuffers 13 Present1 22 ClearRTV 50 OMSetRT 33

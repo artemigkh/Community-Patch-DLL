@@ -7,6 +7,7 @@
 	------------------------------------------------------------------------------------------------------- */
 
 #include "CvGameCoreDLLPCH.h"
+#include "MemoryHooks.h"
 #include "CvEconomicAI.h"
 #include "ICvDLLUserInterface.h"
 #include "CvGameCoreUtils.h"
@@ -491,6 +492,7 @@ void CvEconomicAI::LogEconomyMessage(const CvString& strMsg)
 /// Called every turn to see what Strategies this player should using (or not)
 void CvEconomicAI::DoTurn()
 {
+	MEMHOOK_SCOPE(MEMTAG_ECONOMIC_AI);
 	LogMonitor();
 	LogCityMonitor();
 	LogBuildingYields();

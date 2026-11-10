@@ -1,0 +1,13 @@
+name,kind,dx11_va,dx9_va,tablet_va,signature,comment
+LoadCvGameCoreDLL_SetEngineUserInterface,EXE_CODE,0x0047ba70,0x0072b7f0,0x004cb690,8B 0D ?? ?? ?? ?? 8B 81 D0 00 00 00 ?? ?? 74 05 83 C0 04 EB 02 ?? ?? 8B 16 50 8B 82 34 02 00 00 56 FF D0,code location inside LoadCvGameCoreDLL where the engine user interface is set
+InterfaceBuddy_UserInterface,EXE_OFFSET,0x00000004,0x00000004,0x00000004,,field offset in InterfaceBuddy (not an address)
+InterfaceBuddy_dtor,EXE_FUNCTION,0x006b74d0,0x00472fc0,0x0054d990,83 EC 10 53 55 56 ?? ?? C7 06 ?? ?? ?? ?? C7 46 04,InterfaceBuddy destructor
+InterfaceBuddy_vftable,EXE_VTABLE,0x00a3fe78,0x00a35198,0x00a42f00,,
+InterfaceBuddy_UserInterface_vftable,EXE_VTABLE,0x00a04240,0x00a00928,0x009f3738,,
+InterfaceBuddy_dtor_UnregisterYieldIcons,EXE_CODE,0x006b76cb,0x004731bb,0x0054db8b,8D 4E 10 E8,call site in InterfaceBuddy dtor: lea ecx [esi+0x10]; call YieldIconManager_UnregisterForEvents
+InterfaceBuddy_YieldIconManager,EXE_OFFSET,0x00000010,0x00000010,0x00000010,,field offset in InterfaceBuddy (not an address)
+YieldIconManager_UnregisterForEvents,EXE_FUNCTION,0x00711dc0,0x0069dde0,0x006bc7b0,83 EC 0C 56 8D 44 24 04 ?? ?? 50 C7 44 24 10 ?? ?? ?? ?? 89 74 24 0C E8 ?? ?? ?? ?? 8D 4C 24 08 51 C7 44 24 14 ?? ?? ?? ?? 89 74 24 10 E8 ?? ?? ?? ?? 8D 54 24 0C 52 C7 44 24 18 ?? ?? ?? ?? 89 74 24 14 E8 ?? ?? ?? ?? 8D 44 24 10 50 C7 44 24 1C ?? ?? ?? ?? 89 74 24 18 E8 ?? ?? ?? ?? 8D 4C 24 14 51 C7 44 24 20 ?? ?? ?? ?? 89 74 24 1C E8 ?? ?? ?? ?? 8D 54 24 18 52 C7 44 24 24 ?? ?? ?? ?? 89 74 24 20 E8 ?? ?? ?? ?? 83 C4 18 5E 83 C4 0C C3,thiscall; no stack args; plain ret
+YieldIconManager_UnregisterForEvents_unk17,EXE_FUNCTION,0x00874eb0,0x0089aa50,0x00876940,A1 ?? ?? ?? ?? 83 EC 34 69 C0 00 06 00 00 F6 05,no engine symbol: removes one handler from g_EventSystemLocalMachine's current channel
+g_EventSystemLocalMachine,EXE_DATA,0x01a0e400,0x019fe200,0x01a0fe80,,LocalMachine event system; first dword is the current event channel
+Civ5NetMessage_s_wantForceResync,EXE_DATA,0x02dd2f68,0x02dc2d68,0x02dd4f50,,
+ResetNetMessageStatics_ClearWantForceResync,EXE_CODE,0x00525bd3,0x004e1193,0x00781b73,A1 ?? ?? ?? ?? 89 2D ?? ?? ?? ?? 89 1D ?? ?? ?? ?? 88 1D,code location inside ResetNetMessageStatics that clears s_wantForceResync

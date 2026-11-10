@@ -1,0 +1,26 @@
+17:47:33.687 ==== test_host start pid 14808 label 'composite_clear' swap blit(DISCARD) buffers 1 format 28 msaa 1 vsync 0 load after size 1280x720 bb 2560x1440
+17:47:33.864 device FL b000 on 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:47:33.867 mem start: private=23.76 MB working=29.18 MB video_local=8.25 MB handles=333
+17:47:33.878 LoadLibraryW('C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\shell_composite.dll') after device creation (frame N) -> 5AFB0000 (err 0) in 1.40 ms
+17:47:34.867 1s: frames 9883 mean 0.101 ms max 4.738 ms bb 2560x1440
+17:47:35.867 1s: frames 10841 mean 0.092 ms max 1.045 ms bb 2560x1440
+17:47:36.867 1s: frames 10928 mean 0.091 ms max 1.027 ms bb 2560x1440
+17:47:37.867 1s: frames 10123 mean 0.099 ms max 3.557 ms bb 2560x1440
+17:47:38.868 1s: frames 11246 mean 0.089 ms max 0.942 ms bb 2560x1440
+17:47:39.868 1s: frames 12791 mean 0.078 ms max 0.562 ms bb 2560x1440
+17:47:40.868 1s: frames 12452 mean 0.080 ms max 0.532 ms bb 2560x1440
+17:47:41.869 1s: frames 12290 mean 0.081 ms max 0.688 ms bb 2560x1440
+17:47:42.868 1s: frames 12366 mean 0.081 ms max 0.598 ms bb 2560x1440
+17:47:43.866 mem periodic: private=34.11 MB working=35.11 MB video_local=56.50 MB handles=390
+17:47:43.868 1s: frames 11764 mean 0.085 ms max 0.973 ms bb 2560x1440
+17:47:44.868 1s: frames 12069 mean 0.083 ms max 0.750 ms bb 2560x1440
+17:47:45.869 1s: frames 11982 mean 0.083 ms max 0.911 ms bb 2560x1440
+17:47:46.868 1s: frames 10889 mean 0.092 ms max 1.937 ms bb 2560x1440
+17:47:47.868 1s: frames 10977 mean 0.091 ms max 9.003 ms bb 2560x1440
+17:47:48.868 1s: frames 12086 mean 0.083 ms max 0.919 ms bb 2560x1440
+17:47:49.868 1s: frames 11807 mean 0.085 ms max 0.987 ms bb 2560x1440
+17:47:50.868 1s: frames 12043 mean 0.083 ms max 1.027 ms bb 2560x1440
+17:47:51.868 1s: frames 12076 mean 0.083 ms max 1.406 ms bb 2560x1440
+17:47:52.869 1s: frames 12292 mean 0.081 ms max 0.810 ms bb 2560x1440
+17:47:53.871 summary label=composite_clear frames=201371 mean=0.0844 p50=0.0672 p99=0.2731 max=9.003 fps=11843.4
+17:47:53.871 mem end: private=34.38 MB working=35.82 MB video_local=56.50 MB handles=394

@@ -7,6 +7,7 @@
 #include "CustomMods.h"
 
 #include <string.h>
+#include <time.h>
 
 // must be included after all other headers
 #include "LintFree.h"
@@ -16,6 +17,7 @@ SqliteLogger::SqliteLogger() :
 	m_kConnection(),
 	m_bOpenAttempted(false),
 	m_bOpen(false),
+	m_iRunId(0),
 	m_registeredTableSchemas(),
 	m_preparedInserts()
 {
@@ -42,6 +44,25 @@ SqliteLogger& SqliteLogger::getInstance()
 {
 	static SqliteLogger s_kInstance;
 	return s_kInstance;
+}
+
+//	-----------------------------------------------------------------------------------------------
+int SqliteLogger::GetRunId()
+{
+	// One id per launch of the game process, stamped onto every row this process writes.
+	//
+	// GameId identifies a game, not a sitting: reloading a save keeps the same GameId, so replaying
+	// turns that were already logged once leaves duplicate (GameId, Turn) rows that can only be told
+	// apart by guessing at rowid order. RunId removes the guesswork - (GameId, RunId) names exactly
+	// one continuous stretch of play.
+	//
+	// Seconds since the epoch is used because it is monotonic across launches, needs no state on
+	// disk, and is far above the small synthetic ids (100000+) backfilled onto rows that were
+	// written before this column existed, so the two can never collide.
+	if (m_iRunId == 0)
+		m_iRunId = (int)time(NULL);
+
+	return m_iRunId;
 }
 
 //	-----------------------------------------------------------------------------------------------
@@ -235,25 +256,32 @@ void SqliteLogger::RegisterTable(const std::string& strTableName, const TableDef
 		return;
 	}
 
-	// Every table implicitly starts with a GameId (INT) and Turn (INT) column. These are
-	// prepended to the caller-supplied schema here and bound automatically in BeginLogRow(),
-	// so callers must neither declare nor bind them. GameId is an integer id into uuid_dictionary.
+	// Every table implicitly starts with a GameId (INT) and Turn (INT) column and ends with a
+	// RunId (INT) column. These are added to the caller-supplied schema here and bound
+	// automatically in BeginLogRow(), so callers must neither declare nor bind them. GameId is an
+	// integer id into uuid_dictionary; RunId identifies one launch of the game process.
+	//
+	// RunId is deliberately the LAST column rather than a third leading one: SQLite's
+	// ALTER TABLE ... ADD COLUMN can only append, and TableSchemaMatches() compares positionally,
+	// so appending is what lets an existing stats.db be migrated in place instead of being dropped
+	// and recreated (which would destroy the history the table exists to accumulate).
 	TableDef kFullColumns;
-	kFullColumns.reserve(kColumns.size() + 2);
+	kFullColumns.reserve(kColumns.size() + 3);
 	kFullColumns.push_back(ColumnDef("GameId", Database::COLTYPE_INT));
 	kFullColumns.push_back(ColumnDef("Turn", Database::COLTYPE_INT));
 	for (size_t i = 0; i < kColumns.size(); ++i)
 		kFullColumns.push_back(kColumns[i]);
+	kFullColumns.push_back(ColumnDef("RunId", Database::COLTYPE_INT));
 
 	// Reject duplicate column names (case-insensitive). This also catches callers that try to
-	// re-declare the implicit GameId/Turn columns.
+	// re-declare the implicit GameId/Turn/RunId columns.
 	for (size_t i = 0; i < kFullColumns.size(); ++i)
 	{
 		for (size_t j = i + 1; j < kFullColumns.size(); ++j)
 		{
 			if (_stricmp(kFullColumns[i].name.c_str(), kFullColumns[j].name.c_str()) == 0)
 			{
-				ASSERT(false, "SqliteLogger: duplicate column name in table definition (note: GameId and Turn are implicit and must not be declared)");
+				ASSERT(false, "SqliteLogger: duplicate column name in table definition (note: GameId, Turn and RunId are implicit and must not be declared)");
 				return;
 			}
 		}
@@ -338,7 +366,8 @@ SqliteLogger::Statement SqliteLogger::BeginLogRow(const std::string& strTableNam
 	pkResults->Reset();
 
 	// The implicit GameId and Turn columns lead every table; bind them automatically here so that
-	// callers only ever bind their own columns (in declaration order).
+	// callers only ever bind their own columns (in declaration order). The trailing RunId column is
+	// bound by execute(), once the caller has finished with its own.
 	Statement kStatement(this, strTableName, pkResults, &itSchema->second, true);
 	kStatement.bind(GC.getGame().getGameDatabaseId());
 	kStatement.bind(GC.getGame().getElapsedGameTurns());
@@ -349,23 +378,24 @@ SqliteLogger::Statement SqliteLogger::BeginLogRow(const std::string& strTableNam
 SqliteLogger::BatchWriter SqliteLogger::BeginLogBatch(const std::string& strTableName)
 {
 	if (!EnsureOpen())
-		return BatchWriter(this, strTableName, NULL, NULL, 0, 0, 0, false);
+		return BatchWriter(this, strTableName, NULL, NULL, 0, 0, 0, 0, false);
 
 	SchemaMap::iterator itSchema = m_registeredTableSchemas.find(strTableName);
 	if (itSchema == m_registeredTableSchemas.end())
 	{
 		ASSERT(false, "SqliteLogger: BeginLogBatch called for an unregistered table");
-		return BatchWriter(this, strTableName, NULL, NULL, 0, 0, 0, false);
+		return BatchWriter(this, strTableName, NULL, NULL, 0, 0, 0, 0, false);
 	}
 
 	Database::Results* pkResults = GetOrCreateInsert(strTableName);
 	if (pkResults == NULL)
-		return BatchWriter(this, strTableName, NULL, NULL, 0, 0, 0, false);
+		return BatchWriter(this, strTableName, NULL, NULL, 0, 0, 0, 0, false);
 
-	// GameId and Turn are constant for the lifetime of a batch (same game, same turn), so capture
-	// them once here instead of re-reading them for every buffered row.
+	// GameId, Turn and RunId are constant for the lifetime of a batch (same game, same turn, same
+	// process), so capture them once here instead of re-reading them for every buffered row.
 	const int iGameId = GC.getGame().getGameDatabaseId();
 	const int iTurn = GC.getGame().getElapsedGameTurns();
+	const int iRunId = GetRunId();
 
 	// Higher values buffer more rows in memory before writing, reducing total write time; clamp to
 	// at least one row so a misconfigured (zero/negative) value still makes forward progress.
@@ -373,7 +403,7 @@ SqliteLogger::BatchWriter SqliteLogger::BeginLogBatch(const std::string& strTabl
 	if (iMaxRows < 1)
 		iMaxRows = 1;
 
-	return BatchWriter(this, strTableName, &itSchema->second, pkResults, iGameId, iTurn, iMaxRows, true);
+	return BatchWriter(this, strTableName, &itSchema->second, pkResults, iGameId, iTurn, iRunId, iMaxRows, true);
 }
 
 //	===============================================================================================
@@ -492,6 +522,11 @@ void SqliteLogger::Statement::execute()
 	if (!m_bEnabled || !m_bValid || m_pkResults == NULL || m_pkSchema == NULL)
 		return;
 
+	// RunId is the implicit trailing column. Bind it once the caller has bound everything it
+	// declared, so that callers neither know nor care that it exists.
+	if (m_pkOwner != NULL && m_iBindIndex == (int)m_pkSchema->size() - 1)
+		bind(m_pkOwner->GetRunId());
+
 	if (m_iBindIndex != (int)m_pkSchema->size())
 	{
 		ASSERT(false, "SqliteLogger: execute() called before all columns were bound");
@@ -512,13 +547,14 @@ void SqliteLogger::Statement::execute()
 //	===============================================================================================
 
 //	-----------------------------------------------------------------------------------------------
-SqliteLogger::BatchWriter::BatchWriter(SqliteLogger* pkOwner, const std::string& strTableName, const TableDef* pkSchema, Database::Results* pkResults, int iGameId, int iTurn, int iMaxRows, bool bEnabled) :
+SqliteLogger::BatchWriter::BatchWriter(SqliteLogger* pkOwner, const std::string& strTableName, const TableDef* pkSchema, Database::Results* pkResults, int iGameId, int iTurn, int iRunId, int iMaxRows, bool bEnabled) :
 	m_pkOwner(pkOwner),
 	m_strTableName(strTableName),
 	m_pkSchema(pkSchema),
 	m_pkResults(pkResults),
 	m_iGameId(iGameId),
 	m_iTurn(iTurn),
+	m_iRunId(iRunId),
 	m_iMaxRows(iMaxRows),
 	m_bEnabled(bEnabled),
 	m_buffer(),
@@ -529,10 +565,11 @@ SqliteLogger::BatchWriter::BatchWriter(SqliteLogger* pkOwner, const std::string&
 //	-----------------------------------------------------------------------------------------------
 int SqliteLogger::BatchWriter::CallerColumnCount() const
 {
-	// Every schema implicitly leads with GameId and Turn, which are not bound per row in a batch.
-	if (m_pkSchema == NULL || m_pkSchema->size() < 2)
+	// Every schema implicitly leads with GameId and Turn and ends with RunId; none of the three are
+	// bound per row in a batch.
+	if (m_pkSchema == NULL || m_pkSchema->size() < 3)
 		return 0;
-	return (int)m_pkSchema->size() - 2;
+	return (int)m_pkSchema->size() - 3;
 }
 
 //	-----------------------------------------------------------------------------------------------
@@ -589,6 +626,9 @@ void SqliteLogger::BatchWriter::flush()
 				break;
 			}
 		}
+
+		// ...and the implicit RunId column closes every row.
+		m_pkResults->Bind(iCallerCols + 3, m_iRunId);
 
 		if (!m_pkResults->Execute())
 		{

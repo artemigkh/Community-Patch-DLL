@@ -1,0 +1,2 @@
+Local\VPTapB_154 seq 154 inject 1024x1024 mips 11 arr 1 BC3_TYPELESS ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x802 bytes 1398128 vram_delta_kb 0
+Local\VPTapB_158 seq 158 inject 1024x1024 mips 11 arr 1 BC3_TYPELESS ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x802 bytes 1398128 vram_delta_kb 0

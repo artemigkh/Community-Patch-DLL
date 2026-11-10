@@ -1,0 +1,54 @@
+{
+ "cloak": {
+  "arm": "cloaked window (DWMWA_CLOAK after 4 s)",
+  "before": {
+   "seconds": 2,
+   "fps_avg": 32.0,
+   "occluded_frac": 0.0,
+   "iconic": 0,
+   "fg_any": 0,
+   "cloaked": 0
+  },
+  "before_capture": {
+   "ok": true,
+   "black": false,
+   "mean": [
+    68,
+    24,
+    153
+   ],
+   "fresh": true
+  },
+  "cloaked_flag_seen_from_outside": true,
+  "cloaked": {
+   "seconds": 3,
+   "fps_avg": 165.3,
+   "occluded_frac": 0.0,
+   "iconic": 0,
+   "fg_any": 0,
+   "cloaked": 1
+  },
+  "cloaked_capture": {
+   "ok": true,
+   "black": false,
+   "mean": [
+    155,
+    72,
+    22
+   ],
+   "fresh": true
+  },
+  "cloaked_input": {
+   "keydown_F7": true,
+   "keydown_F8_with_shift_keystate": {
+    "GetKeyState(SHIFT)": "8000",
+    "GetAsyncKeyState(SHIFT)": "8000"
+   },
+   "char_from_translate": true,
+   "click_at_posted_xy": true,
+   "getasync_poll_saw_F8": true,
+   "getkeystate_saw_F7": false
+  },
+  "foreground_hits": 0
+ }
+}

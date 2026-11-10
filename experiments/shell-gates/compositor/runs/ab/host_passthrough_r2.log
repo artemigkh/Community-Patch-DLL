@@ -1,0 +1,26 @@
+17:45:31.974 ==== test_host start pid 20604 label 'passthrough' swap blit(DISCARD) buffers 1 format 28 msaa 1 vsync 0 load after size 1280x720 bb 2560x1440
+17:45:32.164 device FL b000 on 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:45:32.167 mem start: private=23.62 MB working=29.02 MB video_local=8.25 MB handles=331
+17:45:32.178 LoadLibraryW('C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\shell_composite.dll') after device creation (frame N) -> 63030000 (err 0) in 1.13 ms
+17:45:33.167 1s: frames 10422 mean 0.096 ms max 5.237 ms bb 2560x1440
+17:45:34.167 1s: frames 11754 mean 0.085 ms max 0.718 ms bb 2560x1440
+17:45:35.167 1s: frames 11851 mean 0.084 ms max 0.772 ms bb 2560x1440
+17:45:36.167 1s: frames 12853 mean 0.078 ms max 0.591 ms bb 2560x1440
+17:45:37.167 1s: frames 12483 mean 0.080 ms max 0.480 ms bb 2560x1440
+17:45:38.167 1s: frames 11516 mean 0.087 ms max 0.692 ms bb 2560x1440
+17:45:39.167 1s: frames 11638 mean 0.086 ms max 0.734 ms bb 2560x1440
+17:45:40.167 1s: frames 11882 mean 0.084 ms max 0.648 ms bb 2560x1440
+17:45:41.167 1s: frames 12146 mean 0.082 ms max 0.690 ms bb 2560x1440
+17:45:42.167 mem periodic: private=32.75 MB working=32.72 MB video_local=27.06 MB handles=383
+17:45:42.167 1s: frames 11815 mean 0.085 ms max 1.491 ms bb 2560x1440
+17:45:43.168 1s: frames 6785 mean 0.147 ms max 1.656 ms bb 2560x1440
+17:45:44.167 1s: frames 9106 mean 0.110 ms max 0.677 ms bb 2560x1440
+17:45:45.167 1s: frames 11332 mean 0.088 ms max 0.734 ms bb 2560x1440
+17:45:46.168 1s: frames 8952 mean 0.112 ms max 0.866 ms bb 2560x1440
+17:45:47.167 1s: frames 10793 mean 0.093 ms max 1.888 ms bb 2560x1440
+17:45:48.167 1s: frames 12400 mean 0.081 ms max 0.650 ms bb 2560x1440
+17:45:49.168 1s: frames 11981 mean 0.083 ms max 0.848 ms bb 2560x1440
+17:45:50.167 1s: frames 10729 mean 0.093 ms max 1.451 ms bb 2560x1440
+17:45:51.167 1s: frames 11727 mean 0.085 ms max 0.528 ms bb 2560x1440
+17:45:52.170 summary label=passthrough frames=190318 mean=0.0893 p50=0.0688 p99=0.2847 max=1.888 fps=11195.1
+17:45:52.170 mem end: private=32.75 MB working=33.17 MB video_local=27.06 MB handles=383
