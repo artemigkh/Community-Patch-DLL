@@ -1,0 +1,114 @@
+{
+ "t0": 1794276432.9770055,
+ "checks": {
+  "status_start": {
+   "ok": true,
+   "results": [
+    "{ active = 0, cityScreen = false, cities = 13, turn = 352, observer = false, popup = true, blocking = -1, human = true, interfaceMode = 1, units = 76 }"
+   ],
+   "error": null,
+   "ms": 0
+  },
+  "city_open": {
+   "ok": true,
+   "results": [
+    "\"Thebes\""
+   ],
+   "error": null,
+   "ms": 0
+  },
+  "city_screen_up": {
+   "ok": true,
+   "results": [
+    "true",
+    "\"Thebes\""
+   ],
+   "error": null,
+   "ms": 0
+  },
+  "city_close": {
+   "ok": true,
+   "results": [
+    "true"
+   ],
+   "error": null,
+   "ms": 0
+  },
+  "city_screen_closed": {
+   "ok": true,
+   "results": [
+    "false"
+   ],
+   "error": null,
+   "ms": 0
+  },
+  "select_unit": {
+   "ok": true,
+   "results": [
+    "\"Destroyer\"",
+    "\"Destroyer\""
+   ],
+   "error": null,
+   "ms": 0
+  },
+  "minimap_state": {
+   "ok": true,
+   "results": [
+    "true"
+   ],
+   "error": null,
+   "ms": 0
+  },
+  "unitflag_state": {
+   "ok": true,
+   "results": [
+    "true"
+   ],
+   "error": null,
+   "ms": 0
+  },
+  "citybanner_state": {
+   "ok": true,
+   "results": [
+    "true"
+   ],
+   "error": null,
+   "ms": 0
+  },
+  "pick_by_message": {
+   "ok": true,
+   "results": [
+    [
+     "85",
+     "22"
+    ],
+    [
+     "83",
+     "23"
+    ],
+    [
+     "86",
+     "21"
+    ]
+   ]
+  },
+  "end_turn_1": {
+   "ok": true,
+   "turn_from": 352,
+   "seconds": 24.5,
+   "results": [
+    "0 [1] \"forced\" [2] -1",
+    "turn 353 active after 24 s"
+   ]
+  },
+  "status_end": {
+   "ok": true,
+   "results": [
+    "{ active = 0, cityScreen = false, cities = 13, turn = 353, observer = false, popup = true, blocking = -1, human = true, interfaceMode = 1, units = 75 }"
+   ],
+   "error": null,
+   "ms": 0
+  }
+ },
+ "t1": 1794276473.0132177
+}

@@ -23,6 +23,39 @@ State: waiting for the parent session's probes (each DisableSystems key alone, t
 
 ### Probe results (forwarded)
 
+From the parent session (`experiments/exe-world-subsystems/PROBES.md` in the main checkout; Release 5.4.8 DLL,
+one run per probe, 60 s idle, baseline 1,985 MB private):
+
+- **Cannot be switched off by config** (each crashes the load alone): Terrain (NULL read at EXE+0x2b4f3c via the
+  message-queue dispatch EXE+0x2a59a5), Unit (silent exit at mod activation; in combination NULL read at
+  EXE+0x59fc14), LandmarkSystem (write at EXE+0x39b73d), River and Arrows (same write at EXE+0x4cc892). The EXE
+  keeps dispatching world messages to systems that do not exist.
+- **Can be switched off**: FluidFOW (-294 MB), Particle (-43), City (-29), Forest (-17), Minimap, Overlay, Decal,
+  FOW, Waves, DistanceFog, YieldIcons, StrategicView, MovementPath, Combat, Projectile (within noise).
+- **Combined**: A4 (12 keys) 1,561 MB (-424); **B4** (A4 + Overlay OverlayDebug StrategicView Minimap
+  ColorKeyEdit, 17 keys) **1,545 MB (-440)**, map and minimap black, UI works; A5 (A4 with FluidFOW on) 1,869 MB.
+  B4 is the decisive configuration re-run below.
+
+### Baseline (all systems on), instrumented
+
+Run 2026-11-09 20:33-21:08, experiment DLL (5.4.8 + MemoryImports/MemoryHooks + EngineAllocTrace on), no-focus
+mode (cloaked, off-screen). The instrumented DLL costs ~140 MB private against the probes' plain 5.4.8, so only
+deltas against this baseline are compared.
+
+| Moment | Private | WS | Free (4 GB space) | Largest free block | Free below 2 GB |
+|---|---|---|---|---|---|
+| main menu (no instruments loaded yet beyond DLL) | 1,615 | 1,177 | 1,583 | 1,541 | 31 |
+| in play, t350, right after load | 2,122 | 1,848 | 1,094 | 1,054 | 26 |
+| t351 (after one AI turn) | 2,167 | 1,912 | 1,036 | 995 | - |
+| t353 (after three) | 2,211 | 1,256 | 1,001 | 901 | 26 |
+
+Functional checklist (`tools/gate1_checklist.py`, all through the Lua channel or posted window messages, no
+focus): status, city screen open (Thebes) / up / closed, unit select + LookAt (head unit = Destroyer), minimap /
+unit-flag / city-banner UI contexts alive, **hex picking by posted WM_MOUSEMOVE** (UI.GetMouseOverHex followed the
+cursor: 85,22 / 83,23 / 86,21), end of turn (forced 352 -> 353 in 24 s): **all pass**. AI diplomacy screens (a
+peace offer, two Bismarck dialogs) stall the AI turn; `tools/wait_turn.py --answer N` answers them with a posted
+click on the bottom (neutral / REFUSE) button.
+
 ### Re-run of the decisive configuration (instrumented)
 
 Instrumentation: `tools/addrspace.py` (read-only: private bytes, working set, committed / reserved / free, largest
@@ -156,6 +189,14 @@ mouse handling; no GetKeyState, raw input or DirectInput), so posted keys should
 | VMware VM | desk only: rejected (one Steam game per account at a time, full install inside, 8-12 GB guest RAM, different address-space numbers) | | | |
 | RDP / second session | impossible on Home edition | | | |
 | Guard compiled into the VP DLL | too late: the DLL loads after the window and the startup SetActiveWindow | | | |
+
+**Live, real game, main menu (2026-11-09 20:29, experiment DLL 5.4.8 + instruments):** `civ_bg.py launch --
+--mods cp,vp,eui --menu-only` started the EXE directly (no Steam relaunch, same pid throughout), guard injected
+before the first instruction: all 17 hooks ok, cloak applied, window parked at x = -4680, `seen by Art: False`,
+`foreground=False`. The guard refused the game's startup `SetActiveWindow` (1 of 1), 3 of 6 `SetWindowPos`, and
+both `SetWindowsHookEx(WH_KEYBOARD_LL)` installs. PrintWindow returned the live menu (`live/menu1.png`); a posted
+click on OPTIONS opened the options screen (`live/menu_options.png`) and a posted ESC closed it
+(`live/menu_after_esc.png`). The 20 ms `watch` saw no foreground or visibility slip.
 
 Residual cases: Steam relaunching the EXE (new process without the guard), system-modal assert boxes (visible,
 no focus) and WerFault/crash dialogs (other process), `front` (on purpose), exclusive fullscreen (refused), GPU

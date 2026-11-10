@@ -66,16 +66,25 @@ UI.DoSelectCityAtPlot(c:Plot())
 return vp.g1city
 '''
 
-ANCHORS = '''
--- world anchors the UI keeps: unit flags and city banners exist as Lua-side objects even with Unit/City systems off?
-local out = {}
+ANCHORS = '''--@state=InGame
 local p = Players[Game.GetActivePlayer()]
-local u = p:Units()()
-if u then UI.SelectUnit(u); UI.LookAt(u:Plot(), 0); out.selected = u:GetName(); out.headSelected = UI.GetHeadSelectedUnit() and UI.GetHeadSelectedUnit():GetID() or -1 end
-local mx, my = UI.GetMouseOverHex()
-out.mouseOverHex = { mx, my }
-return out
+local u = p:GetFirstReadyUnit()
+if not u then for x in p:Units() do u = x break end end
+if not u then return 'no unit' end
+UI.SelectUnit(u); UI.LookAt(u:GetPlot(), 0)
+local h = UI.GetHeadSelectedUnit()
+return u:GetName(), h and h:GetName() or 'none'
 '''
+
+PICK = '''--@state=InGame
+local mx, my = UI.GetMouseOverHex() return mx, my
+'''
+
+
+def civbg(*args):
+    import subprocess
+    return subprocess.run([sys.executable, str(HERE.parents[1] / 'nofocus' / 'civ_bg.py'), *args],
+                          capture_output=True, text=True).returncode
 
 
 def main():
@@ -94,28 +103,30 @@ def main():
     chk['city_close'] = lua('Events.SerialEventExitCityScreen() return true')
     time.sleep(2)
     chk['city_screen_closed'] = lua('return UI.IsCityScreenUp()')
-    chk['anchors'] = lua(ANCHORS)
+    chk['select_unit'] = lua(ANCHORS)
     chk['minimap_state'] = lua('return ContextPtr ~= nil', state='MiniMapPanel')
     chk['unitflag_state'] = lua('return ContextPtr ~= nil', state='UnitFlagManager')
     chk['citybanner_state'] = lua('return ContextPtr ~= nil', state='CityBannerManager')
+    # hex picking through posted WM_MOUSEMOVE (no focus): the hovered hex must follow the cursor
+    picks = []
+    for fx, fy in ((0.5, 0.5), (0.3, 0.4), (0.7, 0.6)):
+        civbg('move', str(fx), str(fy))
+        time.sleep(0.7)
+        picks.append(lua(PICK).get('results'))
+    chk['pick_by_message'] = {'ok': len({str(x) for x in picks}) == 3, 'results': picks}
     if not a.skip_endturn:
+        import subprocess
         for i in range(a.turns):
-            start = lua('return Game.GetGameTurn()')
-            t0 = time.time()
-            turn0 = int(start['results'][0]) if start.get('ok') else None
-            tries = []
-            done = False
-            while time.time() - t0 < a.turn_timeout:
-                cur = lua('return Game.GetGameTurn(), Players[Game.GetActivePlayer()]:IsTurnActive(), UI.IsPopupUp()')
-                if cur.get('ok') and turn0 is not None and int(cur['results'][0]) > turn0 and cur['results'][1] == 'true':
-                    done = True
-                    break
-                if cur.get('ok') and cur['results'][1] == 'true':
-                    tries.append(lua(CLEAR))
-                    tries.append(lua('if UI.IsPopupUp() then return "popup up" end return "no popup"'))
-                time.sleep(5)
-            chk[f'end_turn_{i + 1}'] = {'ok': done, 'turn_from': turn0, 'seconds': round(time.time() - t0, 1),
-                                        'attempts': tries[-6:]}
+            t = time.time()
+            turn0 = int(lua('return Game.GetGameTurn()')['results'][0])
+            e = subprocess.run([sys.executable, str(HERE.parent / 'end_turn.py')], capture_output=True, text=True)
+            w = subprocess.run([sys.executable, str(HERE.parent / 'wait_turn.py'), str(turn0), '--answer', '8', '--timeout',
+                                str(a.turn_timeout), '--stall', '45'], capture_output=True, text=True)
+            chk[f'end_turn_{i + 1}'] = {'ok': w.returncode == 0, 'turn_from': turn0,
+                                        'seconds': round(time.time() - t, 1),
+                                        'results': [e.stdout.strip()[-300:], w.stdout.strip()[-200:]]}
+            if w.returncode != 0:
+                break
     chk['status_end'] = lua(STATUS)
     res['t1'] = time.time()
     Path(a.out).write_text(json.dumps(res, indent=1))
