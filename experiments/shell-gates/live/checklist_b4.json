@@ -1,0 +1,110 @@
+{
+ "t0": 1794276699.5593455,
+ "checks": {
+  "status_start": {
+   "ok": true,
+   "results": [
+    "{ active = 0, cityScreen = false, cities = 13, turn = 350, observer = false, popup = false, blocking = 2, human = true, interfaceMode = 1, units = 79 }"
+   ],
+   "error": null,
+   "ms": 0
+  },
+  "city_open": {
+   "ok": true,
+   "results": [
+    "\"Thebes\""
+   ],
+   "error": null,
+   "ms": 0
+  },
+  "city_screen_up": {
+   "ok": true,
+   "results": [
+    "true",
+    "\"Thebes\""
+   ],
+   "error": null,
+   "ms": 0
+  },
+  "city_close": {
+   "ok": true,
+   "results": [
+    "true"
+   ],
+   "error": null,
+   "ms": 0
+  },
+  "city_screen_closed": {
+   "ok": true,
+   "results": [
+    "false"
+   ],
+   "error": null,
+   "ms": 16
+  },
+  "select_unit": {
+   "ok": true,
+   "results": [
+    "\"Destroyer\"",
+    "\"Destroyer\""
+   ],
+   "error": null,
+   "ms": 0
+  },
+  "minimap_state": {
+   "ok": true,
+   "results": [
+    "true"
+   ],
+   "error": null,
+   "ms": 0
+  },
+  "unitflag_state": {
+   "ok": true,
+   "results": [
+    "true"
+   ],
+   "error": null,
+   "ms": 0
+  },
+  "citybanner_state": {
+   "ok": true,
+   "results": [
+    "true"
+   ],
+   "error": null,
+   "ms": 0
+  },
+  "pick_by_message": {
+   "ok": true,
+   "results": [
+    [
+     "85",
+     "22"
+    ],
+    [
+     "83",
+     "23"
+    ],
+    [
+     "86",
+     "21"
+    ]
+   ]
+  },
+  "end_turn_1": {
+   "ok": false,
+   "turn_from": 350,
+   "seconds": 534.3,
+   "results": [
+    "0 [1] \"blocked\" [2] 2 [3] 1\n1 [1] \"blocked\" [2] 10 [3] 6\n2 [1] \"blocked\" [2] 10 [3] 11\n3 [1] \"blocked\" [2] 10 [3] 13\n4 [1] \"blocked\" [2] 26 [3] 15\n5 [1] \"forced\" [2] -1",
+    "log 4 at 239 s\nstall: answered dialog 5 at 301 s\nstall: answered dialog 6 at 351 s\nstall: answered dialog 7 at 411 s\nstall: answered dialog 8 at 471 s\nchannel silent for 55 s (leader screen or popup?)"
+   ]
+  },
+  "status_end": {
+   "ok": null,
+   "error": "timeout: vp_lua: no answer from the game within 30 s (request 24808-f30180dff6af4d79, state Main, cache C:\\Users\\Art\\Documents\\My Games\\Sid Meier's Civilization 5\\cache).\nThe request was never picked up - nothing polled Local\\VPLuaExec - and has been withdrawn.\nFacts:\n  game process: CivilizationV_DX11.exe pid 9432, VP_LUAEXEC=<unset>\n  channel: the events already existed before this client opened them, so another process had set the channel up\n  installed DLL C:\\Program Files (x86)\\Steam\\steamapps\\common\\Sid Meier's Civilization V\\Assets\\DLC\\VP_MODPACK\\Mods\\(1) Community Patch\\CvGameCore_Expansion2.dll: contains the string VPLuaExec: file not found or unreadable\nLikely causes, most likely first:\n  - The game set the channel up earlier but no longer polls it: it is back in the front end (the channel runs from CvGame::update, so it is dead in the front end (main menu, game setup, load screen)), or it is hung."
+  }
+ },
+ "t1": 1794277282.7374523
+}

@@ -1,4 +1,4 @@
-"""Wait until the human's turn is active at a turn > FROM, through the Lua channel (no input).
+﻿"""Wait until the human's turn is active at a turn > FROM, through the Lua channel (no input).
 
     python wait_turn.py FROM [--timeout 900] [--stall 60] [--shot path.png]
 
@@ -35,7 +35,7 @@ def main():
     ap.add_argument('--stall', type=float, default=60)
     ap.add_argument('--shot')
     ap.add_argument('--answer', type=int, default=0,
-                    help='on a stall, click the bottom dialog button (x 0.459, y 0.977: REFUSE on a deal screen, '
+                    help='on a stall, click the bottom dialog button (x 0.49, y 0.977: REFUSE on a deal screen, '
                          'the last = neutral answer on a leader dialog) up to N times, then keep waiting')
     a = ap.parse_args()
     answered = 0
@@ -58,8 +58,8 @@ def main():
             if a.shot:
                 subprocess.run([sys.executable, str(CIVBG), 'shot', a.shot.replace('.png', f'_answer{n}.png'),
                                 '--scale', '0.5'], capture_output=True)
-            subprocess.run([sys.executable, str(CIVBG), 'move', '0.459', '0.977'], capture_output=True)
-            subprocess.run([sys.executable, str(CIVBG), 'click', '0.459', '0.977'], capture_output=True)
+            subprocess.run([sys.executable, str(CIVBG), 'move', '0.49', '0.977'], capture_output=True)
+            subprocess.run([sys.executable, str(CIVBG), 'click', '0.49', '0.977'], capture_output=True)
             answered = n
             last_answer = time.time()
             print(f'stall: answered dialog {n} at {time.time() - t0:.0f} s', flush=True)
