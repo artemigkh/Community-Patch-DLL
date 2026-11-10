@@ -175,18 +175,18 @@ FDataStream & operator<<(FDataStream & saveTo, const stdext::hash_map<KeyType, E
 	return saveTo;
 }
 
+// Unordered containers are written in sorted key order (D18): hash-table order differs between STLs.
+// Same bytes per element as before; the readers do not depend on the order.
 template<typename KeyType, typename ElementType>
 FDataStream & operator<<(FDataStream & saveTo, const std::tr1::unordered_map<KeyType, ElementType> & readFrom)
 {
-	std::for_each(readFrom.begin(), readFrom.end(), SerializeFromAssociativeContainer<std::pair<KeyType, ElementType>, const std::tr1::unordered_map<KeyType, ElementType> >(saveTo, readFrom));
-	return saveTo;
+	return saveTo << std::map<KeyType, ElementType>(readFrom.begin(), readFrom.end());
 }
 
 template<typename KeyType>
 FDataStream & operator <<(FDataStream & saveTo, const std::tr1::unordered_set<KeyType>& readFrom)
 {
-	std::for_each(readFrom.begin(), readFrom.end(), SerializeFromAssociativeContainer<KeyType, const std::tr1::unordered_set<KeyType> >(saveTo, readFrom));
-	return saveTo;
+	return saveTo << std::set<KeyType>(readFrom.begin(), readFrom.end());
 }
 
 template<typename ElementType>
