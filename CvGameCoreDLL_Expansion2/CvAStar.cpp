@@ -140,6 +140,7 @@ void CvAStar::DeInit()
 {
 	m_openNodes.clear();
 	m_closedNodes.clear();
+	m_childNodes.clear();
 
 	if(m_ppaaNodes != NULL)
 	{
@@ -251,6 +252,7 @@ void CvAStar::Reset()
 		(*it)->clear();
 	m_openNodes.clear();
 	m_closedNodes.clear();
+	m_childNodes.clear();
 
 	//debug helpers
 	m_iProcessedNodes = 0;
@@ -715,8 +717,22 @@ NodeState CvAStar::LinkChild(CvAStarNode* node, CvAStarNode* check)
 	if (node->m_pParent && node->m_pParent->m_iX == check->m_iX && node->m_pParent->m_iY == check->m_iY)
 		return NS_OBSOLETE;
 
-	//remember the connection
-	node->m_apChildren.push_back(check);
+	//remember the connection. a node's children are kept contiguous in m_childNodes;
+	//they are normally all added in one go, otherwise move the existing ones to the end first
+	if (node->m_iNumChildren == 0)
+		node->m_iFirstChild = static_cast<unsigned int>(m_childNodes.size());
+	else if (node->m_iFirstChild + node->m_iNumChildren != m_childNodes.size())
+	{
+		unsigned int iNewFirst = static_cast<unsigned int>(m_childNodes.size());
+		for (unsigned int i = 0; i < node->m_iNumChildren; i++)
+		{
+			CvAStarNode* pChild = m_childNodes[node->m_iFirstChild + i]; //copy first, push_back may reallocate
+			m_childNodes.push_back(pChild);
+		}
+		node->m_iFirstChild = iNewFirst;
+	}
+	m_childNodes.push_back(check);
+	node->m_iNumChildren++;
 
 	//is the new node already on the open list? update it
 	if(check->m_bIsOpen)
@@ -786,9 +802,9 @@ void CvAStar::UpdateDownstreamNodes(CvAStarNode* node)
 	CvAStarNode* parent = node;
 	while(parent != NULL)
 	{
-		for(size_t i = 0; i < parent->m_apChildren.size(); i++)
+		for(unsigned int i = 0; i < parent->m_iNumChildren; i++)
 		{
-			CvAStarNode* kid = parent->m_apChildren[i];
+			CvAStarNode* kid = m_childNodes[parent->m_iFirstChild + i];
 
 			int iKnownCost = (parent->m_iKnownCost + udFunc(udCost, parent, kid, m_sData));
 
