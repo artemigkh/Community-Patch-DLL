@@ -80,6 +80,51 @@ const CodePattern WHITE_PATTERNS[] =
 	{ 0x3B267C, "builder mask copy", "0f b7 05 ?? ?? ?? ?? 8b 54 24 1c 66 89 42 26", -1 },
 };
 
+// Draw objects built at app Startup, before the DLL is loaded, copied 0xDA12AC while it was still 0 (issue 3011, second
+// half): the city-building and wonder templates (0x5A24A0, from City startup 0x5640A0 at 0x4765F6; copied into the
+// draw-object pool by 0x6E0A80) and the forest draw objects (0x6C1CD0, from Forest_System::Startup 0x726050 at
+// 0x47672D). The engine's draw objects live in one static pool: 0x80 bytes each at VA 0x313DE88 + 0x80 * index,
+// allocated by 0x8C69B0 / 0x8C69F0 from the allocator at VA 0x30BCE00 (+0x40 high-water index, +0x44 + 4 * index use
+// count, max 0x20000). Entry layout: +0 word program index (the material table order), +0x18 + 2 * slot texture
+// handle, +0x4C + 2 * slot sampler, +0x7C byte texture count. The pool pass writes the white handle into the mask slot
+// of entries whose program has the FOW mask in a known slot and whose mask slot is still 0: data writes only.
+const DWORD RVA_DRAWOBJ_ALLOC = 0x2CBCE00;	// VA 0x30BCE00
+const DWORD RVA_DRAWOBJ_POOL = 0x2D3DE88;	// VA 0x313DE88
+const DWORD DRAWOBJ_SIZE = 0x80;
+const DWORD MAX_DRAWOBJ = 0x20000;
+const DWORD RVA_FOG_RAMP = 0x9A12B4;		// VA 0xDA12B4: distance-fog ramp handle; t5 of the building family, t4 of the forest
+const WORD PROGRAM_FOREST = 44;			// ForestShader: t4 fog ramp, t6 FOWMask, t7 base layer (0x6C210C pushes 0x2C)
+const WORD PROGRAM_BUILDING_FIRST = 1;		// BuildingShader .. BuildingShader_Skinned_CODE (1..6): t5 fog ramp, t7 FOWMask
+const WORD PROGRAM_BUILDING_LAST = 6;
+
+const CodePattern POOL_PATTERNS[] =
+{
+	// 0x8C69B0: push esi; push edi; mov ecx,<allocator>; call 0x8C5C00; mov edi,eax; shl eax,7; push 80h; lea esi,[eax+<pool>]
+	{ 0x4C69B0, "draw-object alloc", "56 57 b9 ?? ?? ?? ?? e8 44 f2 ff ff 8b f8 c1 e0 07 68 80 00 00 00 8d b0 ?? ?? ?? ??", -1 },
+	// 0x8C5C84: mov edi,[esi+40h]; lea eax,[edi+1]; cmp eax,20000h; jb; ... mov [esi+40h],eax; inc dword [esi+4*edi+44h]
+	{ 0x4C5C84, "draw-object high-water", "8b 7e 40 8d 47 01 3d 00 00 02 00 72 0a", -1 },
+	{ 0x4C5C9B, "draw-object use count", "89 46 40 ff 44 be 44 8b c7", -1 },
+	// forest builder 0x6C1CD0: push 2Ch; push edx; lea eax,[esp+18h]; push eax; call 0x8C69B0 (program 44)
+	{ 0x2C210C, "forest program", "6a 2c 52 8d 44 24 18 50 e8 97 48 20 00", -1 },
+	// ... movzx edx, word [0xDA12AC]; mov ecx,[esp+28h]; mov [ecx+24h],dx (t6)
+	{ 0x2C2231, "forest mask copy", "0f b7 15 ?? ?? ?? ?? 8b 4c 24 28 66 89 51 24", -1 },
+	// city-building template builder 0x5A24A0: mov cx, word [0xDA12AC]; xor edx,edx; mov [esi+26h],cx (t7)
+	{ 0x1A25D4, "city mask copy", "66 8b 0d ?? ?? ?? ?? 33 d2 66 89 4e 26", -1 },
+	// ... movzx eax, word [0xDA12B4]; mov [esi+22h],ax (t5 fog ramp)
+	{ 0x1A25AF, "city fog ramp copy", "0f b7 05 ?? ?? ?? ?? 66 89 46 22", -1 },
+};
+
+struct PoolCounts
+{
+	DWORD dwHighWater;
+	DWORD dwLive;
+	DWORD dwBuildingOurs, dwBuildingZero, dwBuildingOther;
+	DWORD dwForestOurs, dwForestZero, dwForestOther;
+	bool bFault;
+};
+
+bool g_bPoolActive = false;
+
 typedef DWORD (__fastcall *TextureLoaderFn)(void* pThis, void* pUnusedEdx, const char* szPath);	// __thiscall through __fastcall
 
 bool g_bWhiteActive = false;
@@ -375,21 +420,22 @@ void Apply(const char* szWhy, int iTurn)
 
 // ---- White FOW-mask stand-in ----
 
-//! True if the marker holds "whitemask=1" (read once, at Install).
-bool MarkerWantsWhiteMask()
+//! The value of "whitemask=" in the marker (read once, at Install): 0 off, 1 the mask global only, 2 the global plus
+//! the pool pass over the draw objects built before the DLL loaded (cities, wonders, trees).
+DWORD MarkerWhiteMaskMode()
 {
 	HANDLE hFile = CreateFileA(MARKER_PATH, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hFile == INVALID_HANDLE_VALUE)
-		return false;
+		return 0;
 	char acBytes[257];
 	DWORD dwRead = 0;
 	const BOOL bRead = ReadFile(hFile, acBytes, 256, &dwRead, NULL);
 	CloseHandle(hFile);
 	if (!bRead)
-		return false;
+		return 0;
 	acBytes[dwRead] = '\0';
 	const char* szWhite = strstr(acBytes, "whitemask=");
-	return szWhite != NULL && strtoul(szWhite + 10, NULL, 0) != 0;
+	return szWhite != NULL ? strtoul(szWhite + 10, NULL, 0) : 0;
 }
 
 //! NULL if the loader, the editor's call to it and the builder's read of the mask handle look as read from the
@@ -451,12 +497,113 @@ DWORD TextureView(DWORD dwHandle)
 	return *reinterpret_cast<const DWORD*>(g_dwBase + RVA_TEX_VIEWS + dwHandle * 12);
 }
 
+//! NULL if the draw-object pool, its allocator and the two boot-time builders look as read from the decompile.
+const char* VerifyPool(DWORD dwBase, DWORD dwImageSize)
+{
+	if (RVA_DRAWOBJ_POOL + MAX_DRAWOBJ * DRAWOBJ_SIZE > dwImageSize || RVA_DRAWOBJ_ALLOC + 0x44 + MAX_DRAWOBJ * 4 > dwImageSize)
+		return "whitemask pool off: image smaller than expected";
+	for (size_t i = 0; i < sizeof(POOL_PATTERNS) / sizeof(POOL_PATTERNS[0]); i++)
+	{
+		const CodePattern& kPattern = POOL_PATTERNS[i];
+		const DWORD dwAt = dwBase + kPattern.dwRva;
+		if (kPattern.dwRva + 32 > dwImageSize || !IsAccessible(dwAt, 32, false) ||
+			!MatchesPattern(reinterpret_cast<const unsigned char*>(dwAt), kPattern.szBytes))
+		{
+			static char s_szReason[160];
+			_snprintf_s(s_szReason, sizeof(s_szReason), _TRUNCATE, "whitemask pool off: EXE code differs from the known layout (%s at RVA 0x%lx)", kPattern.szName, kPattern.dwRva);
+			return s_szReason;
+		}
+	}
+	if (*reinterpret_cast<const DWORD*>(dwBase + 0x4C69B0 + 3) != dwBase + RVA_DRAWOBJ_ALLOC)
+		return "whitemask pool off: the draw-object allocator is not at VA 0x30BCE00";
+	if (*reinterpret_cast<const DWORD*>(dwBase + 0x4C69B0 + 24) != dwBase + RVA_DRAWOBJ_POOL)
+		return "whitemask pool off: the draw-object pool is not at VA 0x313DE88";
+	if (*reinterpret_cast<const DWORD*>(dwBase + 0x2C2231 + 3) != dwBase + RVA_FOW_MASK ||
+		*reinterpret_cast<const DWORD*>(dwBase + 0x1A25D4 + 3) != dwBase + RVA_FOW_MASK)
+		return "whitemask pool off: the forest or city builder does not read VA 0xDA12AC";
+	if (*reinterpret_cast<const DWORD*>(dwBase + 0x1A25AF + 3) != dwBase + RVA_FOG_RAMP)
+		return "whitemask pool off: the city builder does not read the fog ramp at VA 0xDA12B4";
+	if (!IsAccessible(dwBase + RVA_DRAWOBJ_ALLOC, 0x44 + MAX_DRAWOBJ * 4, false) ||
+		!IsAccessible(dwBase + RVA_DRAWOBJ_POOL, MAX_DRAWOBJ * DRAWOBJ_SIZE, true))
+		return "whitemask pool off: the pool or its allocator is not accessible";
+	return NULL;
+}
+
+//! One pass over the live draw objects (use count > 0, index below the high-water mark). Counts the building-family
+//! and forest entries by the state of their mask slot; with bWrite, writes wHandle into those whose mask slot is 0
+//! and whose fog-ramp slot holds the fog ramp handle (the builders' own pattern). No locks, no calls.
+void ScanPool(bool bWrite, WORD wHandle, PoolCounts* pCounts)
+{
+	memset(pCounts, 0, sizeof(*pCounts));
+	const DWORD dwAlloc = g_dwBase + RVA_DRAWOBJ_ALLOC;
+	const DWORD dwPool = g_dwBase + RVA_DRAWOBJ_POOL;
+	const WORD wFogRamp = *reinterpret_cast<const WORD*>(g_dwBase + RVA_FOG_RAMP);
+	__try
+	{
+		DWORD dwHigh = *reinterpret_cast<const volatile DWORD*>(dwAlloc + 0x40);
+		if (dwHigh > MAX_DRAWOBJ)
+			dwHigh = MAX_DRAWOBJ;
+		pCounts->dwHighWater = dwHigh;
+		for (DWORD i = 0; i < dwHigh; i++)
+		{
+			if (*reinterpret_cast<const volatile LONG*>(dwAlloc + 0x44 + i * 4) <= 0)
+				continue;
+			pCounts->dwLive++;
+			unsigned char* pEntry = reinterpret_cast<unsigned char*>(dwPool + i * DRAWOBJ_SIZE);
+			const WORD wProgram = *reinterpret_cast<const WORD*>(pEntry);
+			const BYTE bTextures = pEntry[0x7C];
+			DWORD dwMaskOff = 0, dwRampOff = 0;
+			bool bForest = false;
+			if (wProgram >= PROGRAM_BUILDING_FIRST && wProgram <= PROGRAM_BUILDING_LAST && bTextures >= 8)
+			{
+				dwMaskOff = 0x18 + 2 * 7;
+				dwRampOff = 0x18 + 2 * 5;
+			}
+			else if (wProgram == PROGRAM_FOREST && bTextures >= 7)
+			{
+				dwMaskOff = 0x18 + 2 * 6;
+				dwRampOff = 0x18 + 2 * 4;
+				bForest = true;
+			}
+			else
+				continue;
+			volatile WORD* pMask = reinterpret_cast<volatile WORD*>(pEntry + dwMaskOff);
+			const WORD wMask = *pMask;
+			DWORD* pOurs = bForest ? &pCounts->dwForestOurs : &pCounts->dwBuildingOurs;
+			DWORD* pZero = bForest ? &pCounts->dwForestZero : &pCounts->dwBuildingZero;
+			DWORD* pOther = bForest ? &pCounts->dwForestOther : &pCounts->dwBuildingOther;
+			if (wMask == wHandle)
+				(*pOurs)++;
+			else if (wMask == 0 && *reinterpret_cast<const WORD*>(pEntry + dwRampOff) == wFogRamp)
+			{
+				(*pZero)++;
+				if (bWrite)
+					*pMask = wHandle;
+			}
+			else
+				(*pOther)++;
+		}
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pCounts->bFault = true;
+	}
+}
+
+void LogPool(const char* szWhen, int iTurn, bool bWrote, const PoolCounts& k)
+{
+	Logf("whitemask pool %s turn %d: high-water %lu, live %lu; building family: ours %lu, %s %lu, other %lu; forest: ours %lu, %s %lu, other %lu%s",
+		szWhen, iTurn, k.dwHighWater, k.dwLive, k.dwBuildingOurs, bWrote ? "zero->ours" : "zero", k.dwBuildingZero, k.dwBuildingOther,
+		k.dwForestOurs, bWrote ? "zero->ours" : "zero", k.dwForestZero, k.dwForestOther, k.bFault ? "; EXCEPTION during the pass" : "");
+}
+
 //! From Install (DllGetGameContext, the EXE's main thread, at the front end after the mods were activated: the
 //! device exists and the file system is mounted). Loads White.dds once per process and writes its handle into the
 //! FOW mask global if that is 0. Nothing is called or written unless every check passes.
 void InstallWhiteMask(HMODULE hExe)
 {
-	if (!MarkerWantsWhiteMask())
+	const DWORD dwMode = MarkerWhiteMaskMode();
+	if (dwMode == 0)
 		return;
 	const IMAGE_DOS_HEADER* pDos = reinterpret_cast<const IMAGE_DOS_HEADER*>(hExe);
 	const IMAGE_NT_HEADERS* pNt = reinterpret_cast<const IMAGE_NT_HEADERS*>(g_dwBase + pDos->e_lfanew);
@@ -527,6 +674,23 @@ void InstallWhiteMask(HMODULE hExe)
 	g_bWhiteActive = true;
 	Logf("whitemask: loaded %s in %lu ms: handle 0x%lx view 0x%08lx; mask global 0x%08lx -> 0x%08lx (read back 0x%08lx); base layer 0x%08lx; renderer 0x%08lx device 0x%08lx",
 		WHITE_PATH, dwMs, dwHandle, dwView, dwBefore, dwHandle, static_cast<DWORD>(*pMask), dwBaseLayer, dwRenderer, dwDevice);
+	if (dwMode < 2)
+		return;
+	const char* szPool = VerifyPool(g_dwBase, pNt->OptionalHeader.SizeOfImage);
+	if (szPool != NULL)
+	{
+		AppendToLog(szPool);
+		return;
+	}
+	g_bPoolActive = true;
+	PoolCounts kCounts;
+	const DWORD dwPoolStart = GetTickCount();
+	ScanPool(true, static_cast<WORD>(dwHandle), &kCounts);
+	Logf("whitemask pool: pass at install took %lu ms (fog ramp handle 0x%04x, thread %lu)", GetTickCount() - dwPoolStart,
+		static_cast<unsigned>(*reinterpret_cast<const WORD*>(g_dwBase + RVA_FOG_RAMP)), GetCurrentThreadId());
+	LogPool("install", -1, true, kCounts);
+	if (kCounts.bFault)
+		g_bPoolActive = false;
 }
 
 //! From OnGameUpdate (game-core thread): reads only, plus re-writing the cached handle if the global went back to 0.
@@ -556,6 +720,16 @@ void CheckWhiteMask(int iTurn)
 		Logf("whitemask turn %d: mask global 0x%lx, view 0x%08lx%s, base layer 0x%08lx", iTurn, dwNow, dwView,
 			dwView == g_dwWhiteView ? "" : " (CHANGED since load)", *reinterpret_cast<const DWORD*>(g_dwBase + RVA_FOW_BASE));
 		g_iWhiteLastTurn = iTurn;
+		if (g_bPoolActive)
+		{
+			// game-core thread: a builder running meanwhile copies the same handle from the global, so a write that
+			// races with it stores the value it would store anyway
+			PoolCounts kCounts;
+			ScanPool(true, static_cast<WORD>(g_dwWhiteHandle), &kCounts);
+			LogPool("update", iTurn, true, kCounts);
+			if (kCounts.bFault)
+				g_bPoolActive = false;
+		}
 	}
 }
 
