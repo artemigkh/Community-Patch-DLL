@@ -48,6 +48,46 @@ const CodePattern CODE_PATTERNS[] =
 	{ 0x24A8D0, "view mask init", "89 86 ac 01 00 00 89 86 b0 01 00 00 89 ae b4 01 00 00", -1 },
 };
 
+// ---- White FOW-mask stand-in ("whitemask=1", c5-64bit-patch issue 3011, decision D56; test branch only) ----
+// The building, improvement, resource and wonder pixel shaders end with lerp(FOW base layer t8, lit colour,
+// FOW mask t7.x); the forest pixel shader discards where t7.x == 0. The mask handle (VA 0xDA12AC) is written only by
+// FluidFOW's start-up (0x44a731) and the terrain editor's set-up (0x561fe2, which loads White.dds into it). With
+// FluidFOW off the handle stays 0 (texture slot 0, dark red). This loads the editor's White.dds once per process
+// with the EXE's own texture loader (VA 0x8C6540, called, not patched) and writes the handle into 0xDA12AC.
+const DWORD RVA_TEX_LOADER = 0x4C6540;		// VA 0x8C6540: __thiscall(ECX = [0x03010570], const char* path), ret 4, EAX = handle or 0
+const DWORD RVA_RENDERER_GLOBAL = 0x2C10570;	// VA 0x3010570: the loader's this
+const DWORD RVA_DEVICE_GLOBAL = 0x2C1057C;	// VA 0x301057C: ID3D11Device* used by the loader's texture creation (0x8BBD60)
+const DWORD RVA_FOW_MASK = 0x9A12AC;		// VA 0xDA12AC: FOW mask texture handle (read by the draw-object builders)
+const DWORD RVA_FOW_BASE = 0x9A12B0;		// VA 0xDA12B0: FOW base layer texture handle (logged only)
+const DWORD RVA_TEX_VIEWS = 0x3D4C348;		// VA 0x414C348: per-handle table, 12 bytes per handle, +0 = shader resource view
+const DWORD RVA_WHITE_PATH = 0x63D66C;		// VA 0xA3D66C: "assets\terrain\editor\White.dds", pushed at 0x561fd1
+const DWORD MAX_TEX_HANDLE = 0x3000;		// handle allocator limit (0x8C5CB0)
+const DWORD FLUIDFOW_BIT = 0x8000;			// [DisableSystems] FluidFOW, config/view bit 15
+const char WHITE_PATH[] = "assets\\terrain\\editor\\White.dds";
+
+const CodePattern WHITE_PATTERNS[] =
+{
+	// the loader's prologue up to "mov edi,ecx; push eax" (this kept in EDI, one stack argument)
+	{ 0x4C6540, "texture loader entry", "55 8b ec 83 e4 f0 b8 88 05 01 00 e8 c0 03 06 00 8b 45 08 56 57 8b f9 50", -1 },
+	// ... handle from the allocator 0x8C5CB0 in ESI, texture creation 0x8BBD60 with ECX = this
+	{ 0x4C65FB, "texture loader create", "51 8b f0 56 8b cf e8 5a 57 ff ff", -1 },
+	// ... its return: mov eax,esi ... ret 4
+	{ 0x4C6628, "texture loader return", "8b c6 5e 8b e5 5d c2 04 00", -1 },
+	// terrain editor set-up: mov ecx,[renderer]; push "...White.dds"; mov [0xDA12BC],eax; call 0x8C6540; mov ecx,esi;
+	// mov [0xDA12AC],eax
+	{ 0x161FCB, "editor white load", "8b 0d ?? ?? ?? ?? 68 ?? ?? ?? ?? a3 ?? ?? ?? ?? e8 60 45 36 00 8b ce a3 ?? ?? ?? ??", -1 },
+	// building draw-object builder 0x7B2150: movzx eax, word [0xDA12AC] -> t7
+	{ 0x3B267C, "builder mask copy", "0f b7 05 ?? ?? ?? ?? 8b 54 24 1c 66 89 42 26", -1 },
+};
+
+typedef DWORD (__fastcall *TextureLoaderFn)(void* pThis, void* pUnusedEdx, const char* szPath);	// __thiscall through __fastcall
+
+bool g_bWhiteActive = false;
+DWORD g_dwWhiteHandle = 0;
+DWORD g_dwWhiteView = 0;
+int g_iWhiteLastTurn = -1;
+bool g_bWhiteLoggedForeign = false;
+
 bool g_bTried = false;
 bool g_bActive = false;
 DWORD g_dwBase = 0;
@@ -333,6 +373,192 @@ void Apply(const char* szWhy, int iTurn)
 	g_iLastTurn = iTurn;
 }
 
+// ---- White FOW-mask stand-in ----
+
+//! True if the marker holds "whitemask=1" (read once, at Install).
+bool MarkerWantsWhiteMask()
+{
+	HANDLE hFile = CreateFileA(MARKER_PATH, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+		return false;
+	char acBytes[257];
+	DWORD dwRead = 0;
+	const BOOL bRead = ReadFile(hFile, acBytes, 256, &dwRead, NULL);
+	CloseHandle(hFile);
+	if (!bRead)
+		return false;
+	acBytes[dwRead] = '\0';
+	const char* szWhite = strstr(acBytes, "whitemask=");
+	return szWhite != NULL && strtoul(szWhite + 10, NULL, 0) != 0;
+}
+
+//! NULL if the loader, the editor's call to it and the builder's read of the mask handle look as read from the
+//! decompile (VA 0x8C6540, 0x561FCB, 0x7B267C), else the reason not to call or write. VerifyExe has passed before.
+const char* VerifyWhiteMask(DWORD dwBase, DWORD dwImageSize)
+{
+	if (RVA_TEX_VIEWS + MAX_TEX_HANDLE * 12 > dwImageSize || RVA_DEVICE_GLOBAL + 4 > dwImageSize || RVA_FOW_BASE + 4 > dwImageSize)
+		return "whitemask off: image smaller than expected";
+	for (size_t i = 0; i < sizeof(WHITE_PATTERNS) / sizeof(WHITE_PATTERNS[0]); i++)
+	{
+		const CodePattern& kPattern = WHITE_PATTERNS[i];
+		const DWORD dwAt = dwBase + kPattern.dwRva;
+		if (kPattern.dwRva + 32 > dwImageSize || !IsAccessible(dwAt, 32, false) ||
+			!MatchesPattern(reinterpret_cast<const unsigned char*>(dwAt), kPattern.szBytes))
+		{
+			static char s_szReason[160];
+			_snprintf_s(s_szReason, sizeof(s_szReason), _TRUNCATE, "whitemask off: EXE code differs from the known layout (%s at RVA 0x%lx)", kPattern.szName, kPattern.dwRva);
+			return s_szReason;
+		}
+	}
+	// the absolute addresses inside the editor's call site and the builder (relocated with the image)
+	const DWORD dwSite = dwBase + 0x161FCB;
+	if (*reinterpret_cast<const DWORD*>(dwSite + 2) != dwBase + RVA_RENDERER_GLOBAL)
+		return "whitemask off: the editor's loader call does not take this from VA 0x3010570";
+	if (*reinterpret_cast<const DWORD*>(dwSite + 7) != dwBase + RVA_WHITE_PATH)
+		return "whitemask off: the editor's loader call does not push the White.dds string";
+	if (*reinterpret_cast<const DWORD*>(dwSite + 24) != dwBase + RVA_FOW_MASK)
+		return "whitemask off: the editor does not store the handle at VA 0xDA12AC";
+	if (*reinterpret_cast<const DWORD*>(dwBase + 0x3B267C + 3) != dwBase + RVA_FOW_MASK)
+		return "whitemask off: the building draw-object builder does not read VA 0xDA12AC";
+	if (!IsAccessible(dwBase + RVA_WHITE_PATH, sizeof(WHITE_PATH), false) ||
+		memcmp(reinterpret_cast<const void*>(dwBase + RVA_WHITE_PATH), WHITE_PATH, sizeof(WHITE_PATH)) != 0)
+		return "whitemask off: the EXE's White.dds string differs";
+	if (!IsAccessible(dwBase + RVA_FOW_MASK, 8, true) || !IsAccessible(dwBase + RVA_RENDERER_GLOBAL, 16, false) ||
+		!IsAccessible(dwBase + RVA_TEX_VIEWS, MAX_TEX_HANDLE * 12, false))
+		return "whitemask off: the EXE globals are not accessible";
+	return NULL;
+}
+
+//! Calls the EXE's texture loader (no C++ objects here, so __try is allowed). 0 on failure; *pbFault on an exception.
+DWORD CallTextureLoader(DWORD dwLoader, void* pThis, const char* szPath, bool* pbFault)
+{
+	*pbFault = false;
+	DWORD dwHandle = 0;
+	__try
+	{
+		dwHandle = reinterpret_cast<TextureLoaderFn>(dwLoader)(pThis, NULL, szPath);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		*pbFault = true;
+		dwHandle = 0;
+	}
+	return dwHandle;
+}
+
+DWORD TextureView(DWORD dwHandle)
+{
+	return *reinterpret_cast<const DWORD*>(g_dwBase + RVA_TEX_VIEWS + dwHandle * 12);
+}
+
+//! From Install (DllGetGameContext, the EXE's main thread, at the front end after the mods were activated: the
+//! device exists and the file system is mounted). Loads White.dds once per process and writes its handle into the
+//! FOW mask global if that is 0. Nothing is called or written unless every check passes.
+void InstallWhiteMask(HMODULE hExe)
+{
+	if (!MarkerWantsWhiteMask())
+		return;
+	const IMAGE_DOS_HEADER* pDos = reinterpret_cast<const IMAGE_DOS_HEADER*>(hExe);
+	const IMAGE_NT_HEADERS* pNt = reinterpret_cast<const IMAGE_NT_HEADERS*>(g_dwBase + pDos->e_lfanew);
+	const char* szProblem = VerifyWhiteMask(g_dwBase, pNt->OptionalHeader.SizeOfImage);
+	if (szProblem != NULL)
+	{
+		AppendToLog(szProblem);
+		return;
+	}
+	Logf("whitemask: checks passed (loader 0x%08lx, mask global 0x%08lx, thread %lu)", g_dwBase + RVA_TEX_LOADER, g_dwBase + RVA_FOW_MASK, GetCurrentThreadId());
+
+	const DWORD dwApp = *reinterpret_cast<const DWORD*>(g_dwBase + RVA_APP_GLOBAL);
+	if (dwApp == 0 || !IsAccessible(dwApp, APP_OFF_CFG + 4, false))
+	{
+		Logf("whitemask off: g_Civ5App 0x%08lx not readable at install", dwApp);
+		return;
+	}
+	const DWORD dwConfig = *reinterpret_cast<const DWORD*>(dwApp + APP_OFF_CFG);
+	if ((dwConfig & FLUIDFOW_BIT) != 0)
+	{
+		Logf("whitemask off: config 0x%08lx has FluidFOW on; FluidFOW owns the mask", dwConfig);
+		return;
+	}
+	const DWORD dwRenderer = *reinterpret_cast<const DWORD*>(g_dwBase + RVA_RENDERER_GLOBAL);
+	const DWORD dwDevice = *reinterpret_cast<const DWORD*>(g_dwBase + RVA_DEVICE_GLOBAL);
+	if (dwRenderer == 0 || dwDevice == 0 || !IsAccessible(dwRenderer, 4, false) || !IsAccessible(dwDevice, 4, false))
+	{
+		Logf("whitemask off: renderer 0x%08lx or device 0x%08lx not ready", dwRenderer, dwDevice);
+		return;
+	}
+	volatile LONG* pMask = reinterpret_cast<volatile LONG*>(g_dwBase + RVA_FOW_MASK);
+	const DWORD dwBefore = static_cast<DWORD>(*pMask);
+	const DWORD dwBaseLayer = *reinterpret_cast<const DWORD*>(g_dwBase + RVA_FOW_BASE);
+	if (dwBefore != 0)
+	{
+		Logf("whitemask off: mask global already 0x%08lx (base layer 0x%08lx); left alone", dwBefore, dwBaseLayer);
+		return;
+	}
+
+	bool bFault = false;
+	const DWORD dwStart = GetTickCount();
+	const DWORD dwHandle = CallTextureLoader(g_dwBase + RVA_TEX_LOADER, reinterpret_cast<void*>(dwRenderer), WHITE_PATH, &bFault);
+	const DWORD dwMs = GetTickCount() - dwStart;
+	if (bFault)
+	{
+		Logf("whitemask off: EXCEPTION in the texture loader (renderer 0x%08lx, %lu ms); nothing written", dwRenderer, dwMs);
+		return;
+	}
+	if (dwHandle == 0 || dwHandle >= MAX_TEX_HANDLE)
+	{
+		Logf("whitemask off: loader returned 0x%08lx for %s (%lu ms); nothing written", dwHandle, WHITE_PATH, dwMs);
+		return;
+	}
+	const DWORD dwView = TextureView(dwHandle);
+	if (dwView == 0)
+	{
+		Logf("whitemask off: handle 0x%lx has no shader resource view; nothing written (texture kept, %lu ms)", dwHandle, dwMs);
+		return;
+	}
+	const LONG lSeen = InterlockedCompareExchange(pMask, static_cast<LONG>(dwHandle), 0);
+	if (lSeen != 0)
+	{
+		Logf("whitemask off: mask global became 0x%08lx during the load; handle 0x%lx not written", static_cast<DWORD>(lSeen), dwHandle);
+		return;
+	}
+	g_dwWhiteHandle = dwHandle;
+	g_dwWhiteView = dwView;
+	g_bWhiteActive = true;
+	Logf("whitemask: loaded %s in %lu ms: handle 0x%lx view 0x%08lx; mask global 0x%08lx -> 0x%08lx (read back 0x%08lx); base layer 0x%08lx; renderer 0x%08lx device 0x%08lx",
+		WHITE_PATH, dwMs, dwHandle, dwView, dwBefore, dwHandle, static_cast<DWORD>(*pMask), dwBaseLayer, dwRenderer, dwDevice);
+}
+
+//! From OnGameUpdate (game-core thread): reads only, plus re-writing the cached handle if the global went back to 0.
+//! Never calls the loader (that stays on the main thread).
+void CheckWhiteMask(int iTurn)
+{
+	if (!g_bWhiteActive)
+		return;
+	volatile LONG* pMask = reinterpret_cast<volatile LONG*>(g_dwBase + RVA_FOW_MASK);
+	const DWORD dwNow = static_cast<DWORD>(*pMask);
+	if (dwNow == 0)
+	{
+		const LONG lSeen = InterlockedCompareExchange(pMask, static_cast<LONG>(g_dwWhiteHandle), 0);
+		Logf("whitemask turn %d: mask global was 0, rewritten 0x%lx (seen 0x%08lx, read back 0x%08lx)", iTurn, g_dwWhiteHandle, static_cast<DWORD>(lSeen), static_cast<DWORD>(*pMask));
+		return;
+	}
+	if (dwNow != g_dwWhiteHandle)
+	{
+		if (!g_bWhiteLoggedForeign)
+			Logf("whitemask turn %d: mask global is 0x%08lx, not ours (0x%lx); left alone", iTurn, dwNow, g_dwWhiteHandle);
+		g_bWhiteLoggedForeign = true;
+		return;
+	}
+	if (iTurn != g_iWhiteLastTurn)
+	{
+		const DWORD dwView = TextureView(g_dwWhiteHandle);
+		Logf("whitemask turn %d: mask global 0x%lx, view 0x%08lx%s, base layer 0x%08lx", iTurn, dwNow, dwView,
+			dwView == g_dwWhiteView ? "" : " (CHANGED since load)", *reinterpret_cast<const DWORD*>(g_dwBase + RVA_FOW_BASE));
+		g_iWhiteLastTurn = iTurn;
+	}
+}
+
 }	// namespace
 
 namespace ViewMaskSync
@@ -363,6 +589,7 @@ void Install()
 	g_bActive = true;
 	Logf("active: exe=DX11 timestamp=0x%08lx base=0x%08lx keep=0x%08lx clear=0x%08lx", EXE_TIMESTAMP, g_dwBase, g_dwKeep, g_dwClear);
 	Apply("install", -1);
+	InstallWhiteMask(hExe);
 }
 
 void OnGameUpdate(int iGameTurn)
@@ -406,6 +633,7 @@ void OnGameUpdate(int iGameTurn)
 		}
 	}
 	Apply("update", iGameTurn);
+	CheckWhiteMask(iGameTurn);
 }
 
 }	// namespace ViewMaskSync
