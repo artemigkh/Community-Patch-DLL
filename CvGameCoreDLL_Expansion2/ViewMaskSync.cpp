@@ -52,6 +52,7 @@ bool g_bTried = false;
 bool g_bActive = false;
 DWORD g_dwBase = 0;
 DWORD g_dwKeep = 0;
+DWORD g_dwClear = 0;			// "clear=" bits: cleared even though the config keeps them (e.g. Terrain 0x1, D7 option c1)
 DWORD g_dwCleared = 0;			// bits this instrument cleared in the current GameViewState
 DWORD g_dwLastGvs = 0;
 DWORD g_dwLastApp = 0;
@@ -188,8 +189,9 @@ const char* VerifyExe(HMODULE hExe)
 	return NULL;
 }
 
-//! Reads crashlogs\viewmask.enabled. False if it is gone; *pdwKeep = the "keep=" bits (0 if none).
-bool ReadMarker(DWORD* pdwKeep)
+//! Reads crashlogs\viewmask.enabled. False if it is gone; *pdwKeep = the "keep=" bits, *pdwClear = the "clear="
+//! bits (0 if none). A marker that cannot be read (held open by an editor) keeps the values the caller passed in.
+bool ReadMarker(DWORD* pdwKeep, DWORD* pdwClear)
 {
 	HANDLE hFile = CreateFileA(MARKER_PATH, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hFile == INVALID_HANDLE_VALUE)
@@ -198,13 +200,17 @@ bool ReadMarker(DWORD* pdwKeep)
 	DWORD dwRead = 0;
 	const BOOL bRead = ReadFile(hFile, acBytes, 256, &dwRead, NULL);
 	CloseHandle(hFile);
-	*pdwKeep = 0;
 	if (!bRead)
 		return true;
+	*pdwKeep = 0;
+	*pdwClear = 0;
 	acBytes[dwRead] = '\0';
 	const char* szKeep = strstr(acBytes, "keep=");
 	if (szKeep != NULL)
 		*pdwKeep = strtoul(szKeep + 5, NULL, 0) & KNOWN_BITS;
+	const char* szClear = strstr(acBytes, "clear=");
+	if (szClear != NULL)
+		*pdwClear = strtoul(szClear + 6, NULL, 0) & KNOWN_BITS;
 	return true;
 }
 
@@ -287,16 +293,19 @@ void Apply(const char* szWhy, int iTurn)
 	if (pView == NULL)
 		return;
 
-	const DWORD dwAllowed = dwConfig | ~KNOWN_BITS | g_dwKeep;
+	// "clear=" wins over the config and over "keep=": those bits are cleared even when the system is started
+	// (Terrain c1: the system runs its per-load bake and keeps the heights, but is neither updated nor drawn).
+	const DWORD dwAllowed = (dwConfig | ~KNOWN_BITS | g_dwKeep) & ~g_dwClear;
 
-	// Bits newly put in "keep=" that this instrument cleared earlier: set them back (never River or Arrows).
-	const DWORD dwRestore = g_dwKeep & g_dwCleared & ~NEVER_RESTORE;
+	// Bits this instrument cleared earlier that are allowed now (put in "keep=", or taken out of "clear="): set them
+	// back (never River or Arrows).
+	const DWORD dwRestore = dwAllowed & g_dwCleared & ~NEVER_RESTORE;
 	if (dwRestore != 0)
 	{
 		const DWORD dwBefore = static_cast<DWORD>(*pView);
 		const DWORD dwAfter = OrBits(pView, dwRestore);
 		g_dwCleared &= ~dwRestore;
-		Logf("%s turn %d: keep=0x%08lx: set back 0x%08lx: view 0x%08lx -> 0x%08lx", szWhy, iTurn, g_dwKeep, dwRestore, dwBefore, dwAfter);
+		Logf("%s turn %d: keep=0x%08lx clear=0x%08lx: set back 0x%08lx: view 0x%08lx -> 0x%08lx", szWhy, iTurn, g_dwKeep, g_dwClear, dwRestore, dwBefore, dwAfter);
 	}
 
 	LONG lOld = *pView;
@@ -313,8 +322,8 @@ void Apply(const char* szWhy, int iTurn)
 		}
 		const DWORD dwCleared = static_cast<DWORD>(lOld) & ~dwAllowed;
 		g_dwCleared |= dwCleared;
-		Logf("%s turn %d: config 0x%08lx keep 0x%08lx: view 0x%08lx -> 0x%08lx (cleared 0x%08lx), read back 0x%08lx, GameViewState 0x%08lx",
-			szWhy, iTurn, dwConfig, g_dwKeep, static_cast<DWORD>(lOld), static_cast<DWORD>(lNew), dwCleared, static_cast<DWORD>(*pView), dwGvs);
+		Logf("%s turn %d: config 0x%08lx keep 0x%08lx clear 0x%08lx: view 0x%08lx -> 0x%08lx (cleared 0x%08lx), read back 0x%08lx, GameViewState 0x%08lx",
+			szWhy, iTurn, dwConfig, g_dwKeep, g_dwClear, static_cast<DWORD>(lOld), static_cast<DWORD>(lNew), dwCleared, static_cast<DWORD>(*pView), dwGvs);
 	}
 	else if (iTurn != g_iLastTurn)
 	{
@@ -336,7 +345,8 @@ void Install()
 	g_bTried = true;
 
 	DWORD dwKeep = 0;
-	if (GetFileAttributesA(MARKER_PATH) == INVALID_FILE_ATTRIBUTES || !ReadMarker(&dwKeep))
+	DWORD dwClear = 0;
+	if (GetFileAttributesA(MARKER_PATH) == INVALID_FILE_ATTRIBUTES || !ReadMarker(&dwKeep, &dwClear))
 		return;
 
 	HMODULE hExe = GetModuleHandleA(NULL);
@@ -348,9 +358,10 @@ void Install()
 	}
 	g_dwBase = reinterpret_cast<DWORD>(hExe);
 	g_dwKeep = dwKeep;
+	g_dwClear = dwClear;
 	g_dwLastMarkerTick = GetTickCount();
 	g_bActive = true;
-	Logf("active: exe=DX11 timestamp=0x%08lx base=0x%08lx keep=0x%08lx", EXE_TIMESTAMP, g_dwBase, g_dwKeep);
+	Logf("active: exe=DX11 timestamp=0x%08lx base=0x%08lx keep=0x%08lx clear=0x%08lx", EXE_TIMESTAMP, g_dwBase, g_dwKeep, g_dwClear);
 	Apply("install", -1);
 }
 
@@ -363,8 +374,9 @@ void OnGameUpdate(int iGameTurn)
 	if (dwNow - g_dwLastMarkerTick >= MARKER_EVERY_MS)
 	{
 		g_dwLastMarkerTick = dwNow;
-		DWORD dwKeep = 0;
-		if (!ReadMarker(&dwKeep))
+		DWORD dwKeep = g_dwKeep;
+		DWORD dwClear = g_dwClear;
+		if (!ReadMarker(&dwKeep, &dwClear))
 		{
 			DWORD dwConfig = 0;
 			DWORD dwGvs = 0;
@@ -386,6 +398,11 @@ void OnGameUpdate(int iGameTurn)
 		{
 			Logf("keep changed: 0x%08lx -> 0x%08lx", g_dwKeep, dwKeep);
 			g_dwKeep = dwKeep;
+		}
+		if (dwClear != g_dwClear)
+		{
+			Logf("clear changed: 0x%08lx -> 0x%08lx", g_dwClear, dwClear);
+			g_dwClear = dwClear;
 		}
 	}
 	Apply("update", iGameTurn);
