@@ -33,7 +33,21 @@
 	Log: crashlogs\viewmask.log (appended), every change with the values before and after, and one read-back
 	line per game turn.
 
-	Research: c5-64bit-patch research/02-exe-internals/disable-systems-and-masks.md (sections 3 and 4).
+	White FOW-mask stand-in (test branch i2-white-mask, c5-64bit-patch issue 3011, decision D56): marker content
+	"whitemask=1" (read once, at Install). With FluidFOW off the FOW mask texture handle (VA 0xDA12AC) stays 0 and the
+	building, improvement, resource and wonder shaders draw the fog base layer instead of the lit model (dark red),
+	and the forest shader discards every tree. Install (DllGetGameContext, the EXE's main thread, front end) then
+	checks the loader VA 0x8C6540, the terrain editor's call of it at VA 0x561FCB (which loads the same file into the
+	same global) and the building draw-object builder's read at VA 0x7B267C; requires the config mask to have
+	FluidFOW (0x8000) off, the renderer (VA 0x3010570) and the device (VA 0x301057C) to exist and the mask global to
+	be 0; then calls the loader once (__thiscall, ECX = [0x3010570], one argument: the path; EAX = handle) for
+	"assets\terrain\editor\White.dds" and writes the handle into 0xDA12AC with a compare-and-swap. The EXE's code is
+	called, never changed. The texture is owned by this DLL for the life of the process and never released.
+	CvGame::update (game-core thread) only reads the global once per turn and, if it is 0 again, writes the cached
+	handle back; it never calls the loader. Removing the marker does not take the white mask out.
+
+	Research: c5-64bit-patch research/02-exe-internals/disable-systems-and-masks.md (sections 3 and 4; the white mask:
+	section 5, "Why the models are dark red in D33").
 	------------------------------------------------------------------------------------------------------- */
 
 #pragma once
