@@ -12273,7 +12273,7 @@ vector<STacticalAssignment> TacticalAIHelpers::FindBestUnitAssignments(
 	//the initial position absorbs all the tactical plots (up to the hard cap)
 	//in the passes below; reserve up front so the setup never reallocates.
 	//under address-space exhaustion the reallocation copy is exactly what
-	//fails (see issue #13254). child positions copy exact-size and stay lean.
+	//fails (see issue #13254). child positions inherit the same capacity.
 	initialPosition->reservePlotStorage();
 
 	//first pass: make sure there are no duplicates and other invalid inputs
@@ -12445,6 +12445,11 @@ vector<STacticalAssignment> TacticalAIHelpers::FindBestUnitAssignments(
 				CUSTOMLOG(ss.str().c_str());
 			break;
 		}
+
+		// an expanded position keeps only what its descendants and the support search
+		// read. The root stays whole because later steps look up the start state there.
+		if (current != initialPosition)
+			gTactPosStorage.releaseScratch(current);
 	}
 	timer.EndPerfTest();
 	int durationMs = int(timer.GetDeltaInSeconds() * 1000);
@@ -12613,6 +12618,9 @@ bool TacticalAIHelpers::ExecuteUnitAssignments(PlayerTypes ePlayer, const std::v
 			bPrecondition = (pUnit->plot() == pFromPlot) && (pToPlot->isEnemyUnit(ePlayer, true, true) || pToPlot->isEnemyCity(*pUnit)); //enemy present
 			CvCity* pCity = pToPlot->getPlotCity();
 			CvUnit* pEnemy = pToPlot->getBestDefender(NO_PLAYER, ePlayer, pUnit);
+			//the attack can delete the defender: when we take the city and move in, CvUnit::setXY kills the garrison
+			//at once (kill(false)), so afterwards look it up again by ID instead of using the pointer
+			const IDInfo kEnemy = pEnemy ? IDInfo(pEnemy->getOwner(), pEnemy->GetID()) : IDInfo();
 			bool bCityKill = false;
 			bool bUnitKill = false;
 			//because of randomness in previous combat results, it may happen that we cannot actually kill the enemy
@@ -12651,7 +12659,8 @@ bool TacticalAIHelpers::ExecuteUnitAssignments(PlayerTypes ePlayer, const std::v
 			}
 			if (bPostcondition && bUnitKill)
 			{
-				bPostcondition = pEnemy->IsDead(); //defending unit is dead
+				CvUnit* pEnemyAfter = ::GetPlayerUnit(kEnemy);
+				bPostcondition = !pEnemyAfter || pEnemyAfter->IsDead(); //defending unit is dead or gone
 			}
 			break;
 		}
@@ -12922,6 +12931,10 @@ void CvTactPosStorage::reset(bool bHard)
 
 		for (int i = 0; i < iSize; i++)
 			aPositions[i].wipe();
+
+		// free the recycled buffers too, keeping the lists' reserved capacity
+		spareTactPlots.clear();
+		spareUnitLists.clear();
 
 		//for some reason the memory usage is not affected immediately ... but the wiping works
 		//PrintMemoryInfo("after hard reset");

@@ -4615,7 +4615,7 @@ bool CvCity::IsCityEventChoiceValidEspionage(CityEventChoiceTypes eEventChoice, 
 	if (pSpy && pkEventInfo->GetSpyLevelRequired() > pSpy->GetSpyRank(eSpyOwner))
 		return false;
 
-	if (!bIgnoreActive && GET_PLAYER(eSpyOwner).GetEspionage()->GetNumTurnsSpyActiveMissionsBlocked(uiSpyIndex) > 0)
+	if (!bIgnoreActive && !pkEventInfo->isCounterspyMission() && GET_PLAYER(eSpyOwner).GetEspionage()->GetNumTurnsSpyActiveMissionsBlocked(uiSpyIndex) > 0)
 		return false;
 
 	if (!bIgnoreNetworkPoints && pkEventInfo->GetNetworkPointsNeededScaled() > 0 && GET_PLAYER(eSpyOwner).GetEspionage()->GetNetworkPointsStored(uiSpyIndex) < pkEventInfo->GetNetworkPointsNeededScaled())
@@ -5474,7 +5474,7 @@ CvString CvCity::GetDisabledTooltip(CityEventChoiceTypes eChosenEventChoice, int
 			}
 		}
 
-		if (GET_PLAYER(eSpyOwner).GetEspionage()->GetNumTurnsSpyActiveMissionsBlocked(iSpyIndex) > 0)
+		if (GET_PLAYER(eSpyOwner).GetEspionage()->GetNumTurnsSpyActiveMissionsBlocked(iSpyIndex) > 0 && !pkEventInfo->isCounterspyMission())
 		{
 			localizedDurationText = Localization::Lookup("TXT_KEY_EVENT_RECENT_SPY_MISSION");
 			localizedDurationText << GET_PLAYER(eSpyOwner).GetEspionage()->GetNumTurnsSpyActiveMissionsBlocked(iSpyIndex);
@@ -16814,10 +16814,11 @@ void CvCity::changeAutomatons(int iChange, bool bReassignPop)
 }
 
 //	--------------------------------------------------------------------------------
-long CvCity::getRealPopulation() const
+long long CvCity::getRealPopulation() const
 {
 	VALIDATE_OBJECT();
-	return (((long)(pow((double)getPopulation(), 2.8))) * 1000);
+	// 64 bits: from population 183 on, this is more than INT_MAX
+	return static_cast<long long>(pow(static_cast<double>(getPopulation()), 2.8)) * 1000;
 }
 
 //	--------------------------------------------------------------------------------
@@ -29490,7 +29491,9 @@ void CvCity::popOrder(int iNum, bool bFinish, bool bChoose)
 	if (bFinish && pOrderNode->bSave)
 	{
 		pushOrder(pOrderNode->eOrderType, pOrderNode->iData1, pOrderNode->iData2, true, false, true);
+		pOrderNode = getOrderFromQueue(iNum); // appending can move the queue's storage
 	}
+	const OrderData order = *pOrderNode;
 	bool bUpdateStrength = false;
 
 	eTrainUnit = NO_UNIT;
@@ -29565,17 +29568,25 @@ void CvCity::popOrder(int iNum, bool bFinish, bool bChoose)
 		m_unitBeingBuiltForOperation.Invalidate();
 	}
 
-	if (pOrderNode == headOrderQueueNode())
+	// Finishing the order runs code (instant yields, AI policy choice, Lua hooks) that can change this queue. If the order is no
+	// longer where it was, something else already removed it: deleting the old node would remove another order or underflow the queue.
+	pOrderNode = getOrderFromQueue(iNum);
+	const bool bStillQueued = pOrderNode != NULL && pOrderNode->eOrderType == order.eOrderType && pOrderNode->iData1 == order.iData1 && pOrderNode->iData2 == order.iData2;
+	ASSERT(bStillQueued, "The order was removed from the queue while it was being finished");
+	if (bStillQueued)
 	{
-		bStart = true;
-		stopHeadOrder();
-	}
-	else
-	{
-		bStart = false;
-	}
+		if (pOrderNode == headOrderQueueNode())
+		{
+			bStart = true;
+			stopHeadOrder();
+		}
+		else
+		{
+			bStart = false;
+		}
 
-	m_orderQueue.deleteNode(pOrderNode);
+		m_orderQueue.deleteNode(pOrderNode);
+	}
 	pOrderNode = NULL;
 	if (bFinish)
 	{
@@ -30155,7 +30166,7 @@ CvUnit* CvCity::CreateUnit(UnitTypes eUnitType, UnitAITypes eAIType, UnitCreatio
 		{
 			CvString strCiv = kOwner.getCivilizationAdjective();
 			CvString strLogString;
-			strLogString.Format("TRADE UNIT MADE: %s %s at %d,d", strCiv.c_str(), pUnit->getName().c_str(), pUnit->getX(), pUnit->getY());
+			strLogString.Format("TRADE UNIT MADE: %s %s at %d,%d", strCiv.c_str(), pUnit->getName().c_str(), pUnit->getX(), pUnit->getY());
 			kOwner.GetHomelandAI()->LogHomelandMessage(strLogString);
 		}
 	}
@@ -31069,7 +31080,7 @@ CvUnit* CvCity::PurchaseUnit(UnitTypes eUnitType, YieldTypes ePurchaseYield)
 				{
 					CvString strCiv = GET_PLAYER(getOwner()).getCivilizationAdjective();
 					CvString strLogString;
-					strLogString.Format("TRADE UNIT BOUGHT: %s %s at %d,d", strCiv.c_str(), pUnit->getName().c_str(), pUnit->getX(), pUnit->getY());
+					strLogString.Format("TRADE UNIT BOUGHT: %s %s at %d,%d", strCiv.c_str(), pUnit->getName().c_str(), pUnit->getX(), pUnit->getY());
 					GET_PLAYER(getOwner()).GetHomelandAI()->LogHomelandMessage(strLogString);
 				}
 			}
@@ -33352,9 +33363,9 @@ int CvCity::GetAirStrikeDefenseDamage(const CvUnit* pAttacker, bool bIncludeRand
 	if (bIncludeRand)
 	{
 		if (pAttacker)
-			return iBaseValue + GC.getGame().randRangeExclusive(0, 10, plot()->GetPseudoRandomSeed().mix(GET_PLAYER(getOwner()).GetPseudoRandomSeed()));
-		else
 			return iBaseValue + GC.getGame().randRangeExclusive(0, 10, plot()->GetPseudoRandomSeed().mix(GET_PLAYER(getOwner()).GetPseudoRandomSeed()).mix(pAttacker->GetID()));
+		else
+			return iBaseValue + GC.getGame().randRangeExclusive(0, 10, plot()->GetPseudoRandomSeed().mix(GET_PLAYER(getOwner()).GetPseudoRandomSeed()));
 	}
 	else
 		return iBaseValue;
@@ -35741,7 +35752,7 @@ void CvCity::SpawnFreeUnit(UnitTypes eUnit)
 		{
 			CvString strCiv = GET_PLAYER(getOwner()).getCivilizationAdjective();
 			CvString strLogString;
-			strLogString.Format("FREE TRADE UNIT CREATED: %s %s at %d,d", strCiv.c_str(), pFreeUnit->getName().c_str(), pFreeUnit->getX(), pFreeUnit->getY());
+			strLogString.Format("FREE TRADE UNIT CREATED: %s %s at %d,%d", strCiv.c_str(), pFreeUnit->getName().c_str(), pFreeUnit->getX(), pFreeUnit->getY());
 			GET_PLAYER(getOwner()).GetHomelandAI()->LogHomelandMessage(strLogString);
 		}
 	}
@@ -35941,7 +35952,10 @@ bool CvCity::SetNumFreeBuilding(const BuildingTypes eBuilding, const int iValue,
 			}
 		}
 
-		if (getFirstBuildingOrder(eBuilding) == 0)
+		// If the city already had the building, an order for it at the head of the queue is the one being finished right now
+		// (popOrder -> produce -> e.g. the construction yield lets the AI adopt a policy granting this building), and popOrder
+		// removes it itself. Clearing the queue here popped that order twice and left popOrder deleting from an empty queue.
+		if (iNumRealBuilding == 0 && getFirstBuildingOrder(eBuilding) == 0)
 		{
 			clearOrderQueue();
 			chooseProduction(); // Send a notification to the user that what they were building was given to them, and they need to produce something else.

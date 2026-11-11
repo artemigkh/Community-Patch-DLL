@@ -150,7 +150,7 @@ void CvPlot::init(int iX, int iY)
 //	--------------------------------------------------------------------------------
 void CvPlot::uninit()
 {
-	SAFE_DELETE_ARRAY(m_szScriptData);
+	SAFE_FREE(&m_szScriptData); // allocated with _strdup in setScriptData
 
 	m_pCenterUnit = NULL;
 
@@ -217,6 +217,7 @@ void CvPlot::reset()
 	m_iUnitPlotGAExperience = 0;
 	m_iPlotChangeMoves = 0;
 	m_iRestoreMoves = 0;
+	m_iFreeMoveAcross = 0;
 	m_eLandmarkCreditMinor = NO_PLAYER;
 	m_ePlayerThatClearedDigHere = NO_PLAYER;
 	m_ePlayerThatDestroyedCityHere = NO_PLAYER;
@@ -1283,10 +1284,15 @@ void CvPlot::updateWaterFlags() const
 
 		if(pLoopPlot != NULL)
 		{
-			if(pLoopPlot->isLake())
+			// Don't use the neighbor's cached lake flag, it may not be updated yet when looping over all plots
+			if(pLoopPlot->isWater())
 			{
-				m_bIsFreshwater = true;
-				return;
+				CvLandmass* pLandmass = GC.getMap().getLandmassById(pLoopPlot->getLandmass());
+				if(pLandmass && pLandmass->isLake())
+				{
+					m_bIsFreshwater = true;
+					return;
+				}
 			}
 
 			FeatureTypes feature_type = pLoopPlot->getFeatureType();
@@ -13537,7 +13543,7 @@ CvString CvPlot::getScriptData() const
 //	--------------------------------------------------------------------------------
 void CvPlot::setScriptData(const char* szNewValue)
 {
-	SAFE_DELETE_ARRAY(m_szScriptData);
+	SAFE_FREE(&m_szScriptData);
 	m_szScriptData = _strdup(szNewValue);
 }
 

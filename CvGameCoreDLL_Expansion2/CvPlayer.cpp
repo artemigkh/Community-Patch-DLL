@@ -3014,8 +3014,11 @@ CvCity* CvPlayer::acquireCity(CvCity* pCity, bool bConquest, bool bGift, bool bO
 		{
 			if (pLoopUnit->IsImmobile() && !pLoopUnit->isCargo())
 			{
+				// kill(false) deletes the unit: read what DoUnitKilledCombat needs first
+				const PlayerTypes eLoopOwner = pLoopUnit->getOwner();
+				const UnitTypes eLoopType = pLoopUnit->getUnitType();
 				pLoopUnit->kill(false, GetID());
-				DoUnitKilledCombat(NULL, pLoopUnit->getOwner(), pLoopUnit->getUnitType());
+				DoUnitKilledCombat(NULL, eLoopOwner, eLoopType);
 			}
 		}
 	}
@@ -10872,8 +10875,10 @@ void CvPlayer::updateTimers()
 
 	if (MOD_CORE_DELAYED_VISIBILITY)
 	{
-		// Force explicit visibility update for killed units (but not if the player is currently active)
-		if (!unitsToDelete.empty() && GetID()!=GC.getGame().getActivePlayer())
+		// Force explicit visibility update for killed units (but not during a human's turn).
+		// Not getActivePlayer: the local player differs per machine in MP, so testing it left
+		// a human team's visibility different between copies until its turn ended.
+		if (!unitsToDelete.empty() && (!isHuman() || !isTurnActive()))
 			for (int iI = 0; iI < GC.getMap().numPlots(); iI++)
 				GC.getMap().plotByIndexUnchecked(iI)->flipVisibility(getTeam());
 	}
@@ -17857,9 +17862,9 @@ void CvPlayer::changeTotalPopulation(int iChange)
 	ASSERT(getTotalPopulation() >= 0);
 }
 
-long CvPlayer::getRealPopulation() const
+long long CvPlayer::getRealPopulation() const
 {
-	__int64 iTotalPopulation = 0;
+	long long iTotalPopulation = 0;
 	int iLoop = 0;
 
 	for(const CvCity* pLoopCity = firstCity(&iLoop); pLoopCity != NULL; pLoopCity = nextCity(&iLoop))
@@ -17867,12 +17872,7 @@ long CvPlayer::getRealPopulation() const
 		iTotalPopulation += pLoopCity->getRealPopulation();
 	}
 
-	if(iTotalPopulation > INT_MAX)
-	{
-		iTotalPopulation = INT_MAX;
-	}
-
-	return ((long)(iTotalPopulation));
+	return iTotalPopulation;
 }
 
 int CvPlayer::getHighestPopulation() const
@@ -42628,7 +42628,7 @@ int CvPlayer::getYieldPerTurnHistory(YieldTypes eYield, int iNumTurns, bool bIgn
 		iNumHistory = iNumTurns;
 
 	const vector<int>& viYieldHistory = m_vviYieldHistory[eYield];
-	for (int i = viYieldHistory.size()-1; i >= 0; i--)
+	for (int i = static_cast<int>(viYieldHistory.size())-1; i >= 0; i--)
 	{
 		iYield += viYieldHistory[i];
 		if (++iLoop >= iNumHistory)
