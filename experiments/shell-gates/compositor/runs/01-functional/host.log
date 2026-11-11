@@ -1,0 +1,20 @@
+17:29:19.903 ==== test_host start pid 13556 label 'run' swap blit(DISCARD) buffers 1 format 28 msaa 1 vsync 1 load after size 1280x720 bb 0x0
+17:29:20.177 device FL b000 on 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:29:20.178 mem start: private=23.67 MB working=31.52 MB video_local=8.25 MB handles=338
+17:29:20.378 LoadLibraryW('C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\shell_composite.dll') after device creation (frame N) -> 645E0000 (err 0) in 1.64 ms
+17:29:21.183 1s: frames 149 mean 6.696 ms max 16.961 ms bb 1280x720
+17:29:22.187 1s: frames 166 mean 6.058 ms max 8.899 ms bb 1280x720
+17:29:23.192 1s: frames 166 mean 6.050 ms max 8.859 ms bb 1280x720
+17:29:24.198 1s: frames 166 mean 6.056 ms max 8.480 ms bb 1280x720
+17:29:25.203 1s: frames 166 mean 6.065 ms max 8.662 ms bb 1280x720
+17:29:26.209 1s: frames 166 mean 6.053 ms max 9.583 ms bb 1280x720
+17:29:27.216 1s: frames 166 mean 6.059 ms max 9.122 ms bb 1280x720
+17:29:28.217 1s: frames 165 mean 6.062 ms max 9.880 ms bb 1280x720
+17:29:29.220 1s: frames 166 mean 6.057 ms max 9.191 ms bb 1280x720
+17:29:30.184 mem periodic: private=31.72 MB working=36.00 MB video_local=15.81 MB handles=391
+17:29:30.225 1s: frames 166 mean 6.051 ms max 9.511 ms bb 1280x720
+17:29:31.232 1s: frames 166 mean 6.057 ms max 8.958 ms bb 1280x720
+17:29:32.237 1s: frames 166 mean 6.062 ms max 9.335 ms bb 1280x720
+17:29:33.242 1s: frames 166 mean 6.053 ms max 9.297 ms bb 1280x720
+17:29:34.182 summary label=run frames=1816 mean=6.0577 p50=6.0674 p99=8.7972 max=9.880 fps=165.1
+17:29:34.182 mem end: private=31.72 MB working=36.00 MB video_local=15.81 MB handles=391

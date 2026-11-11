@@ -1,0 +1,12 @@
+17:41:40.152 ==== test_host start pid 12128 label '19-deferred-execmode' swap blit(DISCARD) buffers 1 format 28 msaa 1 vsync 1 load after size 1280x720 bb 0x0
+17:41:40.332 device FL b000 on 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:41:40.333 mem start: private=24.15 MB working=29.71 MB video_local=8.25 MB handles=333
+17:41:40.530 LoadLibraryW('C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\shell_composite.dll') after device creation (frame N) -> 5ADD0000 (err 0) in 0.98 ms
+17:41:41.338 1s: frames 161 mean 6.196 ms max 16.510 ms bb 1280x720
+17:41:42.344 1s: frames 166 mean 6.062 ms max 8.202 ms bb 1280x720
+17:41:43.352 1s: frames 166 mean 6.057 ms max 9.120 ms bb 1280x720
+17:41:44.355 1s: frames 166 mean 6.051 ms max 10.183 ms bb 1280x720
+17:41:45.357 1s: frames 165 mean 6.066 ms max 9.507 ms bb 1280x720
+17:41:46.359 1s: frames 165 mean 6.098 ms max 10.573 ms bb 1280x720
+17:41:47.336 summary label=19-deferred-execmode frames=659 mean=6.0634 p50=6.1057 p99=9.6361 max=10.573 fps=164.9
+17:41:47.336 mem end: private=35.16 MB working=35.56 MB video_local=23.34 MB handles=398

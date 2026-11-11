@@ -1,0 +1,12 @@
+   0.000 START pid=39132 desktop=CivBgExpVeto startupinfo.flags=0x0 wShowWindow=0 lpDesktop=WinSta0\CivBgExpVeto fg_at_start=00000000
+   0.000 CREATED hwnd=005311C8
+   0.000 MSG WM_SHOWWINDOW show=1
+   0.000 MSG WM_SIZE type=0 320x240
+   0.000 ShowWindow(4) -> 0; fg_is_me=0 iconic=0
+   0.000 PLACEMENT showCmd=1 visible=1 iconic=0
+   0.000 RegisterRawInputDevices -> 1
+   0.172 D3D11CreateDeviceAndSwapChain hr=0x00000000 fl=0xb000 swap=discard(blt)
+   0.172 ADAPTER NVIDIA GeForce RTX 4080
+   1.172 SEC fps=17515 present_ok=0 occluded=17515 other=0 frame=17515 iconic=0 fg_is_me=0 active_is_me=0 focus_is_me=0 cloaked=0 rawkeys=0 rawmouse=0
+   2.172 SEC fps=20576 present_ok=0 occluded=20576 other=0 frame=38091 iconic=0 fg_is_me=0 active_is_me=0 focus_is_me=0 cloaked=0 rawkeys=0 rawmouse=0
+   3.172 SEC fps=28526 present_ok=0 occluded=28526 other=0 frame=66617 iconic=0 fg_is_me=0 active_is_me=0 focus_is_me=0 cloaked=0 rawkeys=0 rawmouse=0

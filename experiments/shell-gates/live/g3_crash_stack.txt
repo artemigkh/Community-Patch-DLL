@@ -1,0 +1,107 @@
+﻿
+************* Preparing the environment for Debugger Extensions Gallery repositories **************
+   ExtensionRepository : Implicit
+   UseExperimentalFeatureForNugetShare : true
+   AllowNugetExeUpdate : true
+   NonInteractiveNuget : true
+   AllowNugetMSCredentialProviderInstall : true
+   AllowParallelInitializationOfLocalRepositories : true
+
+   EnableRedirectToV8JsProvider : false
+
+   -- Configuring repositories
+      ----> Repository : LocalInstalled, Enabled: true
+      ----> Repository : UserExtensions, Enabled: true
+
+>>>>>>>>>>>>> Preparing the environment for Debugger Extensions Gallery repositories completed, duration 0.000 seconds
+
+************* Waiting for Debugger Extensions Gallery to Initialize **************
+
+>>>>>>>>>>>>> Waiting for Debugger Extensions Gallery to Initialize completed, duration 0.016 seconds
+   ----> Repository : UserExtensions, Enabled: true, Packages count: 0
+   ----> Repository : LocalInstalled, Enabled: true, Packages count: 29
+
+Microsoft (R) Windows Debugger Version 10.0.26100.1 X86
+Copyright (c) Microsoft Corporation. All rights reserved.
+
+
+Loading Dump File [C:\Users\Art\AppData\Local\CrashDumps\CivilizationV_DX11.exe.44544.dmp]
+User Mini Dump File: Only registers, stack and portions of memory are available
+
+
+************* Path validation summary **************
+Response                         Time (ms)     Location
+OK                                             C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\clang-output\Release
+OK                                             C:\Users\Art\Documents\shell-gates-live
+Symbol search path is: C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\clang-output\Release;C:\Users\Art\Documents\shell-gates-live
+Executable search path is: 
+Windows 10 Version 26100 MP (32 procs) Free x86 compatible
+Product: WinNt, suite: SingleUserTS Personal
+Edition build lab: 26100.1.amd64fre.ge_release.240331-1435
+Debug session time: Mon Nov  9 21:45:30.000 2026 (UTC - 5:00)
+System Uptime: 11 days 7:43:41.255
+Process Uptime: 0 days 0:02:56.000
+................................................................
+................................................................
+..............................
+Loading unloaded module list
+................................................................
+This dump file has an exception of interest stored in it.
+The stored exception information can be accessed via .ecxr.
+(ae00.2c84): Access violation - code c0000005 (first/second chance not available)
+For analysis of this file, run !analyze -v
+*** WARNING: Unable to verify checksum for CvGameCore_Expansion2.dll
+eax=06a00000 ebx=00000001 ecx=069fe890 edx=06780010 esi=00000000 edi=00000000
+eip=5a6118b7 esp=06a0292c ebp=06a029dc iopl=0         nv up ei pl nz na pe nc
+cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00010206
+CvGameCore_Expansion2!_chkstk+0x27:
+5a6118b7 8500            test    dword ptr [eax],eax  ds:002b:06a00000=????????
+0:000> cdb: Reading initial command '.ecxr; kb 40; !teb; q'
+eax=06a00000 ebx=00000001 ecx=069fe890 edx=06780010 esi=00000000 edi=00000000
+eip=5a6118b7 esp=06a0292c ebp=06a029dc iopl=0         nv up ei pl nz na pe nc
+cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00010206
+CvGameCore_Expansion2!_chkstk+0x27:
+5a6118b7 8500            test    dword ptr [eax],eax  ds:002b:06a00000=????????
+ChildEBP RetAddr      Args to Child              
+06a029dc 774ac7ed     06a02a0c 774bcc32 06affd78 CvGameCore_Expansion2!_chkstk+0x27
+WARNING: Stack unwind information not available. Following frames may be wrong.
+06affd78 774ac6e1     ffffffff 774f6333 00000000 ntdll!RtlInitializeExceptionChain+0xfd
+06affd88 00000000     00767035 06914000 00000000 ntdll!RtlGetAppContainerNamedObjectPath+0x231
+TEB at 06917000
+*************************************************************************
+***                                                                   ***
+***                                                                   ***
+***    Either you specified an unqualified symbol, or your debugger   ***
+***    doesn't have full symbol information.  Unqualified symbol      ***
+***    resolution is turned off by default. Please either specify a   ***
+***    fully qualified symbol module!symbolname, or enable resolution ***
+***    of unqualified symbols by typing ".symopt- 100". Note that     ***
+***    enabling unqualified symbol resolution with network symbol     ***
+***    server shares in the symbol path may cause the debugger to     ***
+***    appear to hang for long periods of time when an incorrect      ***
+***    symbol name is typed or the network symbol server is down.     ***
+***                                                                   ***
+***    For some commands to work properly, your symbol path           ***
+***    must point to .pdb files that have full type information.      ***
+***                                                                   ***
+***    Certain .pdb files (such as the public OS symbols) do not      ***
+***    contain the required information.  Contact the group that      ***
+***    provided you with these symbols if you need this command to    ***
+***    work.                                                          ***
+***                                                                   ***
+***    Type referenced: nt!_TEB                                       ***
+***                                                                   ***
+*************************************************************************
+error InitTypeRead( TEB )...
+quit:
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\atlmfc.natvis'
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\ObjectiveC.natvis'
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\concurrency.natvis'
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\cpp_rest.natvis'
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\stl.natvis'
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\Windows.Data.Json.natvis'
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\Windows.Devices.Geolocation.natvis'
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\Windows.Devices.Sensors.natvis'
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\Windows.Media.natvis'
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\windows.natvis'
+NatVis script unloaded from 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\Visualizers\winrt.natvis'

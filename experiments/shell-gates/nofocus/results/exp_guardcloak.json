@@ -1,0 +1,81 @@
+{
+ "guardcloak": {
+  "arm": "guard-applied cloak from the first ShowWindow, window on-screen (secondary monitor)",
+  "cloak_state(wish,applied,hr)": [
+   1,
+   1,
+   0
+  ],
+  "is_cloaked": true,
+  "WindowFromPoint_at_its_centre_is_it": false,
+  "WindowFromPoint_owner": "Program Manager",
+  "rendering": {
+   "seconds": 2,
+   "fps_avg": 160.0,
+   "occluded_frac": 0.0,
+   "iconic": 0,
+   "fg_any": 0,
+   "cloaked": 1
+  },
+  "capture": {
+   "ok": true,
+   "black": false,
+   "mean": [
+    8,
+    136,
+    101
+   ],
+   "fresh": true
+  },
+  "input": {
+   "keydown_F7": true,
+   "keydown_F8_with_shift_keystate": {
+    "GetKeyState(SHIFT)": "8000",
+    "GetAsyncKeyState(SHIFT)": "8000"
+   },
+   "char_from_translate": true,
+   "click_at_posted_xy": true,
+   "getasync_poll_saw_F8": true,
+   "getkeystate_saw_F7": false
+  },
+  "screen_pixels_mean_where_window_is": [
+   205,
+   154,
+   111
+  ],
+  "after_uncloak_state": [
+   0,
+   0,
+   0
+  ],
+  "after_uncloak_is_cloaked": false,
+  "recloaked": true,
+  "guard_counters": {
+   "SetForegroundWindow": {
+    "calls": 3,
+    "altered": 3
+   },
+   "ShowWindow": {
+    "calls": 1,
+    "altered": 1
+   },
+   "SetWindowPos": {
+    "calls": 1,
+    "altered": 0
+   },
+   "GetAsyncKeyState": {
+    "calls": 41,
+    "altered": 41
+   },
+   "GetKeyState": {
+    "calls": 8,
+    "altered": 8
+   },
+   "SetActiveWindow": {
+    "calls": 2,
+    "altered": 2
+   }
+  },
+  "foreground_hits": 0
+ }
+}

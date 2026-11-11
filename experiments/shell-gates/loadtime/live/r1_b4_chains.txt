@@ -1,0 +1,68 @@
+===== prelog
+s000 D3D12Core < ?d3d12 < D3D12Core < ?d3d12 < D3D12Core < ?d3d12 < D3D12Core < ?d3d12 < D3D12Core < ?d3d12 < D3D12Core < ?d3d12
+s001 ?680001 < F8dff30 < F84fd90 < F7cfd40 < F84fd90 < F89fee0 < F7affa0 < F73fdb0 < F4d0000 < F80ff80 < F55f9f0 < ?6c005c
+s002 D3D12Core < nvwgf2um < ?9c9908 < nvwgf2um < D3D12Core < ?d3d12 < D3D12Core < ?d3d12 < D3D12Core < ?72004e < F5ffed0 < F5cff20
+s003 F8ffe80 < nvd3dum < F55f9f0 < F72ff90 < ?6a0049 < ?6b0044 < F6effc0 < F8f0040 < F80ff80 < F4e5c20 < ?780032 < F8dff30
+s004 <Unloaded_nv < F500030 < <Unloaded_nv < F500030 < ?7e002d < F8ffe80 < F84fd90 < F7ffd30 < F92fda0 < F4d0000 < ?640020[near queue listener tr] < F890060
+s005 ?72004e < F5ffed0 < F5cff20 < ?630020 < F61ffb0 < F8dff30 < F5ffed0 < F5cff20 < ?d3d11 < F45af10 < ?72004e < F5ffed0
+s006 D3D12Core < nvwgf2um < D3D12Core < nvwgf2um < F7dffe0 < nvwgf2um < D3D12Core < nvwgf2um < D3D12Core < nvwgf2um < D3D12Core < nvwgf2um
+s007 F8dff30 < F920040 < F8ffe80 < F8dff30 < F84fd90 < F80ff80 < F8b0000 < F890060 < F55f9f0 < F72ff90 < ?6a0049 < ?6b0044
+s008 F80ff80 < ?6e005c < F830050 < F8f0040 < F8dff30 < F780070 < F7cfd40 < F83ffe0 < F89fee0 < ?780065 < F8b0000 < F8ffe80
+s009 F4d7bc0 < F517ad0 < F9d35e0 < F45a860 < F602380 < ___tmainCRTStartup < entry < ?9270d2 < entry < <Unloaded_nv < F55f9f0 < F72ff90
+s010 nvwgf2um < ?4c2e32 < nvwgf2um < F424630 < F82c090 < F8e3150 < F5a0e70 < F7b69f0 < F4d7190 < F50c1b0 < ?793ada < ?422b1b
+===== postlua
+s011 F6bb710 < F6b2b30 < ?5357c0 < ?5357cb < ?422c4d < nvd3dum < nvwgf2um < ?428428 < F5431b0 < F924540 < ?5e2460 < F535a00
+s012 F6bb710 < F6b2b30 < ?5357c0 < ?5357cb < ?422c4d < nvd3dum < nvwgf2um < ?428428 < F5431b0 < F924540 < ?5e2460 < F535a00
+s013 F6bb710 < ?5357c0 < ?422c4d < nvd3dum < nvwgf2um < ?428428 < F5431b0 < F924540 < ?5e2460 < F535a00 < F49c040 < ?5e2460
+s014 F6b2b30 < ?5357c0 < ?5357cb < ?422c4d < nvd3dum < nvwgf2um < ?428428 < F5431b0 < F924540 < ?5e2460 < F535a00 < F49c040
+s015 F6b2b30 < ?5357c0 < ?5357cb < ?422c4d < nvd3dum < nvwgf2um < ?428428 < F5431b0 < F924540 < ?5e2460 < F535a00 < F49c040
+s016 F6b2b30 < ?5357c0 < ?5357cb < ?422c4d < nvd3dum < nvwgf2um < ?428428 < F5431b0 < F924540 < ?5e2460 < F535a00 < F49c040
+s017 F6bb710 < ?5357c0 < ?422c4d < nvd3dum < nvwgf2um < ?428428 < F5431b0 < F924540 < ?5e2460 < F535a00 < F49c040 < ?5e2460
+s018 F82db80 < F82cde0 < F82cc90 < F9161f0 < F5ffed0 < ?940078 < F82d110 < F6d36f0 < F916ae0 < F8ffe80 < ?4a0073 < F890060
+===== saveread
+s019 F820750 < F819e10 < F837580 < F82b800 < F6d9700 < <Unloaded_Cv < F659ac0 < <Unloaded_Cv < ?43d0c1 < F55f9f0 < ?71005c < F80ff80
+s020 F820750 < F819e10 < F837580 < F82b800 < F6d9700 < <Unloaded_Cv < F659ac0 < <Unloaded_Cv < ?43d0c1 < F55f9f0 < ?71005c < F80ff80
+s021 F820750 < F8208b0 < ?835036 < ?7123bb < F439890 < F837750 < F6d9700 < <Unloaded_Cv < F659ac0 < <Unloaded_Cv < ?43d0c1 < F55f9f0
+s022 F820750 < F8208b0 < ?835036 < ?7123bb < F439890 < F837750 < F6d9700 < <Unloaded_Cv < F659ac0 < <Unloaded_Cv < ?43d0c1 < F55f9f0
+s023 F820750 < F819e10 < F837580 < F82b800 < F6d9700 < <Unloaded_Cv < F659ac0 < <Unloaded_Cv < ?43d0c1 < F55f9f0 < ?71005c < F80ff80
+s024 ?42e6d8 < F7da7d0 < nvwgf2um < F830f10 < F7da720 < F7dffe0 < F802d40 < F7f7dd0 < F7e9970 < nvd3dum < ?7fe7ed < F7f4920
+===== dllread
+s025 <Unloaded_Cv < 71c0f9 < <Unloaded_Cv < F7bffb0 < F5efc50 < <Unloaded_nv < nvd3dum < nvwgf2um < nvd3dum < nvwgf2um < nvd3dum < <Unloaded_nv
+s026 F81c250 < FSBAAllocate < F453c30 < <Unloaded_Cv < 71c0f9 < <Unloaded_Cv < F5efc50 < nvd3dum < <Unloaded_Cv < nvwgf2um < nvd3dum < nvwgf2um
+s027 F64fd80 < FSBADeallocate < <Unloaded_Cv < F6d5c30 < <Unloaded_Cv < ?50b06c < ?64c088 < <Unloaded_Cv < F7fe4b0 < F7fe280 < F802d40 < F7f7dd0
+===== terrain
+s028 F6ea000 < ?648cc2 < ?648a52 < ?76999a < F6ba6f0 < nvwgf2um < F5c0f40 < ?420025 < F42fcc0[LoadGameState::StartIn] < F450010 < ?47002a < ?49002c
+s029 F907a00 < ?648c38 < ?648a52 < ?76999a < F6ba6f0 < nvwgf2um < F5c0f40 < ?420025 < F42fcc0[LoadGameState::StartIn] < F450010 < ?47002a < ?49002c
+s030 ?648c38 < ?648a52 < ?76999a < F6ba6f0 < nvwgf2um < F5c0f40 < ?420025 < F42fcc0[LoadGameState::StartIn] < F450010 < ?47002a < ?49002c < ?4b002e
+s031 F425060 < F6ea000 < F75f2a0 < F658e60 < F4d80f0 < F6ba6f0 < ?420025 < F42fcc0[LoadGameState::StartIn] < F450010 < nvwgf2um < ?630046 < F64fd80
+s032 F84f240 < F5417b0 < F4956f0 < F829c50 < F4286f0 < FSBADeallocate < F813cf0 < F425060 < F6ea000 < F75f2a0 < F658e60 < F4d80f0
+s033 nvwgf2um < F8062d0
+s034 F6ce440 < ?430e8e[near LoadGameState::St] < F623010 < ?4adc83 < F820070 < F82d070 < F53c960 < ?7a2ecb < ?7a2f2e < ?7a2f66 < F4d0000 < F544830
+===== gap
+s035 <Unloaded_nv < F6ce440 < ?558af0 < ?6c8975 < F6029b0 < ?6c8910 < F904e30 < ?6c8910 < ?752d38 < ?6c8910 < F8668e0[queue listener list wa] < F63aba0[queue-B dispatcher]
+s036 F77c1c0 < F4365e0 < F585490 < F5b86d0 < ?531155 < F6ce440 < F75aa60 < F46d210 < ?46e0e0 < F75fc10 < F5906b0 < F7a0750
+s037 F747580
+s038 F77c1c0 < ?778c50 < F4365e0 < F585490 < F5b86d0 < ?531155 < F6ce440 < F75aa60 < F46d210 < ?46e0e0 < F75fc10 < F5906b0
+s039 F77c1c0 < ?778c50 < F4365e0 < F585490 < F5b86d0 < ?531155 < F6ce440 < ?558af0 < F7a0750 < F869c00 < F56c0d0 < F5362f0
+s040 F77c1c0 < ?778c50 < F4365e0 < F585490 < F5b86d0 < ?531155 < F6ce440 < F75aa60 < F46d210 < ?46e0e0 < F75fc10 < F5906b0
+s041 F77c1c0 < ?778c50 < F5b86d0 < ?531155 < F6ce440 < ?558af0 < F5906b0 < F7a0750 < F56b480 < F56c0d0 < F5362f0 < F6016f0
+s042 F77c1c0 < F5b86d0 < ?531155 < F6ce440 < ?558af0 < F5906b0 < F7a0750 < F56b480 < F56c0d0 < F5362f0 < F6016f0 < F5362f0
+s043 ?778c50 < F4365e0 < F585490 < F5b86d0 < ?531155 < F6ce440 < ?558af0 < F5906b0 < F7a0750 < F56b480 < F56c0d0 < F5362f0
+s044 F77c1c0 < F4365e0 < F585490 < F5b86d0 < ?531155 < F520060 < ?490016 < F7a0750 < F74b850 < F5362f0 < F6016f0 < F748fc0[farm field decal build]
+s045 F77c1c0 < ?778c50 < F4365e0 < F585490 < F5b86d0 < ?531155 < F6ce440 < ?558af0 < F5906b0 < F7a0750 < F56b480 < F56c0d0
+s046 F77c1c0 < ?778c50 < F5b86d0 < ?531155 < F6ce440 < ?558af0 < F7a0750 < F869c00 < F5362f0 < F6016f0 < F748fc0[farm field decal build] < F8668e0[queue listener list wa]
+s047 
+s048 ?778c50 < F5b86d0 < ?531155 < F6ce440 < ?558af0 < F7a0750 < F74b850 < F5362f0 < F6016f0 < F5362f0 < F748fc0[farm field decal build] < F8668e0[queue listener list wa]
+s049 F77c1c0 < ?778c50 < F4365e0 < F585490 < F5b86d0 < ?531155 < F6ce440 < ?558af0 < F5906b0 < F7a0750 < F74b850 < F5362f0
+s050 ?778c50 < F4365e0 < F585490 < F5b86d0 < ?531155 < F6ce440 < F75aa60 < F46d210 < ?46e0e0 < F75fc10 < F5906b0 < F7a0750
+s051 F6abd30 < ?81d8ef < F7bf900 < ?9c45c0 < F7bf260 < F81d790 < F4387d0 < F49b5a0 < F62ae50 < F46bfe0 < F5865b0 < F7ad6c0[TerrainDecalSystem typ]
+===== tail
+s052 F568430
+s053 F81d950 < ?9c45c0 < F7bf260 < F81d790 < F4387d0 < F49b5a0 < F60f180 < F55d0c0 < F66d090 < F6e27d0 < ?79d074 < F8668e0[queue listener list wa]
+s054 F6abd30 < ?81d8ef < F7bf900 < F81d950 < ?9c45c0 < F7bf260 < F81d790 < F4387d0 < F49b5a0 < F60f180 < F55d0c0 < F66d090
+s055 
+s056 
+===== ready
+s057 F568430
+s058 F5d3310 < F6387e0 < F6be520 < F4842c0 < <Unloaded_Cv < F494160[LoadGameState::Exit] < <Unloaded_Cv < F494160[LoadGameState::Exit] < F47eae0 < <Unloaded_Cv < ?5651c0 < F4b3f41[frame function body]
+s059 F820750 < F820710 < F835460 < F819e10 < F4a7290 < nvwgf2um < ?d3d11 < F84fd90 < F890060 < F8dff30 < F870050 < ?7e005f

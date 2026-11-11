@@ -1,0 +1,8 @@
+Read-only ReadProcessMemory of the running game (run 3, pid 16232, EXE base 0x00240000), 2026-11-10 01:37,
+and run 1 (pid 25336) for the VS bytecode check (read_vs_table.py):
+
+renderer 1e16de60: 128 vertex shaders created; 128 point into the EXE's .shader blobs, 0 elsewhere;
+live bytes == file bytes for 128; models {'vs_5_0': 128}
+
+renderer counters (renderer+0x458..): VS 128, PS 362, DS 1, HS 2  (= the 493 handles of the shader-model-5 set)
+shader level global [0x2e49edc] = 10 (shell_tap.log, "adopted device")

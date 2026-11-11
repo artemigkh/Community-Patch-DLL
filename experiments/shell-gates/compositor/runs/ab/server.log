@@ -1,0 +1,346 @@
+17:43:09.076 shell_server start pid 16140 size 2560x1440 rate 60.0
+17:43:09.089 adapter 0: 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7 VRAM 16048 MB
+17:43:09.089 adapter 1: 'Microsoft Basic Render Driver' LUID 000000000000F569 VRAM 0 MB (software)
+17:43:09.089 using adapter 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:43:09.309 device created, feature level b100
+17:43:09.309 section 'Local\VPShellSection' created
+17:43:09.310 texture generation 1: 2560x1440 BGRA8 shared as 'Local\VPShellWorld_16140_1'
+17:43:09.310 mem start: private=67.39 MB working=33.99 MB video_local=8.25 MB
+17:43:10.310 1s: rendered 61 published 61 overwritten(unconsumed) 60 skipped 0 | acquire max 0.97 ms | client consumed total 0 | gen 1 2560x1440
+17:43:11.327 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.13 ms | client consumed total 0 | gen 1 2560x1440
+17:43:12.343 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.14 ms | client consumed total 0 | gen 1 2560x1440
+17:43:13.343 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.16 ms | client consumed total 0 | gen 1 2560x1440
+17:43:14.360 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.15 ms | client consumed total 0 | gen 1 2560x1440
+17:43:15.360 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.20 ms | client consumed total 0 | gen 1 2560x1440
+17:43:16.376 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.24 ms | client consumed total 0 | gen 1 2560x1440
+17:43:17.394 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.12 ms | client consumed total 0 | gen 1 2560x1440
+17:43:18.410 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.17 ms | client consumed total 0 | gen 1 2560x1440
+17:43:19.310 mem periodic: private=68.96 MB working=35.79 MB video_local=38.26 MB
+17:43:19.410 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.17 ms | client consumed total 0 | gen 1 2560x1440
+17:43:20.427 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.15 ms | client consumed total 0 | gen 1 2560x1440
+17:43:21.443 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.15 ms | client consumed total 0 | gen 1 2560x1440
+17:43:22.443 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.13 ms | client consumed total 0 | gen 1 2560x1440
+17:43:23.443 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.28 ms | client consumed total 0 | gen 1 2560x1440
+17:43:24.460 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.16 ms | client consumed total 0 | gen 1 2560x1440
+17:43:25.477 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.21 ms | client consumed total 0 | gen 1 2560x1440
+17:43:26.477 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.20 ms | client consumed total 0 | gen 1 2560x1440
+17:43:27.477 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.15 ms | client consumed total 0 | gen 1 2560x1440
+17:43:28.493 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.17 ms | client consumed total 0 | gen 1 2560x1440
+17:43:29.327 mem periodic: private=69.23 MB working=36.00 MB video_local=38.26 MB
+17:43:29.493 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.14 ms | client consumed total 0 | gen 1 2560x1440
+17:43:30.493 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.22 ms | client consumed total 0 | gen 1 2560x1440
+17:43:31.493 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.26 ms | client consumed total 0 | gen 1 2560x1440
+17:43:32.510 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.19 ms | client consumed total 0 | gen 1 2560x1440
+17:43:33.527 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.20 ms | client consumed total 0 | gen 1 2560x1440
+17:43:34.543 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.16 ms | client consumed total 0 | gen 1 2560x1440
+17:43:35.560 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.15 ms | client consumed total 0 | gen 1 2560x1440
+17:43:36.577 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.16 ms | client consumed total 0 | gen 1 2560x1440
+17:43:37.577 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.20 ms | client consumed total 0 | gen 1 2560x1440
+17:43:38.577 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.14 ms | client consumed total 0 | gen 1 2560x1440
+17:43:39.343 mem periodic: private=69.43 MB working=36.20 MB video_local=38.26 MB
+17:43:39.593 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.15 ms | client consumed total 0 | gen 1 2560x1440
+17:43:40.610 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.13 ms | client consumed total 0 | gen 1 2560x1440
+17:43:41.627 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.13 ms | client consumed total 0 | gen 1 2560x1440
+17:43:42.643 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.17 ms | client consumed total 0 | gen 1 2560x1440
+17:43:43.644 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.21 ms | client consumed total 0 | gen 1 2560x1440
+17:43:44.660 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.21 ms | client consumed total 0 | gen 1 2560x1440
+17:43:45.660 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.17 ms | client consumed total 0 | gen 1 2560x1440
+17:43:46.677 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.27 ms | client consumed total 0 | gen 1 2560x1440
+17:43:47.676 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.25 ms | client consumed total 0 | gen 1 2560x1440
+17:43:48.693 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.22 ms | client consumed total 0 | gen 1 2560x1440
+17:43:49.360 mem periodic: private=69.60 MB working=36.39 MB video_local=38.26 MB
+17:43:49.710 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.24 ms | client consumed total 0 | gen 1 2560x1440
+17:43:50.726 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.15 ms | client consumed total 0 | gen 1 2560x1440
+17:43:51.743 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.17 ms | client consumed total 0 | gen 1 2560x1440
+17:43:52.743 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.17 ms | client consumed total 0 | gen 1 2560x1440
+17:43:53.760 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.19 ms | client consumed total 0 | gen 1 2560x1440
+17:43:54.777 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.26 ms | client consumed total 0 | gen 1 2560x1440
+17:43:55.777 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.14 ms | client consumed total 0 | gen 1 2560x1440
+17:43:56.794 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.44 ms | client consumed total 0 | gen 1 2560x1440
+17:43:57.810 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.19 ms | client consumed total 0 | gen 1 2560x1440
+17:43:58.810 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.17 ms | client consumed total 0 | gen 1 2560x1440
+17:43:59.377 mem periodic: private=69.78 MB working=36.57 MB video_local=38.26 MB
+17:43:59.810 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.20 ms | client consumed total 0 | gen 1 2560x1440
+17:44:00.827 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.32 ms | client consumed total 0 | gen 1 2560x1440
+17:44:01.843 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.22 ms | client consumed total 0 | gen 1 2560x1440
+17:44:02.860 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.34 ms | client consumed total 0 | gen 1 2560x1440
+17:44:03.860 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.25 ms | client consumed total 0 | gen 1 2560x1440
+17:44:04.860 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.25 ms | client consumed total 0 | gen 1 2560x1440
+17:44:05.876 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.23 ms | client consumed total 0 | gen 1 2560x1440
+17:44:06.876 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.89 ms | client consumed total 0 | gen 1 2560x1440
+17:44:07.893 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.17 ms | client consumed total 0 | gen 1 2560x1440
+17:44:08.893 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.17 ms | client consumed total 0 | gen 1 2560x1440
+17:44:09.393 mem periodic: private=69.89 MB working=36.71 MB video_local=38.26 MB
+17:44:09.910 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.24 ms | client consumed total 0 | gen 1 2560x1440
+17:44:10.910 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.18 ms | client consumed total 0 | gen 1 2560x1440
+17:44:11.110 client pid 26884, client adapter LUID 000000000000E0D7
+17:44:11.926 1s: rendered 61 published 61 overwritten(unconsumed) 11 skipped 0 | acquire max 0.18 ms | client consumed total 50 | gen 1 2560x1440
+17:44:12.944 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.19 ms | client consumed total 111 | gen 1 2560x1440
+17:44:13.943 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.19 ms | client consumed total 171 | gen 1 2560x1440
+17:44:14.943 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.18 ms | client consumed total 231 | gen 1 2560x1440
+17:44:15.943 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.15 ms | client consumed total 291 | gen 1 2560x1440
+17:44:16.960 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.15 ms | client consumed total 352 | gen 1 2560x1440
+17:44:17.960 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.38 ms | client consumed total 412 | gen 1 2560x1440
+17:44:18.977 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.24 ms | client consumed total 473 | gen 1 2560x1440
+17:44:19.410 mem periodic: private=70.07 MB working=36.89 MB video_local=38.26 MB
+17:44:19.993 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.20 ms | client consumed total 534 | gen 1 2560x1440
+17:44:21.010 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.14 ms | client consumed total 595 | gen 1 2560x1440
+17:44:22.027 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.36 ms | client consumed total 656 | gen 1 2560x1440
+17:44:23.043 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.14 ms | client consumed total 717 | gen 1 2560x1440
+17:44:24.043 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.17 ms | client consumed total 777 | gen 1 2560x1440
+17:44:25.051 1s: rendered 58 published 58 overwritten(unconsumed) 1 skipped 0 | acquire max 57.42 ms | client consumed total 834 | gen 1 2560x1440
+17:44:26.067 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.15 ms | client consumed total 895 | gen 1 2560x1440
+17:44:27.068 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.18 ms | client consumed total 955 | gen 1 2560x1440
+17:44:28.084 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.14 ms | client consumed total 1016 | gen 1 2560x1440
+17:44:29.084 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.17 ms | client consumed total 1076 | gen 1 2560x1440
+17:44:29.418 mem periodic: private=70.28 MB working=37.08 MB video_local=38.26 MB
+17:44:30.101 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.18 ms | client consumed total 1137 | gen 1 2560x1440
+17:44:31.101 1s: rendered 60 published 60 overwritten(unconsumed) 3 skipped 0 | acquire max 0.16 ms | client consumed total 1194 | gen 1 2560x1440
+17:44:31.384 client pid 14640, client adapter LUID 000000000000E0D7
+17:44:32.117 1s: rendered 61 published 61 overwritten(unconsumed) 16 skipped 0 | acquire max 0.17 ms | client consumed total 45 | gen 1 2560x1440
+17:44:33.134 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.29 ms | client consumed total 106 | gen 1 2560x1440
+17:44:34.134 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.16 ms | client consumed total 166 | gen 1 2560x1440
+17:44:35.151 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.15 ms | client consumed total 227 | gen 1 2560x1440
+17:44:36.167 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.21 ms | client consumed total 288 | gen 1 2560x1440
+17:44:37.184 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.17 ms | client consumed total 349 | gen 1 2560x1440
+17:44:38.184 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.19 ms | client consumed total 409 | gen 1 2560x1440
+17:44:39.201 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.19 ms | client consumed total 470 | gen 1 2560x1440
+17:44:39.434 mem periodic: private=70.46 MB working=37.26 MB video_local=38.26 MB
+17:44:40.218 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.15 ms | client consumed total 531 | gen 1 2560x1440
+17:44:41.218 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.18 ms | client consumed total 591 | gen 1 2560x1440
+17:44:42.234 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.34 ms | client consumed total 652 | gen 1 2560x1440
+17:44:43.234 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.15 ms | client consumed total 712 | gen 1 2560x1440
+17:44:44.235 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.24 ms | client consumed total 772 | gen 1 2560x1440
+17:44:45.251 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.25 ms | client consumed total 833 | gen 1 2560x1440
+17:44:46.251 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.16 ms | client consumed total 893 | gen 1 2560x1440
+17:44:47.268 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.18 ms | client consumed total 954 | gen 1 2560x1440
+17:44:48.267 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.28 ms | client consumed total 1014 | gen 1 2560x1440
+17:44:49.284 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.19 ms | client consumed total 1075 | gen 1 2560x1440
+17:44:49.450 mem periodic: private=70.60 MB working=37.44 MB video_local=38.26 MB
+17:44:50.284 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.19 ms | client consumed total 1135 | gen 1 2560x1440
+17:44:51.300 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.15 ms | client consumed total 1196 | gen 1 2560x1440
+17:44:52.301 1s: rendered 60 published 60 overwritten(unconsumed) 59 skipped 0 | acquire max 0.40 ms | client consumed total 1197 | gen 1 2560x1440
+17:44:53.317 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.17 ms | client consumed total 1197 | gen 1 2560x1440
+17:44:54.333 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.22 ms | client consumed total 1197 | gen 1 2560x1440
+17:44:55.351 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.24 ms | client consumed total 1197 | gen 1 2560x1440
+17:44:56.350 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.17 ms | client consumed total 1197 | gen 1 2560x1440
+17:44:57.351 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.27 ms | client consumed total 1197 | gen 1 2560x1440
+17:44:58.367 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.18 ms | client consumed total 1197 | gen 1 2560x1440
+17:44:59.384 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.30 ms | client consumed total 1197 | gen 1 2560x1440
+17:44:59.450 mem periodic: private=70.77 MB working=37.62 MB video_local=38.26 MB
+17:45:00.401 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.19 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:01.417 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.18 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:02.434 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.24 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:03.434 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.17 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:04.434 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.22 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:05.450 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.19 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:06.468 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.17 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:07.468 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.25 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:08.484 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.19 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:09.468 mem periodic: private=70.77 MB working=37.62 MB video_local=38.26 MB
+17:45:09.500 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.18 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:10.500 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.17 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:11.501 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.21 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:12.517 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.21 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:13.534 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.22 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:14.551 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.17 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:15.551 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.20 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:16.568 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.22 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:17.567 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.17 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:18.584 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.24 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:19.484 mem periodic: private=70.77 MB working=37.62 MB video_local=38.26 MB
+17:45:19.584 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.29 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:20.600 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.21 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:21.601 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.17 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:22.618 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.18 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:23.634 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.14 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:24.634 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.32 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:25.634 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.22 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:26.650 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.22 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:27.650 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.24 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:28.651 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.25 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:29.501 mem periodic: private=70.71 MB working=37.60 MB video_local=38.26 MB
+17:45:29.667 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.12 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:30.684 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.19 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:31.684 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.17 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:32.701 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.21 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:33.717 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.19 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:34.734 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.22 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:35.751 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.14 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:36.751 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.16 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:37.751 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.15 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:38.750 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.21 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:39.517 mem periodic: private=70.71 MB working=37.60 MB video_local=38.26 MB
+17:45:39.767 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.13 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:40.784 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.19 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:41.800 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.19 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:42.817 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.24 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:43.817 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.24 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:44.834 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.15 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:45.851 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.17 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:46.850 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.20 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:47.851 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.22 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:48.867 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.30 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:49.517 mem periodic: private=70.71 MB working=37.60 MB video_local=38.26 MB
+17:45:49.867 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.21 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:50.884 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.20 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:51.884 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.24 ms | client consumed total 1197 | gen 1 2560x1440
+17:45:52.483 client pid 45464, client adapter LUID 000000000000E0D7
+17:45:52.901 1s: rendered 61 published 61 overwritten(unconsumed) 35 skipped 0 | acquire max 0.20 ms | client consumed total 26 | gen 1 2560x1440
+17:45:53.900 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.16 ms | client consumed total 86 | gen 1 2560x1440
+17:45:54.917 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.13 ms | client consumed total 147 | gen 1 2560x1440
+17:45:55.934 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.21 ms | client consumed total 208 | gen 1 2560x1440
+17:45:56.934 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.16 ms | client consumed total 268 | gen 1 2560x1440
+17:45:57.950 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.20 ms | client consumed total 329 | gen 1 2560x1440
+17:45:58.967 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.15 ms | client consumed total 390 | gen 1 2560x1440
+17:45:59.534 mem periodic: private=70.71 MB working=37.60 MB video_local=38.26 MB
+17:45:59.984 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.14 ms | client consumed total 451 | gen 1 2560x1440
+17:46:00.984 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.17 ms | client consumed total 511 | gen 1 2560x1440
+17:46:01.984 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.31 ms | client consumed total 571 | gen 1 2560x1440
+17:46:03.001 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.15 ms | client consumed total 632 | gen 1 2560x1440
+17:46:04.000 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.34 ms | client consumed total 692 | gen 1 2560x1440
+17:46:05.017 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.19 ms | client consumed total 753 | gen 1 2560x1440
+17:46:06.034 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.14 ms | client consumed total 814 | gen 1 2560x1440
+17:46:07.033 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.16 ms | client consumed total 874 | gen 1 2560x1440
+17:46:08.034 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.13 ms | client consumed total 934 | gen 1 2560x1440
+17:46:09.050 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.14 ms | client consumed total 995 | gen 1 2560x1440
+17:46:09.551 mem periodic: private=70.71 MB working=37.60 MB video_local=38.26 MB
+17:46:10.050 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.30 ms | client consumed total 1055 | gen 1 2560x1440
+17:46:11.067 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.19 ms | client consumed total 1116 | gen 1 2560x1440
+17:46:12.083 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.17 ms | client consumed total 1177 | gen 1 2560x1440
+17:46:12.750 client pid 46144, client adapter LUID 000000000000E0D7
+17:46:13.100 1s: rendered 61 published 61 overwritten(unconsumed) 19 skipped 0 | acquire max 0.14 ms | client consumed total 22 | gen 1 2560x1440
+17:46:14.100 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.15 ms | client consumed total 82 | gen 1 2560x1440
+17:46:15.117 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.15 ms | client consumed total 143 | gen 1 2560x1440
+17:46:16.117 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.14 ms | client consumed total 203 | gen 1 2560x1440
+17:46:17.134 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.24 ms | client consumed total 264 | gen 1 2560x1440
+17:46:18.150 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.14 ms | client consumed total 325 | gen 1 2560x1440
+17:46:19.150 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.16 ms | client consumed total 385 | gen 1 2560x1440
+17:46:19.567 mem periodic: private=70.71 MB working=37.60 MB video_local=38.26 MB
+17:46:20.167 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.25 ms | client consumed total 446 | gen 1 2560x1440
+17:46:21.184 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.14 ms | client consumed total 507 | gen 1 2560x1440
+17:46:22.200 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.21 ms | client consumed total 568 | gen 1 2560x1440
+17:46:23.200 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.20 ms | client consumed total 628 | gen 1 2560x1440
+17:46:24.217 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.18 ms | client consumed total 689 | gen 1 2560x1440
+17:46:25.217 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.15 ms | client consumed total 749 | gen 1 2560x1440
+17:46:26.233 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.26 ms | client consumed total 810 | gen 1 2560x1440
+17:46:27.251 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.13 ms | client consumed total 871 | gen 1 2560x1440
+17:46:28.267 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.16 ms | client consumed total 932 | gen 1 2560x1440
+17:46:29.284 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.20 ms | client consumed total 993 | gen 1 2560x1440
+17:46:29.584 mem periodic: private=70.71 MB working=37.60 MB video_local=38.26 MB
+17:46:30.300 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.18 ms | client consumed total 1054 | gen 1 2560x1440
+17:46:31.300 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.14 ms | client consumed total 1114 | gen 1 2560x1440
+17:46:32.301 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.20 ms | client consumed total 1174 | gen 1 2560x1440
+17:46:33.317 1s: rendered 61 published 61 overwritten(unconsumed) 38 skipped 0 | acquire max 0.27 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:34.334 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.16 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:35.350 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.19 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:36.367 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.22 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:37.367 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.15 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:38.367 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.43 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:39.384 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.17 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:39.600 mem periodic: private=70.71 MB working=37.60 MB video_local=38.26 MB
+17:46:40.384 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.20 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:41.384 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.21 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:42.400 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.23 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:43.400 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.15 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:44.417 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.18 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:45.434 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.20 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:46.434 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.27 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:47.450 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.23 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:48.450 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.19 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:49.450 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.32 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:49.600 mem periodic: private=70.71 MB working=37.60 MB video_local=38.26 MB
+17:46:50.467 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.25 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:51.467 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.16 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:52.467 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.23 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:53.484 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.17 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:54.500 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.16 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:55.501 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.25 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:56.517 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.32 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:57.517 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.19 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:58.517 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.24 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:59.517 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.18 ms | client consumed total 1197 | gen 1 2560x1440
+17:46:59.616 mem periodic: private=70.71 MB working=37.60 MB video_local=38.26 MB
+17:47:00.533 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.19 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:01.533 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.26 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:02.550 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.14 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:03.550 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.20 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:04.550 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.26 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:05.550 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.33 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:06.567 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.18 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:07.583 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.17 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:08.584 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.16 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:09.600 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.27 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:09.633 mem periodic: private=70.71 MB working=37.60 MB video_local=38.26 MB
+17:47:10.600 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.17 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:11.617 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.20 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:12.617 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.26 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:13.634 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.24 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:14.651 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.26 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:15.650 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.26 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:16.667 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.27 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:17.667 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.16 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:18.684 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.25 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:19.650 mem periodic: private=70.71 MB working=37.60 MB video_local=38.26 MB
+17:47:19.683 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.16 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:20.700 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.17 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:21.700 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.17 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:22.700 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.19 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:23.717 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.19 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:24.717 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.17 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:25.717 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.25 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:26.733 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.19 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:27.734 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.24 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:28.751 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.17 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:29.667 mem periodic: private=70.71 MB working=37.60 MB video_local=38.26 MB
+17:47:29.767 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.18 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:30.767 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.15 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:31.784 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.26 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:32.800 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.20 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:33.800 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.18 ms | client consumed total 1197 | gen 1 2560x1440
+17:47:33.933 client pid 14808, client adapter LUID 000000000000E0D7
+17:47:34.800 1s: rendered 60 published 60 overwritten(unconsumed) 7 skipped 0 | acquire max 0.15 ms | client consumed total 53 | gen 1 2560x1440
+17:47:35.817 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.17 ms | client consumed total 114 | gen 1 2560x1440
+17:47:36.817 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.18 ms | client consumed total 174 | gen 1 2560x1440
+17:47:37.816 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.15 ms | client consumed total 234 | gen 1 2560x1440
+17:47:38.833 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.15 ms | client consumed total 295 | gen 1 2560x1440
+17:47:39.684 mem periodic: private=70.68 MB working=37.60 MB video_local=38.26 MB
+17:47:39.850 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.11 ms | client consumed total 356 | gen 1 2560x1440
+17:47:40.850 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.16 ms | client consumed total 416 | gen 1 2560x1440
+17:47:41.850 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.14 ms | client consumed total 476 | gen 1 2560x1440
+17:47:42.867 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.13 ms | client consumed total 537 | gen 1 2560x1440
+17:47:43.866 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.17 ms | client consumed total 597 | gen 1 2560x1440
+17:47:44.883 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.17 ms | client consumed total 658 | gen 1 2560x1440
+17:47:45.883 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.14 ms | client consumed total 718 | gen 1 2560x1440
+17:47:46.900 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.17 ms | client consumed total 779 | gen 1 2560x1440
+17:47:47.917 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.20 ms | client consumed total 840 | gen 1 2560x1440
+17:47:48.933 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.18 ms | client consumed total 901 | gen 1 2560x1440
+17:47:49.700 mem periodic: private=70.68 MB working=37.60 MB video_local=38.26 MB
+17:47:49.933 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.12 ms | client consumed total 961 | gen 1 2560x1440
+17:47:50.950 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.20 ms | client consumed total 1022 | gen 1 2560x1440
+17:47:51.967 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.19 ms | client consumed total 1083 | gen 1 2560x1440
+17:47:52.983 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.17 ms | client consumed total 1144 | gen 1 2560x1440
+17:47:53.984 1s: rendered 60 published 60 overwritten(unconsumed) 6 skipped 0 | acquire max 0.32 ms | client consumed total 1198 | gen 1 2560x1440
+17:47:54.217 client pid 53544, client adapter LUID 000000000000E0D7
+17:47:55.000 1s: rendered 61 published 61 overwritten(unconsumed) 13 skipped 0 | acquire max 0.25 ms | client consumed total 48 | gen 1 2560x1440
+17:47:56.017 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.14 ms | client consumed total 109 | gen 1 2560x1440
+17:47:57.016 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.27 ms | client consumed total 169 | gen 1 2560x1440
+17:47:58.034 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.16 ms | client consumed total 230 | gen 1 2560x1440
+17:47:59.050 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.13 ms | client consumed total 291 | gen 1 2560x1440
+17:47:59.716 mem periodic: private=70.71 MB working=37.61 MB video_local=38.26 MB
+17:48:00.050 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.20 ms | client consumed total 351 | gen 1 2560x1440
+17:48:01.050 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.12 ms | client consumed total 411 | gen 1 2560x1440
+17:48:02.050 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.12 ms | client consumed total 471 | gen 1 2560x1440
+17:48:03.050 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.18 ms | client consumed total 531 | gen 1 2560x1440
+17:48:04.067 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.16 ms | client consumed total 592 | gen 1 2560x1440
+17:48:05.083 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.22 ms | client consumed total 653 | gen 1 2560x1440
+17:48:06.083 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.18 ms | client consumed total 713 | gen 1 2560x1440
+17:48:07.083 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.23 ms | client consumed total 773 | gen 1 2560x1440
+17:48:08.100 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.18 ms | client consumed total 834 | gen 1 2560x1440
+17:48:09.117 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.13 ms | client consumed total 895 | gen 1 2560x1440
+17:48:09.733 mem periodic: private=70.77 MB working=37.81 MB video_local=38.26 MB
+17:48:10.116 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.21 ms | client consumed total 955 | gen 1 2560x1440
+17:48:11.133 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.14 ms | client consumed total 1016 | gen 1 2560x1440
+17:48:12.149 1s: rendered 61 published 61 overwritten(unconsumed) 0 skipped 0 | acquire max 0.22 ms | client consumed total 1077 | gen 1 2560x1440
+17:48:13.150 1s: rendered 60 published 60 overwritten(unconsumed) 0 skipped 0 | acquire max 0.33 ms | client consumed total 1137 | gen 1 2560x1440
+17:48:14.166 1s: rendered 61 published 61 overwritten(unconsumed) 2 skipped 0 | acquire max 0.21 ms | client consumed total 1196 | gen 1 2560x1440

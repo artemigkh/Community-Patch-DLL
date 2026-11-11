@@ -1,0 +1,450 @@
+{
+ "desktop": {
+  "arm": "separate desktop (CreateDesktop), no guard, stand-in steals every 2 s",
+  "window_found": true,
+  "visible_from_input_desktop_enum": false,
+  "running": {
+   "seconds": 3,
+   "fps_avg": 14876.7,
+   "occluded_frac": 1.0,
+   "iconic": 0,
+   "fg_any": 0,
+   "cloaked": 0
+  },
+  "capture_from_desktop_thread": {
+   "ok": true,
+   "black": false,
+   "mean": [
+    255,
+    255,
+    255
+   ],
+   "fresh": false
+  },
+  "capture_from_input_desktop_thread": {
+   "ok": true,
+   "black": false,
+   "mean": [
+    255,
+    255,
+    255
+   ],
+   "fresh": false
+  },
+  "post_from_input_desktop": {
+   "keydown_F7": true,
+   "keydown_F8_with_shift_keystate": {
+    "GetKeyState(SHIFT)": "0000",
+    "GetAsyncKeyState(SHIFT)": "0000"
+   },
+   "char_from_translate": true,
+   "click_at_posted_xy": true,
+   "getasync_poll_saw_F8": false,
+   "getkeystate_saw_F7": false
+  },
+  "post_from_desktop_thread": {
+   "keydown_F7": true,
+   "keydown_F8_with_shift_keystate": {
+    "GetKeyState(SHIFT)": "0000",
+    "GetAsyncKeyState(SHIFT)": "0000"
+   },
+   "char_from_translate": true,
+   "click_at_posted_xy": true,
+   "getasync_poll_saw_F8": false,
+   "getkeystate_saw_F7": false
+  },
+  "after_input": {
+   "seconds": 3,
+   "fps_avg": 11616.7,
+   "occluded_frac": 1.0,
+   "iconic": 0,
+   "fg_any": 0,
+   "cloaked": 0
+  },
+  "log_head": [
+   "   0.000 START pid=17300 desktop=CivBgExp startupinfo.flags=0x1 wShowWindow=1 lpDesktop=WinSta0\\CivBgExp fg_at_start=00000000",
+   "   0.016 CREATED hwnd=006E163E",
+   "   0.016 MSG WM_SHOWWINDOW show=1",
+   "   0.016 MSG WM_ACTIVATEAPP active=1",
+   "   0.016 MSG WM_ACTIVATE state=1 minimized=0 other=00000000",
+   "   0.032 MSG WM_SETFOCUS",
+   "   0.032 MSG WM_SIZE type=0 800x600",
+   "   0.032 ShowWindow(1) -> 0; fg_is_me=0 iconic=0",
+   "   0.032 SetForegroundWindow at start -> 0; fg_is_me=0",
+   "   0.032 PLACEMENT showCmd=1 visible=1 iconic=0",
+   "   0.032 RegisterRawInputDevices -> 1",
+   "   0.203 D3D11CreateDeviceAndSwapChain hr=0x00000000 fl=0xb000 swap=discard(blt)"
+  ],
+  "steal_results": [
+   "2.203 STEAL SetForegroundWindow -> 0 SetActiveWindow -> 006E163E fg_is_me=0",
+   "4.203 STEAL SetForegroundWindow -> 0 SetActiveWindow -> 006E163E fg_is_me=0",
+   "6.203 STEAL SetForegroundWindow -> 0 SetActiveWindow -> 006E163E fg_is_me=0"
+  ]
+ }
+}
+{
+ "startupinfo": {
+  "arm": "STARTUPINFO override of the first ShowWindow (on a separate desktop)",
+  "rows": [
+   {
+    "app_ShowWindow": 1,
+    "STARTUPINFO.wShowWindow": 4,
+    "placement": "showCmd=1 visible=1 iconic=0",
+    "activated": false
+   },
+   {
+    "app_ShowWindow": 1,
+    "STARTUPINFO.wShowWindow": 7,
+    "placement": "showCmd=2 visible=1 iconic=1",
+    "activated": false
+   },
+   {
+    "app_ShowWindow": 5,
+    "STARTUPINFO.wShowWindow": 4,
+    "placement": "showCmd=1 visible=1 iconic=0",
+    "activated": false
+   },
+   {
+    "app_ShowWindow": 10,
+    "STARTUPINFO.wShowWindow": 4,
+    "placement": "showCmd=1 visible=1 iconic=0",
+    "activated": false
+   },
+   {
+    "app_ShowWindow": 1,
+    "STARTUPINFO.wShowWindow": null,
+    "placement": "showCmd=1 visible=1 iconic=0",
+    "activated": true
+   },
+   {
+    "app_ShowWindow": 3,
+    "STARTUPINFO.wShowWindow": 4,
+    "placement": "showCmd=3 visible=1 iconic=0",
+    "activated": true
+   }
+  ]
+ }
+}
+{
+ "veto": {
+  "arm": "system-initiated activation, with and without the guard's WH_CBT veto",
+  "rows": [
+   {
+    "case": "first window on an empty desktop",
+    "guard": false,
+    "activated": true
+   },
+   {
+    "case": "active window A minimised then closed; B next in z-order",
+    "guard": false,
+    "B_activated_after_A_minimised": true,
+    "A_activated": true,
+    "B_activated_before": false,
+    "B_activated_after_A_died": true
+   },
+   {
+    "case": "first window on an empty desktop",
+    "guard": true,
+    "activated": false
+   },
+   {
+    "case": "active window A minimised then closed; B next in z-order",
+    "guard": true,
+    "B_activated_after_A_minimised": false,
+    "A_activated": true,
+    "B_activated_before": false,
+    "B_activated_after_A_died": false,
+    "guard_counters": {
+     "ShowWindow": {
+      "calls": 1,
+      "altered": 0
+     },
+     "SetWindowPos": {
+      "calls": 1,
+      "altered": 0
+     },
+     "ActivateVeto": {
+      "calls": 1,
+      "altered": 1
+     }
+    }
+   }
+  ]
+ }
+}
+{
+ "nofocus": {
+  "arm": "normal desktop + focus guard (suspended inject) + STARTUPINFO SW_SHOWNOACTIVATE; stand-in calls SetForegroundWindow+SetActiveWindow every 2 s and ClipCursor at start",
+  "window_found": true,
+  "guard_present": true,
+  "guard_status": "GetForegroundWindow:ok SetForegroundWindow:ok BringWindowToTop:ok SwitchToThisWindow:ok ShowWindow:ok SetWindowPos:ok ClipCursor:ok GetAsyncKeyState:ok GetKeyState:ok GetActiveWindow:ok SetActiveWindow:ok SetFocus:ok CreateWindowExA:ok CreateWindowExW:ok GetCursorPos:ok SetWindowsHookExA:ok SetWindowsHookExW:ok ",
+  "window_rect": [
+   -2936,
+   0,
+   -2120,
+   639
+  ],
+  "offscreen": {
+   "seconds": 3,
+   "fps_avg": 32.3,
+   "occluded_frac": 0.0,
+   "iconic": 0,
+   "fg_any": 0,
+   "cloaked": 0
+  },
+  "offscreen_capture": {
+   "ok": true,
+   "black": false,
+   "mean": [
+    11,
+    111,
+    172
+   ],
+   "fresh": true
+  },
+  "offscreen_input_with_guard_hold": {
+   "keydown_F7": true,
+   "keydown_F8_with_shift_keystate": {
+    "GetKeyState(SHIFT)": "8000",
+    "GetAsyncKeyState(SHIFT)": "8000"
+   },
+   "char_from_translate": true,
+   "click_at_posted_xy": true,
+   "getasync_poll_saw_F8": true,
+   "getkeystate_saw_F7": false
+  },
+  "minimized": {
+   "seconds": 4,
+   "fps_avg": 20976.5,
+   "occluded_frac": 1.0,
+   "iconic": 1,
+   "fg_any": 0,
+   "cloaked": 0
+  },
+  "minimized_capture": {
+   "ok": false,
+   "black": null,
+   "fresh": null
+  },
+  "minimized_input": {
+   "keydown_F7": true,
+   "keydown_F8_with_shift_keystate": {
+    "GetKeyState(SHIFT)": "8000",
+    "GetAsyncKeyState(SHIFT)": "8000"
+   },
+   "char_from_translate": true,
+   "click_at_posted_xy": true,
+   "getasync_poll_saw_F8": true,
+   "getkeystate_saw_F7": false
+  },
+  "minimized_restore_attempts": [],
+  "covered_rect": [
+   -1820,
+   454,
+   -1004,
+   1093
+  ],
+  "covered": {
+   "seconds": 4,
+   "fps_avg": 481.2,
+   "occluded_frac": 0.67,
+   "iconic": 0,
+   "fg_any": 0,
+   "cloaked": 0
+  },
+  "covered_capture": {
+   "ok": true,
+   "black": false,
+   "mean": [
+    191,
+    28,
+    84
+   ],
+   "fresh": true
+  },
+  "guard_counters": {
+   "SetForegroundWindow": {
+    "calls": 9,
+    "altered": 9
+   },
+   "ShowWindow": {
+    "calls": 1,
+    "altered": 1
+   },
+   "SetWindowPos": {
+    "calls": 1,
+    "altered": 0
+   },
+   "ClipCursor": {
+    "calls": 1,
+    "altered": 1
+   },
+   "GetAsyncKeyState": {
+    "calls": 4395,
+    "altered": 4395
+   },
+   "GetKeyState": {
+    "calls": 16,
+    "altered": 16
+   },
+   "SetActiveWindow": {
+    "calls": 8,
+    "altered": 8
+   }
+  },
+  "stand_in_steal_results": [
+   "2.203 STEAL SetForegroundWindow -> 1 SetActiveWindow -> 00000000 fg_is_me=0",
+   "4.219 STEAL SetForegroundWindow -> 1 SetActiveWindow -> 00000000 fg_is_me=0"
+  ],
+  "clip": [
+   "0.188 ClipCursor -> 1"
+  ],
+  "log_head": [
+   "   0.000 START pid=48780 desktop=Default startupinfo.flags=0x1 wShowWindow=4 lpDesktop=WinSta0\\Default fg_at_start=002D070C",
+   "   0.000 CREATED hwnd=00251858",
+   "   0.000 MSG WM_SHOWWINDOW show=1",
+   "   0.016 MSG WM_SIZE type=0 800x600",
+   "   0.016 ShowWindow(1) -> 0; fg_is_me=0 iconic=0",
+   "   0.016 SetForegroundWindow at start -> 1; fg_is_me=0",
+   "   0.016 PLACEMENT showCmd=1 visible=1 iconic=0",
+   "   0.016 RegisterRawInputDevices -> 1"
+  ],
+  "foreground_hits_by_stand_in_20ms_polls": 0,
+  "foreground_before": 50408
+ }
+}
+{
+ "cloak": {
+  "arm": "cloaked window (DWMWA_CLOAK after 4 s)",
+  "before": {
+   "seconds": 2,
+   "fps_avg": 32.5,
+   "occluded_frac": 0.0,
+   "iconic": 0,
+   "fg_any": 0,
+   "cloaked": 0
+  },
+  "before_capture": {
+   "ok": true,
+   "black": false,
+   "mean": [
+    69,
+    22,
+    152
+   ],
+   "fresh": true
+  },
+  "cloaked_flag_seen_from_outside": true,
+  "cloaked": {
+   "seconds": 3,
+   "fps_avg": 165.0,
+   "occluded_frac": 0.0,
+   "iconic": 0,
+   "fg_any": 0,
+   "cloaked": 1
+  },
+  "cloaked_capture": {
+   "ok": true,
+   "black": false,
+   "mean": [
+    151,
+    78,
+    17
+   ],
+   "fresh": true
+  },
+  "cloaked_input": {
+   "keydown_F7": true,
+   "keydown_F8_with_shift_keystate": {
+    "GetKeyState(SHIFT)": "8000",
+    "GetAsyncKeyState(SHIFT)": "8000"
+   },
+   "char_from_translate": true,
+   "click_at_posted_xy": true,
+   "getasync_poll_saw_F8": true,
+   "getkeystate_saw_F7": false
+  },
+  "foreground_hits": 0
+ }
+}
+{
+ "guardcloak": {
+  "arm": "guard-applied cloak from the first ShowWindow, window on-screen (secondary monitor)",
+  "cloak_state(wish,applied,hr)": [
+   1,
+   1,
+   0
+  ],
+  "is_cloaked": true,
+  "WindowFromPoint_at_its_centre_is_it": false,
+  "WindowFromPoint_owner": "VP shell test host",
+  "rendering": {
+   "seconds": 2,
+   "fps_avg": 163.0,
+   "occluded_frac": 0.0,
+   "iconic": 0,
+   "fg_any": 0,
+   "cloaked": 1
+  },
+  "capture": {
+   "ok": true,
+   "black": false,
+   "mean": [
+    6,
+    129,
+    110
+   ],
+   "fresh": true
+  },
+  "input": {
+   "keydown_F7": true,
+   "keydown_F8_with_shift_keystate": {
+    "GetKeyState(SHIFT)": "8000",
+    "GetAsyncKeyState(SHIFT)": "8000"
+   },
+   "char_from_translate": true,
+   "click_at_posted_xy": true,
+   "getasync_poll_saw_F8": true,
+   "getkeystate_saw_F7": false
+  },
+  "screen_pixels_mean_where_window_is": [
+   104,
+   102,
+   71
+  ],
+  "after_uncloak_state": [
+   0,
+   0,
+   0
+  ],
+  "after_uncloak_is_cloaked": false,
+  "recloaked": true,
+  "guard_counters": {
+   "SetForegroundWindow": {
+    "calls": 3,
+    "altered": 3
+   },
+   "ShowWindow": {
+    "calls": 1,
+    "altered": 1
+   },
+   "SetWindowPos": {
+    "calls": 1,
+    "altered": 0
+   },
+   "GetAsyncKeyState": {
+    "calls": 41,
+    "altered": 41
+   },
+   "GetKeyState": {
+    "calls": 8,
+    "altered": 8
+   },
+   "SetActiveWindow": {
+    "calls": 2,
+    "altered": 2
+   }
+  },
+  "foreground_hits": 0
+ }
+}

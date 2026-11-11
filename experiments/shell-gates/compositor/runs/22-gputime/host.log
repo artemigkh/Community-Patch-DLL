@@ -1,0 +1,13 @@
+17:42:52.320 ==== test_host start pid 20868 label '22-gputime' swap blit(DISCARD) buffers 1 format 28 msaa 1 vsync 0 load after size 1280x720 bb 2560x1440
+17:42:52.497 device FL b000 on 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:42:52.498 mem start: private=23.80 MB working=29.12 MB video_local=8.25 MB handles=331
+17:42:52.510 LoadLibraryW('C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\shell_composite.dll') after device creation (frame N) -> 5AD90000 (err 0) in 1.23 ms
+17:42:53.498 1s: frames 10129 mean 0.099 ms max 5.277 ms bb 2560x1440
+17:42:54.498 1s: frames 11685 mean 0.086 ms max 0.998 ms bb 2560x1440
+17:42:55.498 1s: frames 11720 mean 0.085 ms max 0.978 ms bb 2560x1440
+17:42:56.498 1s: frames 11402 mean 0.088 ms max 1.109 ms bb 2560x1440
+17:42:57.499 1s: frames 11629 mean 0.086 ms max 0.840 ms bb 2560x1440
+17:42:58.498 1s: frames 11752 mean 0.085 ms max 0.876 ms bb 2560x1440
+17:42:59.499 1s: frames 12367 mean 0.081 ms max 1.072 ms bb 2560x1440
+17:43:00.498 summary label=22-gputime frames=59422 mean=0.0841 p50=0.0680 p99=0.2697 max=1.109 fps=11884.4
+17:43:00.498 mem end: private=34.70 MB working=35.46 MB video_local=56.46 MB handles=390

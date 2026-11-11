@@ -47,6 +47,7 @@
 // CURRENT_GAMECORE_VERSION is needed by CustomFilter's crashes.log report even
 // in builds without minidump support (DISABLE_MINIDUMP).
 #include "../commit_id.inc"
+#include "EngineQueueGuard.h"
 #if defined(MOD_DEBUG_MINIDUMP)
 #include <dbghelp.h>
 #endif // defined(MOD_DEBUG_MINIDUMP)
@@ -371,6 +372,7 @@ CvGlobals::CvGlobals() :
 	GD_INT_INIT(CSD_GOLD_GIFT_DISABLED, 0),
 	GD_INT_INIT(MAX_TURNS_OBSERVER_MODE, 0),
 	GD_INT_INIT(SQLITE_LOGGING_BATCHED_BUFFER_ROWS_MAX, 1024),
+	GD_INT_INIT(MEMORY_DIAGNOSTICS_HEAP_WALK_INTERVAL, 1),
 	GD_INT_INIT(RELIGION_BELIEF_SCORE_CITY_MULTIPLIER, 6),
 	GD_INT_INIT(RELIGION_MISSIONARY_RANGE_IN_TURNS, 20),
 	GD_INT_INIT(RELIGION_MAX_MISSIONARIES, 2),
@@ -2880,6 +2882,9 @@ LONG WINAPI CustomFilter(EXCEPTION_POINTERS* ExceptionInfo)
 		_snprintf_s(szStackTrace, _countof(szStackTrace), _TRUNCATE,
 			"Stack (return-address candidates): none found\n");
 
+	char szQueueGuard[256];
+	EngineQueueGuard::FormatCrashLine(szQueueGuard, sizeof(szQueueGuard));
+
 	char szCrashInfo[3072];
 	_snprintf_s(szCrashInfo, _countof(szCrashInfo), _TRUNCATE, 
 		"--Crash details--\n"
@@ -2900,6 +2905,7 @@ LONG WINAPI CustomFilter(EXCEPTION_POINTERS* ExceptionInfo)
 		"Sub2G: 0x%p / %u\n"
 		"Total: 0x%p / %u\n"
 		"DLL-Version: %s\n"
+		"%s"
 #ifdef VPDEBUG
 		"Configuration: DEBUG\n"
 #else
@@ -2924,6 +2930,7 @@ LONG WINAPI CustomFilter(EXCEPTION_POINTERS* ExceptionInfo)
 		largestFreeBlockLowBase, largestFreeBlockLowSize >> 10,
 		largestFreeBlockBase, largestFreeBlockSize >> 10,
 		CURRENT_GAMECORE_VERSION,
+		szQueueGuard,
 		szExeName
 	);
 
@@ -5838,6 +5845,9 @@ void CvGlobals::cacheGlobals()
 	GD_INT_CACHE(CSD_GOLD_GIFT_DISABLED);
 	GD_INT_CACHE(MAX_TURNS_OBSERVER_MODE);
 	GD_INT_CACHE(SQLITE_LOGGING_BATCHED_BUFFER_ROWS_MAX);
+	// Optional: this define is only present once CoreDefineChanges.sql has been applied to the
+	// modpack's database, so a DLL dropped into an older modpack must fall back rather than assert.
+	GD_INT_CACHE_OPTIONAL(MEMORY_DIAGNOSTICS_HEAP_WALK_INTERVAL, 1);
 	GD_INT_CACHE(RELIGION_BELIEF_SCORE_CITY_MULTIPLIER);
 	GD_INT_CACHE(RELIGION_MISSIONARY_RANGE_IN_TURNS);
 	GD_INT_CACHE(RELIGION_MAX_MISSIONARIES);

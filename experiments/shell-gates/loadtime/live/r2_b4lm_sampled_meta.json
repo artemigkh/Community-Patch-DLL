@@ -1,0 +1,230 @@
+{
+ "started": 1794293516.759654,
+ "every": 2.0,
+ "windows": [
+  "dllread",
+  "gap",
+  "ready",
+  "saveread",
+  "tail",
+  "terrain"
+ ],
+ "samples": [
+  {
+   "n": 0,
+   "window": "saveread",
+   "t": 1794293614.1767094,
+   "cdb_s": 2.026
+  },
+  {
+   "n": 1,
+   "window": "saveread",
+   "t": 1794293616.2046406,
+   "cdb_s": 1.912
+  },
+  {
+   "n": 2,
+   "window": "saveread",
+   "t": 1794293618.2082076,
+   "cdb_s": 1.272
+  },
+  {
+   "n": 3,
+   "window": "saveread",
+   "t": 1794293620.211574,
+   "cdb_s": 1.23
+  },
+  {
+   "n": 4,
+   "window": "saveread",
+   "t": 1794293622.2131548,
+   "cdb_s": 1.293
+  },
+  {
+   "n": 5,
+   "window": "saveread",
+   "t": 1794293624.2161167,
+   "cdb_s": 1.45
+  },
+  {
+   "n": 6,
+   "window": "saveread",
+   "t": 1794293626.219629,
+   "cdb_s": 1.398
+  },
+  {
+   "n": 7,
+   "window": "dllread",
+   "t": 1794293628.233177,
+   "cdb_s": 1.556
+  },
+  {
+   "n": 8,
+   "window": "dllread",
+   "t": 1794293630.2358694,
+   "cdb_s": 1.606
+  },
+  {
+   "n": 9,
+   "window": "dllread",
+   "t": 1794293632.2388954,
+   "cdb_s": 1.917
+  },
+  {
+   "n": 10,
+   "window": "terrain",
+   "t": 1794293635.0077965,
+   "cdb_s": 1.359
+  },
+  {
+   "n": 11,
+   "window": "terrain",
+   "t": 1794293637.0107148,
+   "cdb_s": 1.223
+  },
+  {
+   "n": 12,
+   "window": "terrain",
+   "t": 1794293639.013662,
+   "cdb_s": 1.543
+  },
+  {
+   "n": 13,
+   "window": "terrain",
+   "t": 1794293641.016169,
+   "cdb_s": 2.107
+  },
+  {
+   "n": 14,
+   "window": "terrain",
+   "t": 1794293643.1264381,
+   "cdb_s": 1.499
+  },
+  {
+   "n": 15,
+   "window": "terrain",
+   "t": 1794293645.1290047,
+   "cdb_s": 1.379
+  },
+  {
+   "n": 16,
+   "window": "terrain",
+   "t": 1794293647.1333983,
+   "cdb_s": 1.916
+  },
+  {
+   "n": 17,
+   "window": "terrain",
+   "t": 1794293649.136329,
+   "cdb_s": 1.447
+  },
+  {
+   "n": 18,
+   "window": "gap",
+   "t": 1794293652.664803,
+   "cdb_s": 1.381
+  },
+  {
+   "n": 19,
+   "window": "ready",
+   "t": 1794293654.6768532,
+   "cdb_s": 1.498
+  },
+  {
+   "n": 20,
+   "window": "ready",
+   "t": 1794293656.6877162,
+   "cdb_s": 1.57
+  }
+ ],
+ "pid": 13940,
+ "create_time": 1794293520.4810753,
+ "transitions": [
+  {
+   "t": 1794293614.1767094,
+   "window": "saveread",
+   "seen": [
+    "app",
+    "sw",
+    "mpinit"
+   ]
+  },
+  {
+   "t": 1794293628.233177,
+   "window": "dllread",
+   "seen": [
+    "app",
+    "sw",
+    "mpinit",
+    "netload"
+   ]
+  },
+  {
+   "t": 1794293634.2415264,
+   "window": null,
+   "seen": [
+    "app",
+    "sw",
+    "mpinit",
+    "netload",
+    "regcomplete"
+   ]
+  },
+  {
+   "t": 1794293635.0077965,
+   "window": "terrain",
+   "seen": [
+    "app",
+    "sw",
+    "mpinit",
+    "netload",
+    "regcomplete",
+    "gvs"
+   ]
+  },
+  {
+   "t": 1794293651.1490147,
+   "window": null,
+   "seen": [
+    "app",
+    "sw",
+    "mpinit",
+    "netload",
+    "regcomplete",
+    "gvs",
+    "terrain"
+   ]
+  },
+  {
+   "t": 1794293652.664803,
+   "window": "gap",
+   "seen": [
+    "app",
+    "sw",
+    "mpinit",
+    "netload",
+    "regcomplete",
+    "gvs",
+    "terrain",
+    "luactx"
+   ]
+  },
+  {
+   "t": 1794293654.6768532,
+   "window": "ready",
+   "seen": [
+    "app",
+    "sw",
+    "mpinit",
+    "netload",
+    "regcomplete",
+    "gvs",
+    "terrain",
+    "luactx",
+    "startupgame",
+    "trees"
+   ]
+  }
+ ],
+ "ended": 1794293658.6995575
+}

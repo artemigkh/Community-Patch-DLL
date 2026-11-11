@@ -1,0 +1,25 @@
+17:46:32.740 ==== test_host start pid 37972 label 'nodll' swap blit(DISCARD) buffers 1 format 28 msaa 1 vsync 0 load none size 1280x720 bb 2560x1440
+17:46:33.018 device FL b000 on 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:46:33.020 mem start: private=23.70 MB working=29.07 MB video_local=8.25 MB handles=333
+17:46:34.019 1s: frames 8169 mean 0.122 ms max 7.200 ms bb 2560x1440
+17:46:35.020 1s: frames 8617 mean 0.116 ms max 0.867 ms bb 2560x1440
+17:46:36.020 1s: frames 8957 mean 0.112 ms max 0.593 ms bb 2560x1440
+17:46:37.018 1s: frames 9061 mean 0.110 ms max 0.992 ms bb 2560x1440
+17:46:38.019 1s: frames 9900 mean 0.101 ms max 1.442 ms bb 2560x1440
+17:46:39.019 1s: frames 9893 mean 0.101 ms max 10.395 ms bb 2560x1440
+17:46:40.018 1s: frames 8884 mean 0.113 ms max 0.849 ms bb 2560x1440
+17:46:41.020 1s: frames 9958 mean 0.100 ms max 1.778 ms bb 2560x1440
+17:46:42.020 1s: frames 9264 mean 0.108 ms max 0.924 ms bb 2560x1440
+17:46:43.020 mem periodic: private=30.08 MB working=31.32 MB video_local=27.06 MB handles=376
+17:46:43.020 1s: frames 10096 mean 0.099 ms max 1.396 ms bb 2560x1440
+17:46:44.020 1s: frames 8792 mean 0.114 ms max 9.256 ms bb 2560x1440
+17:46:45.020 1s: frames 9410 mean 0.106 ms max 0.715 ms bb 2560x1440
+17:46:46.020 1s: frames 9615 mean 0.104 ms max 0.886 ms bb 2560x1440
+17:46:47.020 1s: frames 8228 mean 0.122 ms max 0.873 ms bb 2560x1440
+17:46:48.020 1s: frames 9611 mean 0.104 ms max 2.821 ms bb 2560x1440
+17:46:49.020 1s: frames 9365 mean 0.107 ms max 0.838 ms bb 2560x1440
+17:46:50.021 1s: frames 9965 mean 0.100 ms max 1.327 ms bb 2560x1440
+17:46:51.020 1s: frames 8856 mean 0.113 ms max 4.884 ms bb 2560x1440
+17:46:52.020 1s: frames 9014 mean 0.111 ms max 2.070 ms bb 2560x1440
+17:46:53.022 summary label=nodll frames=159921 mean=0.1063 p50=0.0906 p99=0.3368 max=10.395 fps=9407.1
+17:46:53.022 mem end: private=30.08 MB working=31.69 MB video_local=27.06 MB handles=376

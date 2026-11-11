@@ -1,0 +1,691 @@
+17:51:27.834 ==== test_host start pid 23620 label 'soak' swap blit(DISCARD) buffers 1 format 28 msaa 1 vsync 1 load after size 1280x720 bb 0x0
+17:51:28.064 device FL b000 on 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:51:28.066 mem start: private=23.66 MB working=29.04 MB video_local=8.25 MB handles=333
+17:51:28.251 LoadLibraryW('C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\shell_composite.dll') after device creation (frame N) -> 70B00000 (err 0) in 0.94 ms
+17:51:29.067 1s: frames 150 mean 6.631 ms max 66.839 ms bb 1280x720
+17:51:30.073 1s: frames 166 mean 6.054 ms max 7.428 ms bb 1280x720
+17:51:31.079 1s: frames 166 mean 6.059 ms max 7.373 ms bb 1280x720
+17:51:32.084 1s: frames 166 mean 6.062 ms max 7.488 ms bb 1280x720
+17:51:33.085 1s: frames 165 mean 6.057 ms max 7.462 ms bb 1280x720
+17:51:34.088 1s: frames 166 mean 6.054 ms max 7.836 ms bb 1280x720
+17:51:35.094 1s: frames 166 mean 6.057 ms max 7.776 ms bb 1280x720
+17:51:36.100 1s: frames 166 mean 6.060 ms max 7.481 ms bb 1280x720
+17:51:37.105 1s: frames 165 mean 6.092 ms max 12.324 ms bb 1280x720
+17:51:38.071 mem periodic: private=32.53 MB working=34.09 MB video_local=23.34 MB handles=398
+17:51:38.111 1s: frames 165 mean 6.094 ms max 11.820 ms bb 1280x720
+17:51:39.111 1s: frames 165 mean 6.058 ms max 7.776 ms bb 1280x720
+17:51:40.112 1s: frames 163 mean 6.133 ms max 12.163 ms bb 1280x720
+17:51:41.116 1s: frames 166 mean 6.059 ms max 7.614 ms bb 1280x720
+17:51:42.121 1s: frames 165 mean 6.058 ms max 7.510 ms bb 1280x720
+17:51:43.127 1s: frames 165 mean 6.129 ms max 11.875 ms bb 1280x720
+17:51:44.133 1s: frames 166 mean 6.059 ms max 7.734 ms bb 1280x720
+17:51:45.138 1s: frames 166 mean 6.055 ms max 7.451 ms bb 1280x720
+17:51:46.138 1s: frames 165 mean 6.059 ms max 7.991 ms bb 1280x720
+17:51:47.144 1s: frames 166 mean 6.057 ms max 7.731 ms bb 1280x720
+17:51:48.071 ResizeBuffers(1920 x 1080) [churn] -> 0x00000000 (0.69 ms)
+17:51:48.077 mem periodic: private=33.41 MB working=35.20 MB video_local=28.03 MB handles=401
+17:51:48.148 1s: frames 166 mean 6.058 ms max 7.358 ms bb 1920x1080
+17:51:49.154 1s: frames 166 mean 6.056 ms max 7.037 ms bb 1920x1080
+17:51:50.159 1s: frames 166 mean 6.062 ms max 7.707 ms bb 1920x1080
+17:51:51.166 1s: frames 166 mean 6.056 ms max 7.303 ms bb 1920x1080
+17:51:52.171 1s: frames 166 mean 6.060 ms max 7.685 ms bb 1920x1080
+17:51:53.178 1s: frames 166 mean 6.058 ms max 8.062 ms bb 1920x1080
+17:51:54.182 1s: frames 166 mean 6.055 ms max 7.724 ms bb 1920x1080
+17:51:55.187 1s: frames 166 mean 6.055 ms max 7.183 ms bb 1920x1080
+17:51:56.193 1s: frames 166 mean 6.058 ms max 7.406 ms bb 1920x1080
+17:51:57.198 1s: frames 166 mean 6.061 ms max 7.611 ms bb 1920x1080
+17:51:58.078 mem periodic: private=34.02 MB working=35.85 MB video_local=36.97 MB handles=409
+17:51:58.204 1s: frames 165 mean 6.091 ms max 11.688 ms bb 1920x1080
+17:51:59.210 1s: frames 166 mean 6.058 ms max 7.355 ms bb 1920x1080
+17:52:00.216 1s: frames 166 mean 6.061 ms max 7.887 ms bb 1920x1080
+17:52:01.221 1s: frames 166 mean 6.055 ms max 7.707 ms bb 1920x1080
+17:52:02.227 1s: frames 166 mean 6.059 ms max 7.887 ms bb 1920x1080
+17:52:03.231 1s: frames 166 mean 6.058 ms max 7.500 ms bb 1920x1080
+17:52:04.238 1s: frames 166 mean 6.055 ms max 7.151 ms bb 1920x1080
+17:52:05.244 1s: frames 165 mean 6.095 ms max 12.067 ms bb 1920x1080
+17:52:06.249 1s: frames 166 mean 6.060 ms max 8.063 ms bb 1920x1080
+17:52:07.254 1s: frames 165 mean 6.091 ms max 12.089 ms bb 1920x1080
+17:52:08.067 ResizeBuffers(2560 x 1440) [churn] -> 0x00000000 (0.66 ms)
+17:52:08.084 mem periodic: private=34.02 MB working=35.88 MB video_local=51.97 MB handles=412
+17:52:08.260 1s: frames 161 mean 6.245 ms max 11.292 ms bb 2560x1440
+17:52:09.266 1s: frames 166 mean 6.062 ms max 7.988 ms bb 2560x1440
+17:52:10.271 1s: frames 166 mean 6.054 ms max 7.885 ms bb 2560x1440
+17:52:11.276 1s: frames 166 mean 6.059 ms max 7.501 ms bb 2560x1440
+17:52:12.283 1s: frames 166 mean 6.060 ms max 7.891 ms bb 2560x1440
+17:52:13.288 1s: frames 166 mean 6.054 ms max 7.902 ms bb 2560x1440
+17:52:14.294 1s: frames 166 mean 6.057 ms max 7.581 ms bb 2560x1440
+17:52:15.298 1s: frames 166 mean 6.060 ms max 7.731 ms bb 2560x1440
+17:52:16.304 1s: frames 166 mean 6.055 ms max 7.504 ms bb 2560x1440
+17:52:17.310 1s: frames 159 mean 6.325 ms max 12.914 ms bb 2560x1440
+17:52:18.086 mem periodic: private=34.16 MB working=36.07 MB video_local=56.47 MB handles=416
+17:52:18.315 1s: frames 166 mean 6.062 ms max 7.859 ms bb 2560x1440
+17:52:19.320 1s: frames 166 mean 6.056 ms max 7.733 ms bb 2560x1440
+17:52:20.321 1s: frames 161 mean 6.206 ms max 11.849 ms bb 2560x1440
+17:52:21.321 1s: frames 163 mean 6.127 ms max 12.008 ms bb 2560x1440
+17:52:22.326 1s: frames 165 mean 6.097 ms max 13.882 ms bb 2560x1440
+17:52:23.328 1s: frames 165 mean 6.063 ms max 9.096 ms bb 2560x1440
+17:52:24.332 1s: frames 164 mean 6.145 ms max 10.647 ms bb 2560x1440
+17:52:25.332 1s: frames 163 mean 6.132 ms max 11.112 ms bb 2560x1440
+17:52:26.335 1s: frames 164 mean 6.112 ms max 11.176 ms bb 2560x1440
+17:52:27.341 1s: frames 166 mean 6.057 ms max 8.571 ms bb 2560x1440
+17:52:28.068 ResizeBuffers(1280 x 720) [churn] -> 0x00000000 (0.60 ms)
+17:52:28.086 mem periodic: private=34.04 MB working=36.04 MB video_local=60.22 MB handles=419
+17:52:28.343 1s: frames 166 mean 6.036 ms max 9.803 ms bb 1280x720
+17:52:29.346 1s: frames 166 mean 6.047 ms max 8.088 ms bb 1280x720
+17:52:30.347 1s: frames 166 mean 6.020 ms max 9.888 ms bb 1280x720
+17:52:31.351 1s: frames 166 mean 6.061 ms max 8.517 ms bb 1280x720
+17:52:32.357 1s: frames 165 mean 6.090 ms max 8.968 ms bb 1280x720
+17:52:33.363 1s: frames 165 mean 6.096 ms max 10.330 ms bb 1280x720
+17:52:34.367 1s: frames 166 mean 6.059 ms max 7.497 ms bb 1280x720
+17:52:35.368 1s: frames 166 mean 6.027 ms max 8.261 ms bb 1280x720
+17:52:36.373 1s: frames 166 mean 6.048 ms max 8.300 ms bb 1280x720
+17:52:37.379 1s: frames 166 mean 6.058 ms max 7.478 ms bb 1280x720
+17:52:38.087 mem periodic: private=34.05 MB working=36.11 MB video_local=23.34 MB handles=421
+17:52:38.384 1s: frames 166 mean 6.062 ms max 7.957 ms bb 1280x720
+17:52:39.389 1s: frames 166 mean 6.053 ms max 7.702 ms bb 1280x720
+17:52:40.396 1s: frames 166 mean 6.059 ms max 7.535 ms bb 1280x720
+17:52:41.401 1s: frames 165 mean 6.096 ms max 9.671 ms bb 1280x720
+17:52:42.407 1s: frames 165 mean 6.092 ms max 11.618 ms bb 1280x720
+17:52:43.412 1s: frames 166 mean 6.057 ms max 7.211 ms bb 1280x720
+17:52:44.418 1s: frames 166 mean 6.063 ms max 8.007 ms bb 1280x720
+17:52:45.423 1s: frames 166 mean 6.052 ms max 8.245 ms bb 1280x720
+17:52:46.429 1s: frames 166 mean 6.057 ms max 7.475 ms bb 1280x720
+17:52:47.434 1s: frames 165 mean 6.098 ms max 9.725 ms bb 1280x720
+17:52:48.070 ResizeBuffers(1920 x 1080) [churn] -> 0x00000000 (0.60 ms)
+17:52:48.088 mem periodic: private=34.14 MB working=36.19 MB video_local=31.78 MB handles=430
+17:52:48.441 1s: frames 166 mean 6.055 ms max 7.561 ms bb 1920x1080
+17:52:49.445 1s: frames 166 mean 6.057 ms max 7.489 ms bb 1920x1080
+17:52:50.446 1s: frames 165 mean 6.059 ms max 7.597 ms bb 1920x1080
+17:52:51.450 1s: frames 166 mean 6.063 ms max 8.141 ms bb 1920x1080
+17:52:52.456 1s: frames 165 mean 6.088 ms max 10.912 ms bb 1920x1080
+17:52:53.462 1s: frames 166 mean 6.059 ms max 7.546 ms bb 1920x1080
+17:52:54.467 1s: frames 166 mean 6.059 ms max 6.992 ms bb 1920x1080
+17:52:55.472 1s: frames 166 mean 6.056 ms max 7.257 ms bb 1920x1080
+17:52:56.478 1s: frames 165 mean 6.095 ms max 11.875 ms bb 1920x1080
+17:52:57.483 1s: frames 166 mean 6.061 ms max 7.580 ms bb 1920x1080
+17:52:58.090 mem periodic: private=34.13 MB working=36.20 MB video_local=36.97 MB handles=430
+17:52:58.489 1s: frames 165 mean 6.090 ms max 11.690 ms bb 1920x1080
+17:52:59.494 1s: frames 166 mean 6.058 ms max 7.223 ms bb 1920x1080
+17:53:00.500 1s: frames 166 mean 6.060 ms max 7.202 ms bb 1920x1080
+17:53:01.506 1s: frames 166 mean 6.055 ms max 7.677 ms bb 1920x1080
+17:53:02.511 1s: frames 166 mean 6.058 ms max 7.698 ms bb 1920x1080
+17:53:03.517 1s: frames 166 mean 6.062 ms max 7.727 ms bb 1920x1080
+17:53:04.522 1s: frames 166 mean 6.054 ms max 7.520 ms bb 1920x1080
+17:53:05.528 1s: frames 165 mean 6.092 ms max 11.651 ms bb 1920x1080
+17:53:06.534 1s: frames 166 mean 6.065 ms max 7.339 ms bb 1920x1080
+17:53:07.539 1s: frames 164 mean 6.125 ms max 11.408 ms bb 1920x1080
+17:53:08.068 ResizeBuffers(2560 x 1440) [churn] -> 0x00000000 (1.05 ms)
+17:53:08.092 mem periodic: private=34.19 MB working=36.27 MB video_local=51.97 MB handles=435
+17:53:08.546 1s: frames 165 mean 6.095 ms max 9.635 ms bb 2560x1440
+17:53:09.551 1s: frames 165 mean 6.101 ms max 11.629 ms bb 2560x1440
+17:53:10.556 1s: frames 166 mean 6.049 ms max 7.672 ms bb 2560x1440
+17:53:11.561 1s: frames 164 mean 6.133 ms max 11.167 ms bb 2560x1440
+17:53:12.568 1s: frames 166 mean 6.061 ms max 7.359 ms bb 2560x1440
+17:53:13.573 1s: frames 166 mean 6.053 ms max 7.519 ms bb 2560x1440
+17:53:14.580 1s: frames 166 mean 6.061 ms max 7.538 ms bb 2560x1440
+17:53:15.584 1s: frames 166 mean 6.059 ms max 8.044 ms bb 2560x1440
+17:53:16.584 1s: frames 165 mean 6.060 ms max 7.805 ms bb 2560x1440
+17:53:17.589 1s: frames 166 mean 6.052 ms max 7.821 ms bb 2560x1440
+17:53:18.093 mem periodic: private=34.20 MB working=36.29 MB video_local=56.47 MB handles=435
+17:53:18.596 1s: frames 166 mean 6.058 ms max 8.038 ms bb 2560x1440
+17:53:19.600 1s: frames 165 mean 6.103 ms max 10.632 ms bb 2560x1440
+17:53:20.600 1s: frames 165 mean 6.052 ms max 8.047 ms bb 2560x1440
+17:53:21.606 1s: frames 166 mean 6.056 ms max 8.010 ms bb 2560x1440
+17:53:22.612 1s: frames 166 mean 6.058 ms max 7.943 ms bb 2560x1440
+17:53:23.617 1s: frames 166 mean 6.063 ms max 7.882 ms bb 2560x1440
+17:53:24.622 1s: frames 166 mean 6.051 ms max 7.899 ms bb 2560x1440
+17:53:25.628 1s: frames 166 mean 6.060 ms max 7.815 ms bb 2560x1440
+17:53:26.633 1s: frames 166 mean 6.063 ms max 7.918 ms bb 2560x1440
+17:53:27.638 1s: frames 166 mean 6.052 ms max 7.759 ms bb 2560x1440
+17:53:28.070 ResizeBuffers(1280 x 720) [churn] -> 0x00000000 (1.00 ms)
+17:53:28.095 mem periodic: private=34.22 MB working=36.39 MB video_local=60.22 MB handles=439
+17:53:28.639 1s: frames 165 mean 6.057 ms max 7.849 ms bb 1280x720
+17:53:29.644 1s: frames 166 mean 6.061 ms max 8.067 ms bb 1280x720
+17:53:30.648 1s: frames 166 mean 6.063 ms max 10.008 ms bb 1280x720
+17:53:31.654 1s: frames 166 mean 6.051 ms max 7.993 ms bb 1280x720
+17:53:32.661 1s: frames 166 mean 6.058 ms max 7.906 ms bb 1280x720
+17:53:33.666 1s: frames 166 mean 6.064 ms max 8.093 ms bb 1280x720
+17:53:34.666 1s: frames 165 mean 6.055 ms max 8.191 ms bb 1280x720
+17:53:35.672 1s: frames 128 mean 7.848 ms max 13.966 ms bb 1280x720
+17:53:36.678 1s: frames 166 mean 6.059 ms max 8.247 ms bb 1280x720
+17:53:37.682 1s: frames 166 mean 6.063 ms max 8.085 ms bb 1280x720
+17:53:38.096 mem periodic: private=34.22 MB working=36.40 MB video_local=23.34 MB handles=437
+17:53:38.688 1s: frames 166 mean 6.050 ms max 8.184 ms bb 1280x720
+17:53:39.694 1s: frames 166 mean 6.061 ms max 7.985 ms bb 1280x720
+17:53:40.694 1s: frames 165 mean 6.056 ms max 8.075 ms bb 1280x720
+17:53:41.698 1s: frames 166 mean 6.063 ms max 7.947 ms bb 1280x720
+17:53:42.703 1s: frames 166 mean 6.052 ms max 7.937 ms bb 1280x720
+17:53:43.703 1s: frames 165 mean 6.060 ms max 8.203 ms bb 1280x720
+17:53:44.710 1s: frames 166 mean 6.052 ms max 8.146 ms bb 1280x720
+17:53:45.709 1s: frames 165 mean 6.057 ms max 7.891 ms bb 1280x720
+17:53:46.713 1s: frames 166 mean 6.070 ms max 8.318 ms bb 1280x720
+17:53:47.713 1s: frames 164 mean 6.086 ms max 11.601 ms bb 1280x720
+17:53:48.072 ResizeBuffers(1920 x 1080) [churn] -> 0x00000000 (0.67 ms)
+17:53:48.097 mem periodic: private=34.01 MB working=36.32 MB video_local=31.78 MB handles=428
+17:53:48.720 1s: frames 166 mean 6.059 ms max 8.015 ms bb 1920x1080
+17:53:49.726 1s: frames 166 mean 6.053 ms max 7.942 ms bb 1920x1080
+17:53:50.731 1s: frames 155 mean 6.500 ms max 13.339 ms bb 1920x1080
+17:53:51.736 1s: frames 166 mean 6.045 ms max 7.932 ms bb 1920x1080
+17:53:52.741 1s: frames 166 mean 6.058 ms max 8.074 ms bb 1920x1080
+17:53:53.746 1s: frames 166 mean 6.061 ms max 8.021 ms bb 1920x1080
+17:53:54.752 1s: frames 166 mean 6.053 ms max 7.983 ms bb 1920x1080
+17:53:55.759 1s: frames 166 mean 6.062 ms max 7.977 ms bb 1920x1080
+17:53:56.764 1s: frames 166 mean 6.060 ms max 9.306 ms bb 1920x1080
+17:53:57.769 1s: frames 166 mean 6.051 ms max 8.184 ms bb 1920x1080
+17:53:58.101 mem periodic: private=34.08 MB working=36.37 MB video_local=36.97 MB handles=432
+17:53:58.775 1s: frames 166 mean 6.059 ms max 8.039 ms bb 1920x1080
+17:53:59.780 1s: frames 166 mean 6.060 ms max 8.087 ms bb 1920x1080
+17:54:00.786 1s: frames 166 mean 6.056 ms max 9.486 ms bb 1920x1080
+17:54:01.792 1s: frames 165 mean 6.097 ms max 10.877 ms bb 1920x1080
+17:54:02.796 1s: frames 166 mean 6.057 ms max 7.987 ms bb 1920x1080
+17:54:03.802 1s: frames 166 mean 6.053 ms max 8.135 ms bb 1920x1080
+17:54:04.809 1s: frames 166 mean 6.062 ms max 7.910 ms bb 1920x1080
+17:54:05.813 1s: frames 166 mean 6.056 ms max 8.114 ms bb 1920x1080
+17:54:06.818 1s: frames 166 mean 6.058 ms max 7.902 ms bb 1920x1080
+17:54:07.826 1s: frames 166 mean 6.057 ms max 7.889 ms bb 1920x1080
+17:54:08.068 ResizeBuffers(2560 x 1440) [churn] -> 0x00000000 (0.66 ms)
+17:54:08.103 mem periodic: private=34.08 MB working=36.38 MB video_local=51.97 MB handles=433
+17:54:08.830 1s: frames 166 mean 6.064 ms max 8.320 ms bb 2560x1440
+17:54:09.835 1s: frames 166 mean 6.051 ms max 8.062 ms bb 2560x1440
+17:54:10.836 1s: frames 165 mean 6.060 ms max 8.097 ms bb 2560x1440
+17:54:11.841 1s: frames 166 mean 6.054 ms max 8.185 ms bb 2560x1440
+17:54:12.847 1s: frames 166 mean 6.060 ms max 8.244 ms bb 2560x1440
+17:54:13.851 1s: frames 166 mean 6.053 ms max 8.107 ms bb 2560x1440
+17:54:14.858 1s: frames 166 mean 6.060 ms max 8.298 ms bb 2560x1440
+17:54:15.863 1s: frames 166 mean 6.062 ms max 8.445 ms bb 2560x1440
+17:54:16.865 1s: frames 147 mean 6.811 ms max 12.609 ms bb 2560x1440
+17:54:17.868 1s: frames 148 mean 6.781 ms max 12.095 ms bb 2560x1440
+17:54:18.104 mem periodic: private=34.08 MB working=36.39 MB video_local=56.47 MB handles=433
+17:54:18.875 1s: frames 166 mean 6.057 ms max 8.361 ms bb 2560x1440
+17:54:19.879 1s: frames 166 mean 6.062 ms max 7.881 ms bb 2560x1440
+17:54:20.884 1s: frames 166 mean 6.052 ms max 7.874 ms bb 2560x1440
+17:54:21.892 1s: frames 166 mean 6.059 ms max 8.053 ms bb 2560x1440
+17:54:22.896 1s: frames 166 mean 6.062 ms max 7.892 ms bb 2560x1440
+17:54:23.901 1s: frames 166 mean 6.049 ms max 8.103 ms bb 2560x1440
+17:54:24.909 1s: frames 166 mean 6.061 ms max 8.413 ms bb 2560x1440
+17:54:25.913 1s: frames 166 mean 6.062 ms max 8.636 ms bb 2560x1440
+17:54:26.918 1s: frames 166 mean 6.052 ms max 8.102 ms bb 2560x1440
+17:54:27.926 1s: frames 158 mean 6.365 ms max 12.095 ms bb 2560x1440
+17:54:28.069 ResizeBuffers(1280 x 720) [churn] -> 0x00000000 (0.62 ms)
+17:54:28.106 mem periodic: private=34.08 MB working=36.40 MB video_local=60.22 MB handles=433
+17:54:28.930 1s: frames 166 mean 6.063 ms max 8.219 ms bb 1280x720
+17:54:29.931 1s: frames 162 mean 6.179 ms max 11.324 ms bb 1280x720
+17:54:30.934 1s: frames 129 mean 7.775 ms max 12.380 ms bb 1280x720
+17:54:31.941 1s: frames 166 mean 6.054 ms max 7.885 ms bb 1280x720
+17:54:32.945 1s: frames 166 mean 6.067 ms max 7.920 ms bb 1280x720
+17:54:33.944 1s: frames 165 mean 6.051 ms max 7.793 ms bb 1280x720
+17:54:34.946 1s: frames 165 mean 6.058 ms max 8.484 ms bb 1280x720
+17:54:35.950 1s: frames 166 mean 6.065 ms max 8.301 ms bb 1280x720
+17:54:36.956 1s: frames 166 mean 6.049 ms max 8.049 ms bb 1280x720
+17:54:37.956 1s: frames 165 mean 6.058 ms max 8.803 ms bb 1280x720
+17:54:38.107 mem periodic: private=34.09 MB working=36.41 MB video_local=23.34 MB handles=431
+17:54:38.961 1s: frames 166 mean 6.061 ms max 8.162 ms bb 1280x720
+17:54:39.966 1s: frames 166 mean 6.057 ms max 7.856 ms bb 1280x720
+17:54:40.973 1s: frames 166 mean 6.059 ms max 8.090 ms bb 1280x720
+17:54:41.978 1s: frames 159 mean 6.321 ms max 11.946 ms bb 1280x720
+17:54:42.978 1s: frames 165 mean 6.063 ms max 8.023 ms bb 1280x720
+17:54:43.981 1s: frames 133 mean 7.526 ms max 14.137 ms bb 1280x720
+17:54:44.981 1s: frames 158 mean 6.354 ms max 11.845 ms bb 1280x720
+17:54:45.987 1s: frames 166 mean 6.049 ms max 8.125 ms bb 1280x720
+17:54:46.993 1s: frames 166 mean 6.059 ms max 8.035 ms bb 1280x720
+17:54:47.998 1s: frames 166 mean 6.065 ms max 7.763 ms bb 1280x720
+17:54:48.072 ResizeBuffers(1920 x 1080) [churn] -> 0x00000000 (0.80 ms)
+17:54:48.110 mem periodic: private=34.10 MB working=36.44 MB video_local=31.78 MB handles=434
+17:54:49.004 1s: frames 166 mean 6.054 ms max 8.716 ms bb 1920x1080
+17:54:50.011 1s: frames 166 mean 6.058 ms max 7.906 ms bb 1920x1080
+17:54:51.016 1s: frames 166 mean 6.063 ms max 8.309 ms bb 1920x1080
+17:54:52.022 1s: frames 166 mean 6.048 ms max 7.964 ms bb 1920x1080
+17:54:53.028 1s: frames 166 mean 6.062 ms max 7.883 ms bb 1920x1080
+17:54:54.033 1s: frames 166 mean 6.065 ms max 7.995 ms bb 1920x1080
+17:54:55.037 1s: frames 155 mean 6.477 ms max 12.579 ms bb 1920x1080
+17:54:56.043 1s: frames 166 mean 6.055 ms max 7.984 ms bb 1920x1080
+17:54:57.044 1s: frames 165 mean 6.063 ms max 8.241 ms bb 1920x1080
+17:54:58.048 1s: frames 166 mean 6.063 ms max 8.168 ms bb 1920x1080
+17:54:58.114 mem periodic: private=34.10 MB working=36.45 MB video_local=36.97 MB handles=434
+17:54:59.054 1s: frames 166 mean 6.047 ms max 8.299 ms bb 1920x1080
+17:55:00.061 1s: frames 166 mean 6.059 ms max 8.247 ms bb 1920x1080
+17:55:01.065 1s: frames 165 mean 6.097 ms max 11.273 ms bb 1920x1080
+17:55:02.065 1s: frames 165 mean 6.064 ms max 7.843 ms bb 1920x1080
+17:55:03.069 1s: frames 165 mean 6.084 ms max 10.524 ms bb 1920x1080
+17:55:04.077 1s: frames 166 mean 6.062 ms max 8.062 ms bb 1920x1080
+17:55:05.081 1s: frames 166 mean 6.063 ms max 8.498 ms bb 1920x1080
+17:55:06.086 1s: frames 166 mean 6.050 ms max 7.891 ms bb 1920x1080
+17:55:07.092 1s: frames 166 mean 6.058 ms max 7.844 ms bb 1920x1080
+17:55:08.068 ResizeBuffers(2560 x 1440) [churn] -> 0x00000000 (0.66 ms)
+17:55:08.097 1s: frames 166 mean 6.066 ms max 8.790 ms bb 2560x1440
+17:55:08.115 mem periodic: private=34.11 MB working=36.48 MB video_local=51.97 MB handles=437
+17:55:09.103 1s: frames 166 mean 6.050 ms max 7.860 ms bb 2560x1440
+17:55:10.110 1s: frames 166 mean 6.056 ms max 7.768 ms bb 2560x1440
+17:55:11.114 1s: frames 166 mean 6.065 ms max 7.834 ms bb 2560x1440
+17:55:12.113 1s: frames 165 mean 6.059 ms max 8.030 ms bb 2560x1440
+17:55:13.120 1s: frames 164 mean 6.121 ms max 19.674 ms bb 2560x1440
+17:55:14.125 1s: frames 166 mean 6.057 ms max 8.072 ms bb 2560x1440
+17:55:15.130 1s: frames 166 mean 6.065 ms max 8.242 ms bb 2560x1440
+17:55:16.133 1s: frames 163 mean 6.148 ms max 10.624 ms bb 2560x1440
+17:55:17.137 1s: frames 150 mean 6.684 ms max 12.989 ms bb 2560x1440
+17:55:18.118 mem periodic: private=34.12 MB working=36.50 MB video_local=56.47 MB handles=437
+17:55:18.144 1s: frames 156 mean 6.447 ms max 10.860 ms bb 2560x1440
+17:55:19.146 1s: frames 163 mean 6.182 ms max 12.444 ms bb 2560x1440
+17:55:20.147 1s: frames 165 mean 6.060 ms max 9.309 ms bb 2560x1440
+17:55:21.151 1s: frames 166 mean 6.043 ms max 9.643 ms bb 2560x1440
+17:55:22.153 1s: frames 165 mean 6.054 ms max 9.409 ms bb 2560x1440
+17:55:23.160 1s: frames 166 mean 6.065 ms max 9.426 ms bb 2560x1440
+17:55:24.163 1s: frames 166 mean 6.066 ms max 9.149 ms bb 2560x1440
+17:55:25.162 1s: frames 165 mean 6.057 ms max 9.004 ms bb 2560x1440
+17:55:26.168 1s: frames 166 mean 6.047 ms max 9.227 ms bb 2560x1440
+17:55:27.175 1s: frames 166 mean 6.058 ms max 9.218 ms bb 2560x1440
+17:55:28.070 ResizeBuffers(1280 x 720) [churn] -> 0x00000000 (1.05 ms)
+17:55:28.118 mem periodic: private=34.13 MB working=36.44 MB video_local=60.22 MB handles=439
+17:55:28.180 1s: frames 165 mean 6.107 ms max 9.670 ms bb 1280x720
+17:55:29.186 1s: frames 166 mean 6.041 ms max 9.641 ms bb 1280x720
+17:55:30.190 1s: frames 166 mean 6.055 ms max 9.138 ms bb 1280x720
+17:55:31.197 1s: frames 166 mean 6.067 ms max 9.078 ms bb 1280x720
+17:55:32.201 1s: frames 166 mean 6.050 ms max 9.249 ms bb 1280x720
+17:55:33.207 1s: frames 166 mean 6.063 ms max 9.688 ms bb 1280x720
+17:55:34.209 1s: frames 164 mean 6.094 ms max 10.075 ms bb 1280x720
+17:55:35.211 1s: frames 166 mean 6.056 ms max 9.379 ms bb 1280x720
+17:55:36.211 1s: frames 165 mean 6.072 ms max 9.371 ms bb 1280x720
+17:55:37.217 1s: frames 166 mean 6.037 ms max 9.501 ms bb 1280x720
+17:55:38.119 mem periodic: private=34.14 MB working=36.52 MB video_local=23.34 MB handles=437
+17:55:38.222 1s: frames 166 mean 6.058 ms max 9.158 ms bb 1280x720
+17:55:39.224 1s: frames 165 mean 6.059 ms max 9.069 ms bb 1280x720
+17:55:40.227 1s: frames 166 mean 6.064 ms max 9.420 ms bb 1280x720
+17:55:41.227 1s: frames 165 mean 6.055 ms max 8.954 ms bb 1280x720
+17:55:42.228 1s: frames 165 mean 6.056 ms max 9.115 ms bb 1280x720
+17:55:43.233 1s: frames 166 mean 6.069 ms max 9.095 ms bb 1280x720
+17:55:44.237 1s: frames 165 mean 6.079 ms max 9.679 ms bb 1280x720
+17:55:45.243 1s: frames 166 mean 6.060 ms max 9.390 ms bb 1280x720
+17:55:46.245 1s: frames 164 mean 6.096 ms max 9.515 ms bb 1280x720
+17:55:47.248 1s: frames 166 mean 6.068 ms max 9.582 ms bb 1280x720
+17:55:48.069 ResizeBuffers(1920 x 1080) [churn] -> 0x00000000 (1.11 ms)
+17:55:48.121 mem periodic: private=34.39 MB working=36.89 MB video_local=31.78 MB handles=438
+17:55:48.255 1s: frames 165 mean 6.082 ms max 9.402 ms bb 1920x1080
+17:55:49.260 1s: frames 165 mean 6.094 ms max 10.084 ms bb 1920x1080
+17:55:50.261 1s: frames 164 mean 6.101 ms max 9.784 ms bb 1920x1080
+17:55:51.264 1s: frames 166 mean 6.067 ms max 9.255 ms bb 1920x1080
+17:55:52.264 1s: frames 165 mean 6.057 ms max 9.171 ms bb 1920x1080
+17:55:53.265 1s: frames 165 mean 6.059 ms max 9.035 ms bb 1920x1080
+17:55:54.268 1s: frames 166 mean 6.047 ms max 9.199 ms bb 1920x1080
+17:55:55.277 1s: frames 166 mean 6.051 ms max 9.297 ms bb 1920x1080
+17:55:56.280 1s: frames 166 mean 6.074 ms max 9.287 ms bb 1920x1080
+17:55:57.287 1s: frames 166 mean 6.043 ms max 9.258 ms bb 1920x1080
+17:55:58.124 mem periodic: private=34.39 MB working=36.89 MB video_local=36.97 MB handles=438
+17:55:58.294 1s: frames 166 mean 6.058 ms max 9.403 ms bb 1920x1080
+17:55:59.296 1s: frames 166 mean 6.072 ms max 9.083 ms bb 1920x1080
+17:56:00.302 1s: frames 166 mean 6.046 ms max 9.632 ms bb 1920x1080
+17:56:01.310 1s: frames 166 mean 6.059 ms max 9.399 ms bb 1920x1080
+17:56:02.310 1s: frames 165 mean 6.059 ms max 9.893 ms bb 1920x1080
+17:56:03.313 1s: frames 166 mean 6.055 ms max 9.585 ms bb 1920x1080
+17:56:04.313 1s: frames 165 mean 6.070 ms max 9.090 ms bb 1920x1080
+17:56:05.317 1s: frames 165 mean 6.077 ms max 11.055 ms bb 1920x1080
+17:56:06.324 1s: frames 166 mean 6.057 ms max 9.248 ms bb 1920x1080
+17:56:07.328 1s: frames 166 mean 6.065 ms max 9.632 ms bb 1920x1080
+17:56:08.070 ResizeBuffers(2560 x 1440) [churn] -> 0x00000000 (0.65 ms)
+17:56:08.128 mem periodic: private=34.69 MB working=37.18 MB video_local=43.53 MB handles=440
+17:56:08.330 1s: frames 165 mean 6.065 ms max 9.234 ms bb 2560x1440
+17:56:09.334 1s: frames 165 mean 6.082 ms max 9.535 ms bb 2560x1440
+17:56:10.335 1s: frames 165 mean 6.061 ms max 9.566 ms bb 2560x1440
+17:56:11.339 1s: frames 166 mean 6.057 ms max 9.249 ms bb 2560x1440
+17:56:12.345 1s: frames 166 mean 6.058 ms max 9.262 ms bb 2560x1440
+17:56:13.350 1s: frames 166 mean 6.057 ms max 9.148 ms bb 2560x1440
+17:56:14.357 1s: frames 166 mean 6.052 ms max 9.010 ms bb 2560x1440
+17:56:15.360 1s: frames 166 mean 6.063 ms max 9.384 ms bb 2560x1440
+17:56:16.367 1s: frames 166 mean 6.053 ms max 9.394 ms bb 2560x1440
+17:56:17.367 1s: frames 165 mean 6.059 ms max 9.151 ms bb 2560x1440
+17:56:18.131 mem periodic: private=34.69 MB working=37.18 MB video_local=56.47 MB handles=441
+17:56:18.372 1s: frames 164 mean 6.130 ms max 11.428 ms bb 2560x1440
+17:56:19.378 1s: frames 166 mean 6.066 ms max 9.427 ms bb 2560x1440
+17:56:20.384 1s: frames 166 mean 6.056 ms max 9.410 ms bb 2560x1440
+17:56:21.390 1s: frames 165 mean 6.094 ms max 10.071 ms bb 2560x1440
+17:56:22.395 1s: frames 163 mean 6.169 ms max 12.208 ms bb 2560x1440
+17:56:23.400 1s: frames 166 mean 6.056 ms max 9.413 ms bb 2560x1440
+17:56:24.408 1s: frames 166 mean 6.051 ms max 9.025 ms bb 2560x1440
+17:56:25.412 1s: frames 166 mean 6.065 ms max 9.608 ms bb 2560x1440
+17:56:26.416 1s: frames 165 mean 6.086 ms max 11.789 ms bb 2560x1440
+17:56:27.422 1s: frames 166 mean 6.064 ms max 9.215 ms bb 2560x1440
+17:56:28.072 ResizeBuffers(1280 x 720) [churn] -> 0x00000000 (0.61 ms)
+17:56:28.131 mem periodic: private=34.84 MB working=37.35 MB video_local=45.22 MB handles=444
+17:56:28.426 1s: frames 166 mean 6.059 ms max 9.445 ms bb 1280x720
+17:56:29.427 1s: frames 165 mean 6.066 ms max 9.530 ms bb 1280x720
+17:56:30.432 1s: frames 166 mean 6.042 ms max 9.590 ms bb 1280x720
+17:56:31.433 1s: frames 165 mean 6.072 ms max 9.440 ms bb 1280x720
+17:56:32.438 1s: frames 166 mean 6.051 ms max 9.491 ms bb 1280x720
+17:56:33.440 1s: frames 165 mean 6.052 ms max 9.625 ms bb 1280x720
+17:56:34.444 1s: frames 166 mean 6.061 ms max 9.560 ms bb 1280x720
+17:56:35.449 1s: frames 165 mean 6.098 ms max 9.791 ms bb 1280x720
+17:56:36.454 1s: frames 164 mean 6.130 ms max 20.207 ms bb 1280x720
+17:56:37.463 1s: frames 166 mean 6.060 ms max 9.495 ms bb 1280x720
+17:56:38.133 mem periodic: private=34.84 MB working=37.35 MB video_local=23.34 MB handles=443
+17:56:38.466 1s: frames 166 mean 6.069 ms max 9.512 ms bb 1280x720
+17:56:39.473 1s: frames 165 mean 6.074 ms max 10.058 ms bb 1280x720
+17:56:40.478 1s: frames 166 mean 6.056 ms max 9.322 ms bb 1280x720
+17:56:41.482 1s: frames 166 mean 6.065 ms max 9.256 ms bb 1280x720
+17:56:42.488 1s: frames 163 mean 6.162 ms max 20.548 ms bb 1280x720
+17:56:43.493 1s: frames 166 mean 6.059 ms max 9.688 ms bb 1280x720
+17:56:44.494 1s: frames 164 mean 6.101 ms max 11.274 ms bb 1280x720
+17:56:45.498 1s: frames 163 mean 6.170 ms max 11.153 ms bb 1280x720
+17:56:46.501 1s: frames 165 mean 6.080 ms max 12.846 ms bb 1280x720
+17:56:47.508 1s: frames 166 mean 6.057 ms max 8.022 ms bb 1280x720
+17:56:48.072 ResizeBuffers(1920 x 1080) [churn] -> 0x00000000 (0.72 ms)
+17:56:48.138 mem periodic: private=34.84 MB working=37.35 MB video_local=28.03 MB handles=444
+17:56:48.513 1s: frames 166 mean 6.062 ms max 8.087 ms bb 1920x1080
+17:56:49.519 1s: frames 166 mean 6.054 ms max 8.754 ms bb 1920x1080
+17:56:50.525 1s: frames 166 mean 6.058 ms max 7.244 ms bb 1920x1080
+17:56:51.530 1s: frames 166 mean 6.061 ms max 7.394 ms bb 1920x1080
+17:56:52.536 1s: frames 166 mean 6.055 ms max 7.568 ms bb 1920x1080
+17:56:53.541 1s: frames 166 mean 6.058 ms max 8.322 ms bb 1920x1080
+17:56:54.547 1s: frames 165 mean 6.102 ms max 10.216 ms bb 1920x1080
+17:56:55.552 1s: frames 165 mean 6.085 ms max 10.708 ms bb 1920x1080
+17:56:56.558 1s: frames 166 mean 6.057 ms max 7.788 ms bb 1920x1080
+17:56:57.561 1s: frames 165 mean 6.058 ms max 8.314 ms bb 1920x1080
+17:56:58.139 mem periodic: private=34.84 MB working=37.35 MB video_local=36.97 MB handles=444
+17:56:58.562 1s: frames 166 mean 6.062 ms max 10.101 ms bb 1920x1080
+17:56:59.569 1s: frames 166 mean 6.056 ms max 7.596 ms bb 1920x1080
+17:57:00.574 1s: frames 166 mean 6.057 ms max 8.251 ms bb 1920x1080
+17:57:01.580 1s: frames 166 mean 6.062 ms max 8.746 ms bb 1920x1080
+17:57:02.585 1s: frames 166 mean 6.051 ms max 7.580 ms bb 1920x1080
+17:57:03.584 1s: frames 165 mean 6.057 ms max 7.418 ms bb 1920x1080
+17:57:04.590 1s: frames 166 mean 6.059 ms max 7.384 ms bb 1920x1080
+17:57:05.595 1s: frames 166 mean 6.062 ms max 8.243 ms bb 1920x1080
+17:57:06.601 1s: frames 166 mean 6.053 ms max 8.335 ms bb 1920x1080
+17:57:07.608 1s: frames 166 mean 6.057 ms max 8.050 ms bb 1920x1080
+17:57:08.073 ResizeBuffers(2560 x 1440) [churn] -> 0x00000000 (6.09 ms)
+17:57:08.140 mem periodic: private=34.84 MB working=37.43 MB video_local=43.53 MB handles=444
+17:57:08.613 1s: frames 166 mean 6.059 ms max 8.296 ms bb 2560x1440
+17:57:09.618 1s: frames 166 mean 6.055 ms max 7.572 ms bb 2560x1440
+17:57:10.618 1s: frames 162 mean 6.175 ms max 11.618 ms bb 2560x1440
+17:57:11.623 1s: frames 166 mean 6.052 ms max 9.007 ms bb 2560x1440
+17:57:12.627 1s: frames 166 mean 6.062 ms max 7.141 ms bb 2560x1440
+17:57:13.628 1s: frames 165 mean 6.060 ms max 9.173 ms bb 2560x1440
+17:57:14.633 1s: frames 166 mean 6.052 ms max 7.562 ms bb 2560x1440
+17:57:15.640 1s: frames 166 mean 6.056 ms max 7.294 ms bb 2560x1440
+17:57:16.644 1s: frames 166 mean 6.060 ms max 7.312 ms bb 2560x1440
+17:57:17.649 1s: frames 166 mean 6.055 ms max 7.689 ms bb 2560x1440
+17:57:18.141 mem periodic: private=34.84 MB working=37.43 MB video_local=56.47 MB handles=445
+17:57:18.649 1s: frames 163 mean 6.132 ms max 17.461 ms bb 2560x1440
+17:57:19.655 1s: frames 166 mean 6.057 ms max 7.498 ms bb 2560x1440
+17:57:20.661 1s: frames 166 mean 6.063 ms max 8.056 ms bb 2560x1440
+17:57:21.666 1s: frames 166 mean 6.053 ms max 7.791 ms bb 2560x1440
+17:57:22.673 1s: frames 166 mean 6.059 ms max 7.599 ms bb 2560x1440
+17:57:23.678 1s: frames 166 mean 6.060 ms max 7.459 ms bb 2560x1440
+17:57:24.678 1s: frames 165 mean 6.061 ms max 8.001 ms bb 2560x1440
+17:57:25.682 1s: frames 164 mean 6.125 ms max 12.294 ms bb 2560x1440
+17:57:26.683 1s: frames 163 mean 6.134 ms max 11.618 ms bb 2560x1440
+17:57:27.688 1s: frames 153 mean 6.571 ms max 11.931 ms bb 2560x1440
+17:57:28.071 ResizeBuffers(1280 x 720) [churn] -> 0x00000000 (0.58 ms)
+17:57:28.142 mem periodic: private=34.86 MB working=37.44 MB video_local=45.22 MB handles=444
+17:57:28.693 1s: frames 166 mean 6.060 ms max 7.841 ms bb 1280x720
+17:57:29.698 1s: frames 166 mean 6.055 ms max 7.365 ms bb 1280x720
+17:57:30.705 1s: frames 165 mean 6.094 ms max 9.186 ms bb 1280x720
+17:57:31.705 1s: frames 156 mean 6.409 ms max 58.724 ms bb 1280x720
+17:57:32.710 1s: frames 164 mean 6.131 ms max 11.583 ms bb 1280x720
+17:57:33.715 1s: frames 166 mean 6.056 ms max 7.791 ms bb 1280x720
+17:57:34.721 1s: frames 166 mean 6.057 ms max 7.535 ms bb 1280x720
+17:57:35.726 1s: frames 166 mean 6.061 ms max 8.747 ms bb 1280x720
+17:57:36.732 1s: frames 166 mean 6.054 ms max 7.444 ms bb 1280x720
+17:57:37.732 1s: frames 164 mean 6.096 ms max 11.863 ms bb 1280x720
+17:57:38.142 mem periodic: private=34.86 MB working=37.44 MB video_local=23.34 MB handles=443
+17:57:38.736 1s: frames 166 mean 6.057 ms max 7.822 ms bb 1280x720
+17:57:39.742 1s: frames 164 mean 6.136 ms max 12.743 ms bb 1280x720
+17:57:40.748 1s: frames 166 mean 6.053 ms max 8.308 ms bb 1280x720
+17:57:41.753 1s: frames 165 mean 6.093 ms max 11.920 ms bb 1280x720
+17:57:42.754 1s: frames 164 mean 6.093 ms max 12.066 ms bb 1280x720
+17:57:43.758 1s: frames 166 mean 6.068 ms max 8.180 ms bb 1280x720
+17:57:44.764 1s: frames 166 mean 6.050 ms max 7.455 ms bb 1280x720
+17:57:45.770 1s: frames 166 mean 6.059 ms max 7.464 ms bb 1280x720
+17:57:46.776 1s: frames 166 mean 6.057 ms max 7.749 ms bb 1280x720
+17:57:47.781 1s: frames 164 mean 6.130 ms max 16.369 ms bb 1280x720
+17:57:48.074 ResizeBuffers(1920 x 1080) [churn] -> 0x00000000 (1.54 ms)
+17:57:48.144 mem periodic: private=34.86 MB working=37.44 MB video_local=24.28 MB handles=444
+17:57:48.787 1s: frames 166 mean 6.057 ms max 7.670 ms bb 1920x1080
+17:57:49.791 1s: frames 166 mean 6.059 ms max 7.730 ms bb 1920x1080
+17:57:50.797 1s: frames 166 mean 6.055 ms max 7.386 ms bb 1920x1080
+17:57:51.797 1s: frames 165 mean 6.061 ms max 7.508 ms bb 1920x1080
+17:57:52.803 1s: frames 164 mean 6.133 ms max 11.186 ms bb 1920x1080
+17:57:53.808 1s: frames 165 mean 6.092 ms max 12.890 ms bb 1920x1080
+17:57:54.814 1s: frames 165 mean 6.097 ms max 11.524 ms bb 1920x1080
+17:57:55.820 1s: frames 165 mean 6.091 ms max 11.943 ms bb 1920x1080
+17:57:56.824 1s: frames 166 mean 6.059 ms max 7.678 ms bb 1920x1080
+17:57:57.829 1s: frames 166 mean 6.055 ms max 7.442 ms bb 1920x1080
+17:57:58.145 mem periodic: private=34.86 MB working=37.44 MB video_local=36.97 MB handles=444
+17:57:58.837 1s: frames 166 mean 6.058 ms max 7.657 ms bb 1920x1080
+17:57:59.841 1s: frames 166 mean 6.059 ms max 7.904 ms bb 1920x1080
+17:58:00.846 1s: frames 166 mean 6.056 ms max 7.654 ms bb 1920x1080
+17:58:01.852 1s: frames 166 mean 6.058 ms max 7.313 ms bb 1920x1080
+17:58:02.857 1s: frames 166 mean 6.060 ms max 7.550 ms bb 1920x1080
+17:58:03.862 1s: frames 166 mean 6.054 ms max 7.453 ms bb 1920x1080
+17:58:04.870 1s: frames 166 mean 6.058 ms max 8.558 ms bb 1920x1080
+17:58:05.874 1s: frames 166 mean 6.062 ms max 7.856 ms bb 1920x1080
+17:58:06.880 1s: frames 166 mean 6.052 ms max 7.394 ms bb 1920x1080
+17:58:07.887 1s: frames 166 mean 6.060 ms max 7.416 ms bb 1920x1080
+17:58:08.068 ResizeBuffers(2560 x 1440) [churn] -> 0x00000000 (1.07 ms)
+17:58:08.146 mem periodic: private=34.86 MB working=37.44 MB video_local=43.53 MB handles=444
+17:58:08.891 1s: frames 164 mean 6.135 ms max 11.540 ms bb 2560x1440
+17:58:09.897 1s: frames 166 mean 6.055 ms max 7.594 ms bb 2560x1440
+17:58:10.903 1s: frames 163 mean 6.168 ms max 12.293 ms bb 2560x1440
+17:58:11.908 1s: frames 166 mean 6.061 ms max 7.749 ms bb 2560x1440
+17:58:12.913 1s: frames 159 mean 6.319 ms max 11.922 ms bb 2560x1440
+17:58:13.920 1s: frames 166 mean 6.059 ms max 7.820 ms bb 2560x1440
+17:58:14.924 1s: frames 166 mean 6.059 ms max 7.310 ms bb 2560x1440
+17:58:15.930 1s: frames 163 mean 6.165 ms max 12.141 ms bb 2560x1440
+17:58:16.936 1s: frames 166 mean 6.060 ms max 7.518 ms bb 2560x1440
+17:58:17.941 1s: frames 166 mean 6.061 ms max 7.766 ms bb 2560x1440
+17:58:18.147 mem periodic: private=34.64 MB working=37.34 MB video_local=56.47 MB handles=437
+17:58:18.946 1s: frames 163 mean 6.164 ms max 12.145 ms bb 2560x1440
+17:58:19.952 1s: frames 166 mean 6.059 ms max 7.533 ms bb 2560x1440
+17:58:20.958 1s: frames 166 mean 6.060 ms max 7.812 ms bb 2560x1440
+17:58:21.963 1s: frames 164 mean 6.127 ms max 12.058 ms bb 2560x1440
+17:58:22.969 1s: frames 166 mean 6.058 ms max 7.087 ms bb 2560x1440
+17:58:23.976 1s: frames 166 mean 6.062 ms max 7.713 ms bb 2560x1440
+17:58:24.980 1s: frames 166 mean 6.053 ms max 7.582 ms bb 2560x1440
+17:58:25.986 1s: frames 163 mean 6.169 ms max 11.642 ms bb 2560x1440
+17:58:26.991 1s: frames 166 mean 6.059 ms max 7.232 ms bb 2560x1440
+17:58:27.996 1s: frames 166 mean 6.055 ms max 7.141 ms bb 2560x1440
+17:58:28.073 ResizeBuffers(1280 x 720) [churn] -> 0x00000000 (0.72 ms)
+17:58:28.148 mem periodic: private=34.72 MB working=37.38 MB video_local=45.22 MB handles=438
+17:58:29.003 1s: frames 166 mean 6.058 ms max 7.228 ms bb 1280x720
+17:58:30.008 1s: frames 166 mean 6.062 ms max 7.364 ms bb 1280x720
+17:58:31.013 1s: frames 166 mean 6.054 ms max 7.229 ms bb 1280x720
+17:58:32.020 1s: frames 166 mean 6.057 ms max 7.732 ms bb 1280x720
+17:58:33.024 1s: frames 166 mean 6.059 ms max 7.595 ms bb 1280x720
+17:58:34.030 1s: frames 166 mean 6.055 ms max 7.597 ms bb 1280x720
+17:58:35.036 1s: frames 166 mean 6.058 ms max 7.289 ms bb 1280x720
+17:58:36.042 1s: frames 166 mean 6.063 ms max 7.405 ms bb 1280x720
+17:58:37.047 1s: frames 165 mean 6.090 ms max 10.932 ms bb 1280x720
+17:58:38.054 1s: frames 166 mean 6.056 ms max 8.227 ms bb 1280x720
+17:58:38.150 mem periodic: private=34.72 MB working=37.38 MB video_local=23.34 MB handles=437
+17:58:39.057 1s: frames 166 mean 6.065 ms max 7.918 ms bb 1280x720
+17:58:40.063 1s: frames 166 mean 6.052 ms max 7.478 ms bb 1280x720
+17:58:41.070 1s: frames 166 mean 6.058 ms max 7.559 ms bb 1280x720
+17:58:42.070 1s: frames 165 mean 6.060 ms max 7.337 ms bb 1280x720
+17:58:43.074 1s: frames 166 mean 6.063 ms max 8.031 ms bb 1280x720
+17:58:44.074 1s: frames 165 mean 6.053 ms max 7.742 ms bb 1280x720
+17:58:45.078 1s: frames 166 mean 6.059 ms max 7.373 ms bb 1280x720
+17:58:46.080 1s: frames 165 mean 6.056 ms max 7.512 ms bb 1280x720
+17:58:47.085 1s: frames 166 mean 6.057 ms max 8.860 ms bb 1280x720
+17:58:48.073 ResizeBuffers(1920 x 1080) [churn] -> 0x00000000 (0.99 ms)
+17:58:48.091 1s: frames 165 mean 6.094 ms max 11.710 ms bb 1920x1080
+17:58:48.150 mem periodic: private=34.72 MB working=37.38 MB video_local=28.03 MB handles=438
+17:58:49.095 1s: frames 166 mean 6.060 ms max 7.619 ms bb 1920x1080
+17:58:50.102 1s: frames 166 mean 6.054 ms max 7.900 ms bb 1920x1080
+17:58:51.106 1s: frames 166 mean 6.059 ms max 7.517 ms bb 1920x1080
+17:58:52.111 1s: frames 166 mean 6.059 ms max 7.434 ms bb 1920x1080
+17:58:53.118 1s: frames 166 mean 6.054 ms max 7.697 ms bb 1920x1080
+17:58:54.123 1s: frames 166 mean 6.062 ms max 7.668 ms bb 1920x1080
+17:58:55.123 1s: frames 165 mean 6.056 ms max 7.586 ms bb 1920x1080
+17:58:56.129 1s: frames 166 mean 6.061 ms max 7.690 ms bb 1920x1080
+17:58:57.134 1s: frames 166 mean 6.052 ms max 7.672 ms bb 1920x1080
+17:58:58.140 1s: frames 166 mean 6.058 ms max 7.320 ms bb 1920x1080
+17:58:58.151 mem periodic: private=34.72 MB working=37.39 MB video_local=36.97 MB handles=438
+17:58:59.145 1s: frames 166 mean 6.059 ms max 7.440 ms bb 1920x1080
+17:59:00.151 1s: frames 166 mean 6.056 ms max 8.124 ms bb 1920x1080
+17:59:01.151 1s: frames 165 mean 6.060 ms max 7.444 ms bb 1920x1080
+17:59:02.156 1s: frames 166 mean 6.055 ms max 7.781 ms bb 1920x1080
+17:59:03.161 1s: frames 165 mean 6.097 ms max 11.401 ms bb 1920x1080
+17:59:04.166 1s: frames 166 mean 6.055 ms max 7.207 ms bb 1920x1080
+17:59:05.172 1s: frames 166 mean 6.059 ms max 7.336 ms bb 1920x1080
+17:59:06.178 1s: frames 166 mean 6.059 ms max 7.380 ms bb 1920x1080
+17:59:07.184 1s: frames 166 mean 6.056 ms max 7.593 ms bb 1920x1080
+17:59:08.070 ResizeBuffers(2560 x 1440) [churn] -> 0x00000000 (0.87 ms)
+17:59:08.153 mem periodic: private=34.44 MB working=36.89 MB video_local=43.53 MB handles=438
+17:59:08.190 1s: frames 166 mean 6.058 ms max 7.992 ms bb 2560x1440
+17:59:09.194 1s: frames 166 mean 6.059 ms max 7.615 ms bb 2560x1440
+17:59:10.200 1s: frames 165 mean 6.092 ms max 11.854 ms bb 2560x1440
+17:59:11.206 1s: frames 166 mean 6.057 ms max 7.441 ms bb 2560x1440
+17:59:12.211 1s: frames 166 mean 6.061 ms max 7.443 ms bb 2560x1440
+17:59:13.211 1s: frames 165 mean 6.061 ms max 7.565 ms bb 2560x1440
+17:59:14.216 1s: frames 164 mean 6.127 ms max 11.763 ms bb 2560x1440
+17:59:15.223 1s: frames 166 mean 6.058 ms max 9.794 ms bb 2560x1440
+17:59:16.227 1s: frames 162 mean 6.207 ms max 12.467 ms bb 2560x1440
+17:59:17.232 1s: frames 166 mean 6.054 ms max 7.556 ms bb 2560x1440
+17:59:18.154 mem periodic: private=34.44 MB working=36.89 MB video_local=56.47 MB handles=439
+17:59:18.239 1s: frames 166 mean 6.060 ms max 7.334 ms bb 2560x1440
+17:59:19.244 1s: frames 164 mean 6.131 ms max 11.273 ms bb 2560x1440
+17:59:20.249 1s: frames 166 mean 6.057 ms max 8.234 ms bb 2560x1440
+17:59:21.256 1s: frames 166 mean 6.059 ms max 7.739 ms bb 2560x1440
+17:59:22.260 1s: frames 166 mean 6.062 ms max 7.728 ms bb 2560x1440
+17:59:23.261 1s: frames 165 mean 6.056 ms max 7.860 ms bb 2560x1440
+17:59:24.266 1s: frames 166 mean 6.053 ms max 7.466 ms bb 2560x1440
+17:59:25.271 1s: frames 166 mean 6.057 ms max 7.331 ms bb 2560x1440
+17:59:26.271 1s: frames 165 mean 6.059 ms max 7.866 ms bb 2560x1440
+17:59:27.277 1s: frames 166 mean 6.063 ms max 7.684 ms bb 2560x1440
+17:59:28.071 ResizeBuffers(1280 x 720) [churn] -> 0x00000000 (0.60 ms)
+17:59:28.156 mem periodic: private=34.70 MB working=37.27 MB video_local=45.22 MB handles=438
+17:59:28.283 1s: frames 166 mean 6.054 ms max 7.728 ms bb 1280x720
+17:59:29.288 1s: frames 166 mean 6.055 ms max 7.747 ms bb 1280x720
+17:59:30.293 1s: frames 166 mean 6.063 ms max 7.483 ms bb 1280x720
+17:59:31.298 1s: frames 166 mean 6.052 ms max 7.959 ms bb 1280x720
+17:59:32.298 1s: frames 165 mean 6.062 ms max 7.750 ms bb 1280x720
+17:59:33.306 1s: frames 166 mean 6.060 ms max 8.034 ms bb 1280x720
+17:59:34.309 1s: frames 166 mean 6.058 ms max 8.268 ms bb 1280x720
+17:59:35.315 1s: frames 165 mean 6.091 ms max 10.314 ms bb 1280x720
+17:59:36.321 1s: frames 166 mean 6.058 ms max 7.889 ms bb 1280x720
+17:59:37.326 1s: frames 166 mean 6.060 ms max 7.803 ms bb 1280x720
+17:59:38.157 mem periodic: private=34.70 MB working=37.28 MB video_local=23.34 MB handles=437
+17:59:38.332 1s: frames 166 mean 6.052 ms max 7.829 ms bb 1280x720
+17:59:39.337 1s: frames 166 mean 6.057 ms max 7.948 ms bb 1280x720
+17:59:40.338 1s: frames 165 mean 6.063 ms max 7.969 ms bb 1280x720
+17:59:41.342 1s: frames 166 mean 6.064 ms max 8.813 ms bb 1280x720
+17:59:42.348 1s: frames 166 mean 6.046 ms max 8.104 ms bb 1280x720
+17:59:43.354 1s: frames 166 mean 6.061 ms max 8.000 ms bb 1280x720
+17:59:44.355 1s: frames 165 mean 6.056 ms max 8.144 ms bb 1280x720
+17:59:45.358 1s: frames 166 mean 6.058 ms max 7.978 ms bb 1280x720
+17:59:46.364 1s: frames 166 mean 6.058 ms max 8.120 ms bb 1280x720
+17:59:47.370 1s: frames 166 mean 6.057 ms max 8.027 ms bb 1280x720
+17:59:48.068 ResizeBuffers(1920 x 1080) [churn] -> 0x00000000 (0.68 ms)
+17:59:48.156 mem periodic: private=34.43 MB working=36.91 MB video_local=28.03 MB handles=438
+17:59:48.374 1s: frames 165 mean 6.100 ms max 10.837 ms bb 1920x1080
+17:59:49.381 1s: frames 166 mean 6.051 ms max 8.008 ms bb 1920x1080
+17:59:50.387 1s: frames 166 mean 6.054 ms max 7.841 ms bb 1920x1080
+17:59:51.391 1s: frames 166 mean 6.067 ms max 8.048 ms bb 1920x1080
+17:59:52.391 1s: frames 165 mean 6.053 ms max 8.393 ms bb 1920x1080
+17:59:53.396 1s: frames 166 mean 6.056 ms max 8.294 ms bb 1920x1080
+17:59:54.403 1s: frames 166 mean 6.057 ms max 8.023 ms bb 1920x1080
+17:59:55.404 1s: frames 165 mean 6.057 ms max 8.103 ms bb 1920x1080
+17:59:56.406 1s: frames 166 mean 6.059 ms max 8.498 ms bb 1920x1080
+17:59:57.407 1s: frames 165 mean 6.058 ms max 7.816 ms bb 1920x1080
+17:59:58.159 mem periodic: private=34.44 MB working=36.92 MB video_local=36.97 MB handles=438
+17:59:58.412 1s: frames 166 mean 6.056 ms max 8.000 ms bb 1920x1080
+17:59:59.420 1s: frames 166 mean 6.060 ms max 8.128 ms bb 1920x1080
+18:00:00.423 1s: frames 165 mean 6.093 ms max 9.512 ms bb 1920x1080
+18:00:01.430 1s: frames 166 mean 6.059 ms max 8.078 ms bb 1920x1080
+18:00:02.437 1s: frames 166 mean 6.057 ms max 8.193 ms bb 1920x1080
+18:00:03.441 1s: frames 166 mean 6.061 ms max 7.900 ms bb 1920x1080
+18:00:04.446 1s: frames 166 mean 6.050 ms max 8.622 ms bb 1920x1080
+18:00:05.445 1s: frames 165 mean 6.063 ms max 7.965 ms bb 1920x1080
+18:00:06.451 1s: frames 166 mean 6.055 ms max 7.914 ms bb 1920x1080
+18:00:07.456 1s: frames 166 mean 6.058 ms max 7.963 ms bb 1920x1080
+18:00:08.070 ResizeBuffers(2560 x 1440) [churn] -> 0x00000000 (1.01 ms)
+18:00:08.160 mem periodic: private=34.45 MB working=36.93 MB video_local=43.53 MB handles=438
+18:00:08.463 1s: frames 166 mean 6.054 ms max 8.315 ms bb 2560x1440
+18:00:09.469 1s: frames 166 mean 6.058 ms max 8.080 ms bb 2560x1440
+18:00:10.472 1s: frames 166 mean 6.062 ms max 8.240 ms bb 2560x1440
+18:00:11.473 1s: frames 165 mean 6.063 ms max 8.119 ms bb 2560x1440
+18:00:12.474 1s: frames 165 mean 6.051 ms max 8.100 ms bb 2560x1440
+18:00:13.478 1s: frames 166 mean 6.061 ms max 8.244 ms bb 2560x1440
+18:00:14.478 1s: frames 165 mean 6.053 ms max 8.771 ms bb 2560x1440
+18:00:15.482 1s: frames 166 mean 6.059 ms max 8.334 ms bb 2560x1440
+18:00:16.490 1s: frames 165 mean 6.088 ms max 11.377 ms bb 2560x1440
+18:00:17.493 1s: frames 166 mean 6.069 ms max 8.061 ms bb 2560x1440
+18:00:18.161 mem periodic: private=34.45 MB working=36.96 MB video_local=56.47 MB handles=439
+18:00:18.494 1s: frames 165 mean 6.052 ms max 8.239 ms bb 2560x1440
+18:00:19.499 1s: frames 166 mean 6.052 ms max 7.957 ms bb 2560x1440
+18:00:20.504 1s: frames 166 mean 6.057 ms max 7.842 ms bb 2560x1440
+18:00:21.504 1s: frames 165 mean 6.062 ms max 8.021 ms bb 2560x1440
+18:00:22.509 1s: frames 166 mean 6.063 ms max 8.125 ms bb 2560x1440
+18:00:23.514 1s: frames 166 mean 6.048 ms max 8.488 ms bb 2560x1440
+18:00:24.523 1s: frames 166 mean 6.059 ms max 7.980 ms bb 2560x1440
+18:00:25.526 1s: frames 166 mean 6.059 ms max 8.561 ms bb 2560x1440
+18:00:26.531 1s: frames 166 mean 6.053 ms max 8.444 ms bb 2560x1440
+18:00:27.538 1s: frames 166 mean 6.060 ms max 7.892 ms bb 2560x1440
+18:00:28.074 ResizeBuffers(1280 x 720) [churn] -> 0x00000000 (1.02 ms)
+18:00:28.161 mem periodic: private=34.71 MB working=37.41 MB video_local=30.22 MB handles=438
+18:00:28.544 1s: frames 166 mean 6.068 ms max 8.214 ms bb 1280x720
+18:00:29.549 1s: frames 166 mean 6.049 ms max 7.971 ms bb 1280x720
+18:00:30.555 1s: frames 166 mean 6.057 ms max 7.855 ms bb 1280x720
+18:00:31.560 1s: frames 166 mean 6.059 ms max 8.107 ms bb 1280x720
+18:00:32.566 1s: frames 166 mean 6.055 ms max 7.961 ms bb 1280x720
+18:00:33.571 1s: frames 166 mean 6.059 ms max 8.274 ms bb 1280x720
+18:00:34.577 1s: frames 166 mean 6.065 ms max 8.092 ms bb 1280x720
+18:00:35.582 1s: frames 166 mean 6.047 ms max 7.903 ms bb 1280x720
+18:00:36.588 1s: frames 166 mean 6.061 ms max 8.443 ms bb 1280x720
+18:00:37.593 1s: frames 166 mean 6.059 ms max 8.028 ms bb 1280x720
+18:00:38.163 mem periodic: private=34.72 MB working=37.42 MB video_local=23.34 MB handles=437
+18:00:38.598 1s: frames 166 mean 6.055 ms max 8.161 ms bb 1280x720
+18:00:39.604 1s: frames 166 mean 6.058 ms max 7.865 ms bb 1280x720
+18:00:40.605 1s: frames 165 mean 6.055 ms max 8.111 ms bb 1280x720
+18:00:41.609 1s: frames 166 mean 6.060 ms max 7.962 ms bb 1280x720
+18:00:42.615 1s: frames 166 mean 6.054 ms max 7.907 ms bb 1280x720
+18:00:43.620 1s: frames 166 mean 6.062 ms max 8.511 ms bb 1280x720
+18:00:44.621 1s: frames 165 mean 6.057 ms max 7.807 ms bb 1280x720
+18:00:45.626 1s: frames 166 mean 6.059 ms max 8.416 ms bb 1280x720
+18:00:46.630 1s: frames 166 mean 6.052 ms max 7.895 ms bb 1280x720
+18:00:47.630 1s: frames 165 mean 6.064 ms max 8.131 ms bb 1280x720
+18:00:48.068 ResizeBuffers(1920 x 1080) [churn] -> 0x00000000 (0.90 ms)
+18:00:48.165 mem periodic: private=34.48 MB working=37.04 MB video_local=28.03 MB handles=438
+18:00:48.636 1s: frames 166 mean 6.055 ms max 7.971 ms bb 1920x1080
+18:00:49.642 1s: frames 166 mean 6.062 ms max 7.896 ms bb 1920x1080
+18:00:50.647 1s: frames 166 mean 6.052 ms max 8.097 ms bb 1920x1080
+18:00:51.653 1s: frames 166 mean 6.055 ms max 7.972 ms bb 1920x1080
+18:00:52.658 1s: frames 166 mean 6.061 ms max 7.932 ms bb 1920x1080
+18:00:53.658 1s: frames 156 mean 6.417 ms max 63.097 ms bb 1920x1080
+18:00:54.663 1s: frames 166 mean 6.048 ms max 7.944 ms bb 1920x1080
+18:00:55.670 1s: frames 166 mean 6.059 ms max 8.057 ms bb 1920x1080
+18:00:56.674 1s: frames 166 mean 6.058 ms max 8.083 ms bb 1920x1080
+18:00:57.680 1s: frames 166 mean 6.057 ms max 8.059 ms bb 1920x1080
+18:00:58.172 mem periodic: private=34.50 MB working=37.05 MB video_local=36.97 MB handles=438
+18:00:58.687 1s: frames 166 mean 6.058 ms max 7.914 ms bb 1920x1080
+18:00:59.690 1s: frames 166 mean 6.061 ms max 7.857 ms bb 1920x1080
+18:01:00.697 1s: frames 166 mean 6.050 ms max 9.049 ms bb 1920x1080
+18:01:01.702 1s: frames 166 mean 6.056 ms max 7.922 ms bb 1920x1080
+18:01:02.702 1s: frames 165 mean 6.061 ms max 8.457 ms bb 1920x1080
+18:01:03.708 1s: frames 166 mean 6.064 ms max 8.354 ms bb 1920x1080
+18:01:04.712 1s: frames 166 mean 6.053 ms max 7.931 ms bb 1920x1080
+18:01:05.718 1s: frames 163 mean 6.170 ms max 21.540 ms bb 1920x1080
+18:01:06.723 1s: frames 166 mean 6.059 ms max 8.006 ms bb 1920x1080
+18:01:07.729 1s: frames 166 mean 6.056 ms max 8.169 ms bb 1920x1080
+18:01:08.071 ResizeBuffers(2560 x 1440) [churn] -> 0x00000000 (0.85 ms)
+18:01:08.177 mem periodic: private=34.75 MB working=37.42 MB video_local=35.09 MB handles=438
+18:01:08.736 1s: frames 166 mean 6.058 ms max 7.917 ms bb 2560x1440
+18:01:09.737 1s: frames 161 mean 6.209 ms max 10.911 ms bb 2560x1440
+18:01:10.742 1s: frames 157 mean 6.416 ms max 16.706 ms bb 2560x1440
+18:01:11.747 1s: frames 161 mean 6.243 ms max 10.156 ms bb 2560x1440
+18:01:12.751 1s: frames 165 mean 6.093 ms max 9.370 ms bb 2560x1440
+18:01:13.754 1s: frames 165 mean 6.059 ms max 9.340 ms bb 2560x1440
+18:01:14.757 1s: frames 166 mean 6.066 ms max 9.988 ms bb 2560x1440
+18:01:15.762 1s: frames 166 mean 6.040 ms max 9.580 ms bb 2560x1440
+18:01:16.762 1s: frames 164 mean 6.094 ms max 9.502 ms bb 2560x1440
+18:01:17.770 1s: frames 166 mean 6.059 ms max 9.212 ms bb 2560x1440
+18:01:18.179 mem periodic: private=34.75 MB working=37.44 MB video_local=56.47 MB handles=439
+18:01:18.773 1s: frames 166 mean 6.071 ms max 9.366 ms bb 2560x1440
+18:01:19.779 1s: frames 166 mean 6.043 ms max 9.236 ms bb 2560x1440
+18:01:20.779 1s: frames 165 mean 6.065 ms max 9.422 ms bb 2560x1440
+18:01:21.784 1s: frames 166 mean 6.052 ms max 9.267 ms bb 2560x1440
+18:01:22.789 1s: frames 166 mean 6.063 ms max 9.283 ms bb 2560x1440
+18:01:23.794 1s: frames 166 mean 6.058 ms max 9.235 ms bb 2560x1440
+18:01:24.803 1s: frames 166 mean 6.052 ms max 9.226 ms bb 2560x1440
+18:01:25.806 1s: frames 166 mean 6.063 ms max 9.394 ms bb 2560x1440
+18:01:26.810 1s: frames 164 mean 6.131 ms max 9.474 ms bb 2560x1440
+18:01:27.811 1s: frames 164 mean 6.097 ms max 9.559 ms bb 2560x1440
+18:01:28.068 summary label=soak frames=98129 mean=6.0838 p50=6.0683 p99=8.9441 max=63.097 fps=164.4
+18:01:28.068 mem end: private=35.21 MB working=37.85 MB video_local=56.47 MB handles=441

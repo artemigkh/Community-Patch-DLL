@@ -7,6 +7,7 @@
 	------------------------------------------------------------------------------------------------------- */
 
 #include "CvGameCoreDLLPCH.h"
+#include "MemoryHooks.h"
 #include "ICvDLLUserInterface.h"
 #include "CvGameCoreUtils.h"
 #include "CvDiplomacyAIEnums.h"
@@ -9280,6 +9281,7 @@ void CvDiplomacyAI::ChangeVassalGoldPerTurnTaxedSinceVassalStarted(PlayerTypes e
 /// Runs every turn! The order matters for a lot of this stuff, so be VERY careful about moving anything around (!)
 void CvDiplomacyAI::DoTurn(DiplomacyMode eDiploMode, PlayerTypes ePlayer)
 {
+	MEMHOOK_SCOPE(MEMTAG_DIPLOMACY_AI);
 	//set this for one iteration, reset below
 	m_eDiploMode = eDiploMode;
 	m_eTargetPlayer = ePlayer;

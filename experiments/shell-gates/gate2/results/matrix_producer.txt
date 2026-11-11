@@ -1,0 +1,25 @@
+producer pid 57224 (32-bit), FL b000, ExtendedResourceSharing 1, SharedResourceTier 3 (hr 0x00000000)
+[ 0] bgra8_1mip_ntkm            created ok, export NT-name 0x00000000
+[ 1] bc1_mips_ntkm              created ok, export NT-name 0x00000000
+[ 2] bc3_mips_ntkm              created ok, export NT-name 0x00000000
+[ 3] bc1_mips_nt_nokm           created ok, export NT-name 0x00000000
+[ 4] bc1_mips_legacy_shared     created ok, export legacy 0x00000000
+[ 5] bc1_mips_IMMUTABLE_ntkm    CREATE FAILED 0x80070057
+[ 6] bc1_mips_IMMUTABLE_nt      CREATE FAILED 0x80070057
+[ 7] rgba8_array4_mips_ntkm     created ok, export NT-name 0x00000000
+[ 8] bc3_array4_mips_ntkm       created ok, export NT-name 0x00000000
+[ 9] bc1_cube_mips_ntkm         CREATE FAILED 0x80070057
+[10] rgba16f_1mip_ntkm          created ok, export NT-name 0x00000000
+[11] rgba16_unorm_ntkm          created ok, export NT-name 0x00000000
+[12] r16f_1mip_ntkm             created ok, export NT-name 0x00000000
+[13] a8_1mip_ntkm               created ok, export NT-name 0x00000000
+[14] r32f_1mip_ntkm             created ok, export NT-name 0x00000000
+[15] vb_1MB_ntkm                CREATE FAILED 0x80070057
+[16] vb_1MB_nt                  CREATE FAILED 0x80070057
+[17] vb_1MB_legacy_shared       created ok, export legacy 0x00000000
+[18] ib_256KB_legacy_shared     created ok, export legacy 0x00000000
+[19] vb_IMMUTABLE_legacy        created ok, export legacy 0x00000000
+[20] vb_DYNAMIC_legacy          CREATE FAILED 0x80070057
+[21] bc1_cube_legacy_shared     created ok, export legacy 0x00000000
+[22] bc1_mips_IMMUTABLE_legacy  created ok, export legacy 0x00000000
+[23] srvbuf_1MB_nt              CREATE FAILED 0x80070057

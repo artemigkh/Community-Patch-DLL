@@ -272,6 +272,13 @@
     <ClCompile Include="CvWonderProductionAI.cpp" />
     <ClCompile Include="CvWorldBuilderMapLoader.cpp" />
     <ClCompile Include="SqliteLogger.cpp" />
+    <ClCompile Include="MemoryDiagnostics.cpp" />
+    <ClCompile Include="MemoryHooks.cpp" />
+    <ClCompile Include="MemoryImports.cpp" />
+    <ClCompile Include="EngineQueueGuard.cpp" />
+    <ClCompile Include="EngineAllocTrace.cpp" />
+    <ClCompile Include="ShellHelperLoader.cpp" />
+    <ClCompile Include="ViewMaskSync.cpp" />
     <ClCompile Include="CvDllBuildInfo.cpp" />
     <ClCompile Include="CvDllBuildingInfo.cpp" />
     <ClCompile Include="CvDllCity.cpp" />
@@ -452,6 +459,13 @@
     <ClInclude Include="CvWonderProductionAI.h" />
     <ClInclude Include="CvWorldBuilderMapLoader.h" />
     <ClInclude Include="SqliteLogger.h" />
+    <ClInclude Include="MemoryDiagnostics.h" />
+    <ClInclude Include="MemoryHooks.h" />
+    <ClInclude Include="MemoryImports.h" />
+    <ClInclude Include="EngineQueueGuard.h" />
+    <ClInclude Include="EngineAllocTrace.h" />
+    <ClInclude Include="ShellHelperLoader.h" />
+    <ClInclude Include="ViewMaskSync.h" />
     <ClInclude Include="SqliteLoggerRegistrations.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="CvDllBuildInfo.h" />

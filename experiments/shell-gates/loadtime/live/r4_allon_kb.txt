@@ -1,0 +1,33 @@
+s000_saveread.txt EXE:820783 < EXE:43d0c1 < EXE:64002d < EXE:630055 < EXE:7b0045 < EXE:4f0030 < EXE:4c0035 < EXE:5f002e < EXE:920069 < EXE:6f0035 < EXE:920061
+s001_saveread.txt EXE:820783 < EXE:43d0c1 < EXE:64002d < EXE:630055 < EXE:7b0045 < EXE:4f0030 < EXE:4c0035 < EXE:5f002e < EXE:920069 < EXE:6f0035 < EXE:920061
+s002_saveread.txt EXE:820783 < EXE:43d0c1 < EXE:64002d < EXE:630055 < EXE:7b0045 < EXE:4f0030 < EXE:4c0035 < EXE:5f002e < EXE:920069 < EXE:6f0035 < EXE:920061
+s003_saveread.txt EXE:820783 < EXE:43d0c1 < EXE:64002d < EXE:630055 < EXE:7b0045 < EXE:4f0030 < EXE:4c0035 < EXE:5f002e < EXE:920069 < EXE:6f0035 < EXE:920061
+s004_saveread.txt EXE:820904 < EXE:43d0c1 < EXE:64002d < EXE:630055 < EXE:7b0045 < EXE:4f0030 < EXE:4c0035 < EXE:5f002e < EXE:920069 < EXE:6f0035 < EXE:920061
+s005_saveread.txt EXE:820904 < EXE:43d0c1 < EXE:64002d < EXE:630055 < EXE:7b0045 < EXE:4f0030 < EXE:4c0035 < EXE:5f002e < EXE:920069 < EXE:6f0035 < EXE:920061
+s006_saveread.txt EXE:820904 < EXE:43d0c1 < EXE:64002d < EXE:630055 < EXE:7b0045 < EXE:4f0030 < EXE:4c0035 < EXE:5f002e < EXE:920069 < EXE:6f0035 < EXE:920061
+s007_saveread.txt zlib1!inflateInit_+0xfa
+s008_gap.txt EXE:? < CvGameDatabaseWin32Final_Release!Database::ResultsCache::Prepare+0x46bbf < MSVCR90!_STRINGTOLD_L+0xc84 < EXE:6eb5f9 < EXE:872a08 < EXE:47ff03 < lua51_Win32!lua_getinfo+0x1374 < lua51_Win32!luaopen_table+0x268b
+s009_gap.txt EXE:? < EXE:436661 < EXE:49f803 < EXE:5854a5 < EXE:5b8848 < EXE:5a883f < MSVCR90!modf+0x151c < lua51_Win32!luaopen_table+0xe39 < lua51_Win32!lua_getfield+0x50
+s010_gap.txt EXE:? < EXE:6428d7 < EXE:6017ad < EXE:536334 < EXE:7490b3 < EXE:866919 < EXE:63abd4 < EXE:785ba7 < EXE:4b402e < EXE:81dcb5 < EXE:602477
+s011_gap.txt EXE:? < EXE:436661 < EXE:49f803 < EXE:5854a5 < EXE:5b8848 < 0x6aff3d0 < 0x6aff3fc < lua51_Win32!lua_tointeger+0x11 < lua51_Win32!lua_tointeger+0x11 < EXE:531155 < MSVCR90!modf+0x151c < lua51_Win32!luaopen_table+0xe39 < lua51_Win32!lua_getfield+0x50
+s012_gap.txt EXE:? < EXE:6abd3b < EXE:7bf28f < EXE:81d7ca < EXE:43893d < EXE:49b92a < EXE:5ec9db < EXE:6fad46 < EXE:5ec284 < EXE:866919 < EXE:63abd4 < EXE:785ba7 < EXE:4b402e < EXE:81dcb5
+s013_gap.txt EXE:? < EXE:436661 < EXE:49f803 < EXE:5854a5 < EXE:5b8848 < EXE:75f34c < EXE:5a883f < MSVCR90!modf+0x151c < lua51_Win32!luaopen_table+0xe39 < lua51_Win32!lua_getfield+0x50
+s014_gap.txt EXE:? < EXE:436661 < EXE:49f803 < EXE:5854a5 < EXE:5b8848 < EXE:5a883f < MSVCR90!modf+0x151c < lua51_Win32!luaopen_table+0xe39 < lua51_Win32!lua_getfield+0x50
+s015_gap.txt EXE:? < EXE:436661 < EXE:49f803 < EXE:5854a5 < EXE:5b8848 < EXE:5a883f < MSVCR90!modf+0x151c < lua51_Win32!luaopen_table+0xe39 < lua51_Win32!lua_getfield+0x50
+s016_gap.txt EXE:? < EXE:436661 < EXE:49f803 < EXE:5854a5 < EXE:5b8848 < EXE:5a883f < MSVCR90!modf+0x151c < lua51_Win32!luaopen_table+0xe39 < lua51_Win32!lua_getfield+0x50
+s017_gap.txt EXE:? < EXE:924516 < EXE:59e230 < EXE:647ed5 < 0x6afe848
+s018_gap.txt EXE:? < EXE:436661 < EXE:49f803 < EXE:5854a5 < EXE:5b8848 < EXE:75f34c < EXE:5a883f < MSVCR90!modf+0x151c < lua51_Win32!luaopen_table+0xe39 < lua51_Win32!lua_getfield+0x50 < lua51_Win32!lua_touserdata+0xd
+s019_gap.txt EXE:? < EXE:436661 < EXE:49f803 < EXE:5854a5 < EXE:5b8848 < EXE:5a883f < MSVCR90!modf+0x151c < lua51_Win32!luaopen_table+0xe39 < lua51_Win32!lua_getfield+0x50
+s020_gap.txt EXE:6b696d < EXE:4c5d8d < EXE:619fae < EXE:866919 < EXE:63abd4 < EXE:785ba7 < EXE:4b402e < EXE:81dcb5 < EXE:602477
+s021_gap.txt EXE:? < EXE:924516 < EXE:59e230 < EXE:53c446 < cryptnet!I_CryptNetSetUrlCachePreFetchInfo+0x13de < cryptnet!I_CryptNetSetUrlCachePreFetchInfo+0x13de < cryptnet!I_CryptNetSetUrlCachePreFetchInfo+0x13de < cryptnet!I_CryptNetSetUrlCachePreFetchInfo+0x13de < cryptnet!I_CryptNetSetUrlCachePreFetchInfo+0x13de < EXE:73b4d5 < urlmon!Ordinal607+0x22b5 < 0x21137c0f < 0x94fcfa99 < 0x45d353c2
+s022_gap.txt EXE:? < EXE:5684ef < EXE:6abd43 < EXE:7bf28f < EXE:81d7ca < EXE:43893d < EXE:68f238 < EXE:49e6f0 < EXE:583dfe < EXE:5ec284 < EXE:866919 < EXE:63abd4 < EXE:785ba7 < EXE:4b402e
+s023_gap.txt EXE:? < EXE:436661 < EXE:49f803 < EXE:5854a5 < EXE:5b8848 < EXE:5a883f < MSVCR90!modf+0x151c < lua51_Win32!luaopen_table+0xe39 < lua51_Win32!lua_getfield+0x50
+s024_gap.txt EXE:? < EXE:6428d7 < EXE:6017ad < EXE:536334 < EXE:7490b3 < EXE:866919 < EXE:63abd4 < EXE:785ba7 < EXE:4b402e < EXE:81dcb5 < EXE:602477
+s025_gap.txt EXE:?
+s026_gap.txt EXE:? < EXE:5684ef < EXE:6abd43 < EXE:7bf28f < EXE:81d7ca < EXE:43893d < EXE:68f238 < EXE:51d5da < EXE:6ded4f < EXE:866919 < EXE:6a59a5 < EXE:459d8a < EXE:4b406c < EXE:81dcb5
+s027_tail.txt EXE:? < EXE:5684ef < EXE:6abd43 < EXE:7bf28f < EXE:81d7ca < EXE:43893d < EXE:49b92a < EXE:46c0c8 < 0x96ee9514
+s028_tail.txt EXE:? < EXE:5684ef < EXE:6abd43 < EXE:7bf28f < EXE:81d7ca < EXE:43893d < EXE:49b92a < EXE:60f1ce < EXE:55dc82 < EXE:7bfba3 < EXE:66d0a8 < EXE:6e282e < EXE:79d074 < EXE:866919
+s029_tail.txt EXE:? < EXE:79d074 < EXE:866919
+s030_tail.txt EXE:? < EXE:5684ef < EXE:6abd43 < EXE:7bf28f < EXE:81d7ca < EXE:43893d < EXE:49b92a < EXE:60f1ce < EXE:55dc82 < EXE:7bfc28 < EXE:66d0a8 < EXE:6e282e < EXE:79d074 < EXE:866919
+s031_tail.txt d3dx9_42!D3DXVec3Normalize < EXE:5684ef < EXE:6abd43 < EXE:7bf28f < EXE:81d7ca < EXE:43893d < EXE:68f238 < EXE:66d0a8 < EXE:6e2826 < EXE:79d074 < EXE:866919
+s032_tail.txt d3dx9_42!D3DXComputeIMTFromPerTexelSignal+0x3f3e1 < EXE:7295aa < EXE:5ce9d5 < EXE:639d3c < EXE:7bf28f < EXE:81d7ca < EXE:4ae861 < EXE:68f002 < EXE:70cc30 < EXE:628286 < EXE:4b40cd < EXE:81dcb5 < EXE:602477

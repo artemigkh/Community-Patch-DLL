@@ -1192,6 +1192,16 @@ const char* ShortenFilePath(const char* szFile);
 #define GD_INT_MEMBER(name) public: GD_INT_DEF(name) private: GD_INT_DECL(name)
 #define GD_INT_INIT(name, def)    m_i##name(def)
 #define GD_INT_CACHE(name)        getDatabaseValue(#name,m_i##name)
+// As GD_INT_CACHE, but for defines that may legitimately be absent from the database - typically a
+// define added after a modpack's database was last built. The row being missing is not an error, so
+// no assert is raised; the supplied default is applied instead. Passing the default explicitly (as
+// well as via GD_INT_INIT) also matters when the database is re-cached without restarting the game,
+// as it stops a value read from a previously loaded modpack from carrying over.
+#define GD_INT_CACHE_OPTIONAL(name, def)                          \
+	do {                                                          \
+		if (!getDatabaseValue(#name, m_i##name, false))           \
+			m_i##name = (def);                                    \
+	} while (0)
 #define GD_INT_GET(name)          GC.get##name()
 
 #define GD_FLOAT_DECL(name)       float m_f##name
