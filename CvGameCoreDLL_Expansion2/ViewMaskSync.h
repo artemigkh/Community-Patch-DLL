@@ -17,7 +17,13 @@
 
 	Switch: crashlogs\viewmask.enabled in the install folder (the working directory). Optional content
 	"keep=0x<hex>": bits that are never cleared, re-read every 2 s; bits added to it later are set back if this
-	instrument cleared them (never River or Arrows). Removing the marker while the game runs sets back every
+	instrument cleared them (never River or Arrows). "clear=0x<hex>" (anywhere in the file, also re-read every
+	2 s): bits that are cleared even though the config keeps them; it wins over the config and over "keep=".
+	For D7 option c1: Terrain stays on in config.ini (so the per-load bake fills the height field and the
+	terrain decal system is started) and clear=0x1 stops the terrain update and draw. GVS::StartupGame ORs bit 0
+	back at every load (VA 0x468BCC); the CvGame::update re-check clears it again, so the frames rendered between
+	that startup and the first CvGame::update after it still have the bit set (load screen). Bits taken out of
+	"clear=" later are set back if the config allows them. Removing the marker while the game runs sets back every
 	bit it cleared except River and Arrows and stops it. Without the marker nothing is done and nothing is logged.
 
 	Checks before any write: PE TimeDateStamp 0x546CD0A8 (CivilizationV_DX11.exe, Steam build 4390913), six
@@ -40,7 +46,8 @@ namespace ViewMaskSync
 //! Reads the marker, verifies the EXE and applies the mask once if the GameViewState exists. Only the first
 //! call does anything. From DllGetGameContext.
 void Install();
-//! Re-reads the marker every 2 s and re-applies the mask when a bit the config mask clears is set again.
+//! Re-reads the marker every 2 s and re-applies the mask when a bit the config mask (or "clear=") clears is set
+//! again.
 //! Cheap when nothing changed. From the top of CvGame::update (game-core thread).
 void OnGameUpdate(int iGameTurn);
 }
