@@ -31,6 +31,12 @@ namespace
 	}
 }
 
+// Reports a failed statement with its table, SQLite error code and message. A macro, so that every call site
+// keeps its own assert (an assert that is logged with popups suppressed is ignored at that site from then on).
+#define SQLITE_LOGGER_REPORT(pkLogger, szWhat, strTableName, iErrorCode) \
+	ASSERT(false, "SqliteLogger: %s (table %s): SQLite error %d: %s", szWhat, std::string(strTableName).c_str(), \
+		iErrorCode, (pkLogger)->LastErrorMessage())
+
 //	-----------------------------------------------------------------------------------------------
 SqliteLogger::SqliteLogger() :
 	m_kConnection(),
@@ -85,11 +91,21 @@ const char* SqliteLogger::SqlTypeName(Database::ColumnTypes eType)
 }
 
 //	-----------------------------------------------------------------------------------------------
+bool SqliteLogger::ExecuteOnce(Database::Results* pkResults, const char* szSql)
+{
+	if (pkResults != NULL && szSql != NULL)
+		return m_kConnection.Execute(*pkResults, szSql); // prepare szSql into *pkResults
+	if (pkResults != NULL)
+		return pkResults->Execute();                     // step the bound statement
+	return m_kConnection.Execute(szSql);                 // run szSql to its end
+}
+
+//	-----------------------------------------------------------------------------------------------
 int SqliteLogger::ExecuteWithRetry(Database::Results* pkResults, const char* szSql)
 {
 	// A failed sqlite3_step leaves a prepared statement ready to be stepped again with the same bindings (since
 	// SQLite 3.7.0 the next step resets it), so a retry repeats the whole insert: rows are neither lost nor doubled.
-	if (pkResults != NULL ? pkResults->Execute() : m_kConnection.Execute(szSql))
+	if (ExecuteOnce(pkResults, szSql))
 		return 0;
 
 	int iErrorCode = m_kConnection.ErrorCode();
@@ -100,7 +116,7 @@ int SqliteLogger::ExecuteWithRetry(Database::Results* pkResults, const char* szS
 	for (int iRetry = 0; iRetry < SQLITE_LOGGER_MAX_RETRIES; ++iRetry)
 	{
 		Sleep(SQLITE_LOGGER_RETRY_MS);
-		if (pkResults != NULL ? pkResults->Execute() : m_kConnection.Execute(szSql))
+		if (ExecuteOnce(pkResults, szSql))
 			return 0;
 
 		iErrorCode = m_kConnection.ErrorCode();
@@ -113,13 +129,10 @@ int SqliteLogger::ExecuteWithRetry(Database::Results* pkResults, const char* szS
 }
 
 //	-----------------------------------------------------------------------------------------------
-void SqliteLogger::ReportFailure(const char* szWhat, const std::string& strTableName, int iErrorCode)
+const char* SqliteLogger::LastErrorMessage() const
 {
-	ASSERT(false, "SqliteLogger: %s (table %s): SQLite error %d: %s", szWhat, strTableName.c_str(), iErrorCode,
-		m_kConnection.ErrorMessage() != NULL ? m_kConnection.ErrorMessage() : "(no message)");
-	(void)szWhat;
-	(void)strTableName;
-	(void)iErrorCode;
+	const char* szMessage = m_kConnection.ErrorMessage();
+	return szMessage != NULL ? szMessage : "(no message)";
 }
 
 //	-----------------------------------------------------------------------------------------------
@@ -146,8 +159,8 @@ bool SqliteLogger::EnsureOpen()
 		// commit and create and delete the journal file every time, which stalls the game thread for tens of
 		// milliseconds per commit when many games share one disk. Without the flushes a crashed or killed game still
 		// leaves a consistent database; only an OS crash or power loss can lose or corrupt the latest rows.
-		m_kConnection.Execute("PRAGMA synchronous = OFF");
-		m_kConnection.Execute("PRAGMA journal_mode = PERSIST");
+		ExecuteWithRetry(NULL, "PRAGMA synchronous = OFF");
+		ExecuteWithRetry(NULL, "PRAGMA journal_mode = PERSIST");
 		EnsureDictionaryTable();
 	}
 	else
@@ -165,13 +178,12 @@ void SqliteLogger::EnsureDictionaryTable()
 	if (!m_bOpen)
 		return;
 
-	if (!m_kConnection.Execute(
+	const int iErrorCode = ExecuteWithRetry(NULL,
 		"CREATE TABLE IF NOT EXISTS uuid_dictionary ("
 		"id INTEGER PRIMARY KEY AUTOINCREMENT, "
-		"uuid_hex TEXT UNIQUE NOT NULL)"))
-	{
-		ASSERT(false, "SqliteLogger: failed to create uuid_dictionary table");
-	}
+		"uuid_hex TEXT UNIQUE NOT NULL)");
+	if (iErrorCode != 0)
+		SQLITE_LOGGER_REPORT(this, "failed to create table", "uuid_dictionary", iErrorCode);
 }
 
 //	-----------------------------------------------------------------------------------------------
@@ -186,10 +198,12 @@ int SqliteLogger::ResolveGameId(const std::string& strUuidHex)
 	// Insert the UUID if it is not already present. The UNIQUE constraint makes this idempotent.
 	{
 		Database::Results kInsert;
-		if (m_kConnection.Execute(kInsert, "INSERT OR IGNORE INTO uuid_dictionary (uuid_hex) VALUES (?)"))
+		if (ExecuteWithRetry(&kInsert, "INSERT OR IGNORE INTO uuid_dictionary (uuid_hex) VALUES (?)") == 0)
 		{
 			kInsert.Bind(1, strUuidHex.c_str());
-			kInsert.Execute();
+			const int iErrorCode = ExecuteWithRetry(&kInsert, NULL);
+			if (iErrorCode != 0)
+				SQLITE_LOGGER_REPORT(this, "failed to record the game id", "uuid_dictionary", iErrorCode);
 			kInsert.Reset();
 		}
 	}
@@ -198,7 +212,7 @@ int SqliteLogger::ResolveGameId(const std::string& strUuidHex)
 	int iId = 0;
 	{
 		Database::Results kSelect;
-		if (m_kConnection.Execute(kSelect, "SELECT id FROM uuid_dictionary WHERE uuid_hex = ?"))
+		if (ExecuteWithRetry(&kSelect, "SELECT id FROM uuid_dictionary WHERE uuid_hex = ?") == 0)
 		{
 			kSelect.Bind(1, strUuidHex.c_str());
 			if (kSelect.Step())
@@ -217,15 +231,16 @@ bool SqliteLogger::IsEnabled()
 }
 
 //	-----------------------------------------------------------------------------------------------
-bool SqliteLogger::TableSchemaMatches(const std::string& strTableName, const TableDef& kColumns)
+int SqliteLogger::TableSchemaMatches(const std::string& strTableName, const TableDef& kColumns, int& iErrorCode)
 {
 	std::string strSql = "PRAGMA table_info(\"";
 	strSql += strTableName;
 	strSql += "\")";
 
 	Database::Results kResults;
-	if (!m_kConnection.Execute(kResults, strSql.c_str()))
-		return false;
+	iErrorCode = ExecuteWithRetry(&kResults, strSql.c_str());
+	if (iErrorCode != 0)
+		return -1;
 
 	size_t uiColumn = 0;
 	while (kResults.Step())
@@ -238,28 +253,33 @@ bool SqliteLogger::TableSchemaMatches(const std::string& strTableName, const Tab
 		{
 			// Live table has more columns than expected.
 			kResults.Reset();
-			return false;
+			return 0;
 		}
 
 		const ColumnDef& kExpected = kColumns[uiColumn];
 		if (szName == NULL || _stricmp(szName, kExpected.name.c_str()) != 0)
 		{
 			kResults.Reset();
-			return false;
+			return 0;
 		}
 		if (szType == NULL || _stricmp(szType, SqlTypeName(kExpected.type)) != 0)
 		{
 			kResults.Reset();
-			return false;
+			return 0;
 		}
 
 		++uiColumn;
 	}
 
+	// The loop also ends when a step fails: a lock is not "no such table".
+	iErrorCode = m_kConnection.ErrorCode();
 	kResults.Reset();
+	if (IsLockError(iErrorCode))
+		return -1;
+	iErrorCode = 0;
 
 	// Match only if every expected column was found and there were no extras.
-	return (uiColumn == kColumns.size()) && (uiColumn > 0);
+	return (uiColumn == kColumns.size()) && (uiColumn > 0) ? 1 : 0;
 }
 
 //	-----------------------------------------------------------------------------------------------
@@ -282,10 +302,9 @@ void SqliteLogger::CreateTable(const std::string& strTableName, const TableDef& 
 
 	strSql += ")";
 
-	if (!m_kConnection.Execute(strSql.c_str()))
-	{
-		ASSERT(false, "SqliteLogger: failed to create table");
-	}
+	const int iErrorCode = ExecuteWithRetry(NULL, strSql.c_str());
+	if (iErrorCode != 0)
+		SQLITE_LOGGER_REPORT(this, "failed to create table", strTableName, iErrorCode);
 }
 
 //	-----------------------------------------------------------------------------------------------
@@ -332,13 +351,23 @@ void SqliteLogger::RegisterTable(const std::string& strTableName, const TableDef
 		m_preparedInserts.erase(itInsert);
 	}
 
-	if (!TableSchemaMatches(strTableName, kFullColumns))
+	int iErrorCode = 0;
+	const int iMatch = TableSchemaMatches(strTableName, kFullColumns, iErrorCode);
+	if (iMatch < 0)
+	{
+		// The schema could not be read (stats.db stayed locked): never drop a table on that. Register the schema
+		// anyway; the inserts then work if the table exists and are reported if it does not.
+		SQLITE_LOGGER_REPORT(this, "failed to read the table schema, table left as it is", strTableName, iErrorCode);
+	}
+	else if (iMatch == 0)
 	{
 		// Table is missing or has a different schema: drop (if present) and (re)create.
 		std::string strDrop = "DROP TABLE IF EXISTS \"";
 		strDrop += strTableName;
 		strDrop += "\"";
-		m_kConnection.Execute(strDrop.c_str());
+		iErrorCode = ExecuteWithRetry(NULL, strDrop.c_str());
+		if (iErrorCode != 0)
+			SQLITE_LOGGER_REPORT(this, "failed to drop table", strTableName, iErrorCode);
 
 		CreateTable(strTableName, kFullColumns);
 	}
@@ -371,9 +400,10 @@ Database::Results* SqliteLogger::GetOrCreateInsert(const std::string& strTableNa
 	strSql += ")";
 
 	Database::Results* pkResults = new Database::Results();
-	if (!m_kConnection.Execute(*pkResults, strSql.c_str()))
+	const int iErrorCode = ExecuteWithRetry(pkResults, strSql.c_str());
+	if (iErrorCode != 0)
 	{
-		ASSERT(false, "SqliteLogger: failed to prepare insert statement");
+		SQLITE_LOGGER_REPORT(this, "failed to prepare insert statement, row dropped", strTableName, iErrorCode);
 		delete pkResults;
 		return NULL;
 	}
@@ -565,7 +595,7 @@ void SqliteLogger::Statement::execute()
 
 	const int iErrorCode = m_pkOwner->ExecuteWithRetry(m_pkResults, NULL);
 	if (iErrorCode != 0)
-		m_pkOwner->ReportFailure("failed to execute insert, row dropped", m_strTableName, iErrorCode);
+		SQLITE_LOGGER_REPORT(m_pkOwner, "failed to execute insert, row dropped", m_strTableName, iErrorCode);
 
 	// Leave the statement ready for the next row.
 	m_pkResults->Reset();
@@ -629,7 +659,7 @@ void SqliteLogger::BatchWriter::flush()
 	int iErrorCode = m_pkOwner->ExecuteWithRetry(NULL, "BEGIN IMMEDIATE");
 	if (iErrorCode != 0)
 	{
-		m_pkOwner->ReportFailure("failed to begin a batch, batch dropped", m_strTableName, iErrorCode);
+		SQLITE_LOGGER_REPORT(m_pkOwner, "failed to begin a batch, batch dropped", m_strTableName, iErrorCode);
 		m_buffer.clear();
 		return;
 	}
@@ -664,7 +694,7 @@ void SqliteLogger::BatchWriter::flush()
 
 		iErrorCode = m_pkOwner->ExecuteWithRetry(m_pkResults, NULL);
 		if (iErrorCode != 0)
-			m_pkOwner->ReportFailure("failed to execute batched insert, row dropped", m_strTableName, iErrorCode);
+			SQLITE_LOGGER_REPORT(m_pkOwner, "failed to execute batched insert, row dropped", m_strTableName, iErrorCode);
 	}
 
 	// Intentional: a failed row above is reported but does not abort the batch. For best-effort stats
@@ -674,7 +704,7 @@ void SqliteLogger::BatchWriter::flush()
 	iErrorCode = m_pkOwner->ExecuteWithRetry(NULL, "COMMIT");
 	if (iErrorCode != 0)
 	{
-		m_pkOwner->ReportFailure("failed to commit a batch, batch dropped", m_strTableName, iErrorCode);
+		SQLITE_LOGGER_REPORT(m_pkOwner, "failed to commit a batch, batch dropped", m_strTableName, iErrorCode);
 		m_pkOwner->m_kConnection.RollbackTransaction();
 	}
 
