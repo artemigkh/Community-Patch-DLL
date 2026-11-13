@@ -1181,6 +1181,7 @@ void CvGame::uninit()
 	m_iEstimateEndTurn = 0;
 	m_iDefaultEstimateEndTurn = 0;
 	m_iTurnSlice = 0;
+	m_iCacheStamp = 1;
 	m_iCutoffSlice = 0;
 	m_iNumCities = 0;
 	m_iTotalPopulation = 0;
@@ -1620,6 +1621,8 @@ bool ExternalPause()
 //	---------------------------------------------------------------------------
 void CvGame::update()
 {
+	m_iCacheStamp++; // bug 0116: see GetCacheStamp
+
 	if(IsWaitingForBlockingInput())
 	{
 		if(!GC.GetEngineUserInterface()->isDiploActive())
@@ -5011,6 +5014,17 @@ void CvGame::setTurnSlice(int iNewValue)
 void CvGame::changeTurnSlice(int iChange)
 {
 	setTurnSlice(getTurnSlice() + iChange);
+	m_iCacheStamp++;
+}
+
+//	--------------------------------------------------------------------------------
+/// Key for caches that live for one turn slice. It changes where the turn slice changes and also at the start of every
+/// CvGame::update(), so that a value cached by a call between two updates (UI Lua, a headless host's per-turn checkpoint,
+/// network message handling) is not used by the next update: such calls would otherwise decide which state the game's
+/// own reads in that update see (bug 0116, one-off 9044).
+int CvGame::GetCacheStamp() const
+{
+	return m_iCacheStamp;
 }
 
 //	--------------------------------------------------------------------------------
