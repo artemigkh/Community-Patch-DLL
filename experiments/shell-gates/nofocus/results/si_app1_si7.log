@@ -1,0 +1,9 @@
+   0.000 START pid=56952 desktop=CivBgExpSI startupinfo.flags=0x1 wShowWindow=7 lpDesktop=WinSta0\CivBgExpSI fg_at_start=00000000
+   0.015 CREATED hwnd=00691562
+   0.015 MSG WM_SIZE type=1 0x0
+   0.015 ShowWindow(1) -> 0; fg_is_me=0 iconic=1
+   0.015 PLACEMENT showCmd=2 visible=1 iconic=1
+   0.015 RegisterRawInputDevices -> 1
+   0.187 D3D11CreateDeviceAndSwapChain hr=0x00000000 fl=0xb000 swap=discard(blt)
+   0.187 ADAPTER NVIDIA GeForce RTX 4080
+   1.187 SEC fps=12840 present_ok=0 occluded=12840 other=0 frame=12840 iconic=1 fg_is_me=0 active_is_me=0 focus_is_me=0 cloaked=0 rawkeys=0 rawmouse=0

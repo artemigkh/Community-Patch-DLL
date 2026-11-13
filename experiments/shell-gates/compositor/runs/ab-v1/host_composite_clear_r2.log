@@ -1,0 +1,37 @@
+17:40:01.607 ==== test_host start pid 53156 label 'composite_clear' swap blit(DISCARD) buffers 1 format 28 msaa 1 vsync 0 load after size 1280x720 bb 2560x1440
+17:40:01.830 device FL b000 on 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:40:01.831 mem start: private=23.81 MB working=29.18 MB video_local=8.25 MB handles=333
+17:40:01.847 LoadLibraryW('C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\shell_composite.dll') after device creation (frame N) -> 5AE10000 (err 0) in 1.38 ms
+17:40:02.832 1s: frames 9618 mean 0.104 ms max 7.599 ms bb 2560x1440
+17:40:03.831 1s: frames 10421 mean 0.096 ms max 1.194 ms bb 2560x1440
+17:40:04.831 1s: frames 11648 mean 0.086 ms max 1.219 ms bb 2560x1440
+17:40:05.832 1s: frames 11831 mean 0.085 ms max 0.885 ms bb 2560x1440
+17:40:06.832 1s: frames 11178 mean 0.089 ms max 0.867 ms bb 2560x1440
+17:40:07.832 1s: frames 11766 mean 0.085 ms max 0.828 ms bb 2560x1440
+17:40:08.831 1s: frames 11416 mean 0.088 ms max 0.834 ms bb 2560x1440
+17:40:09.833 1s: frames 11836 mean 0.084 ms max 0.891 ms bb 2560x1440
+17:40:10.832 1s: frames 11199 mean 0.089 ms max 1.000 ms bb 2560x1440
+17:40:11.831 mem periodic: private=33.80 MB working=35.16 MB video_local=56.50 MB handles=390
+17:40:11.831 1s: frames 11255 mean 0.089 ms max 1.001 ms bb 2560x1440
+17:40:12.832 1s: frames 11369 mean 0.088 ms max 1.002 ms bb 2560x1440
+17:40:13.832 1s: frames 11249 mean 0.089 ms max 0.994 ms bb 2560x1440
+17:40:14.833 1s: frames 11036 mean 0.091 ms max 0.802 ms bb 2560x1440
+17:40:15.832 1s: frames 10565 mean 0.095 ms max 1.141 ms bb 2560x1440
+17:40:16.833 1s: frames 11286 mean 0.089 ms max 0.983 ms bb 2560x1440
+17:40:17.832 1s: frames 11633 mean 0.086 ms max 0.964 ms bb 2560x1440
+17:40:18.833 1s: frames 11116 mean 0.090 ms max 1.150 ms bb 2560x1440
+17:40:19.833 1s: frames 8765 mean 0.114 ms max 0.890 ms bb 2560x1440
+17:40:20.833 1s: frames 8368 mean 0.120 ms max 1.387 ms bb 2560x1440
+17:40:21.832 mem periodic: private=33.81 MB working=35.61 MB video_local=56.50 MB handles=390
+17:40:21.833 1s: frames 8682 mean 0.115 ms max 1.222 ms bb 2560x1440
+17:40:22.833 1s: frames 10631 mean 0.094 ms max 1.068 ms bb 2560x1440
+17:40:23.833 1s: frames 9836 mean 0.102 ms max 1.037 ms bb 2560x1440
+17:40:24.833 1s: frames 10193 mean 0.098 ms max 1.179 ms bb 2560x1440
+17:40:25.833 1s: frames 10760 mean 0.093 ms max 0.939 ms bb 2560x1440
+17:40:26.833 1s: frames 10805 mean 0.093 ms max 1.181 ms bb 2560x1440
+17:40:27.833 1s: frames 12070 mean 0.083 ms max 0.756 ms bb 2560x1440
+17:40:28.833 1s: frames 11852 mean 0.084 ms max 1.147 ms bb 2560x1440
+17:40:29.834 1s: frames 11906 mean 0.084 ms max 0.823 ms bb 2560x1440
+17:40:30.833 1s: frames 11924 mean 0.084 ms max 1.031 ms bb 2560x1440
+17:40:31.838 summary label=composite_clear frames=295676 mean=0.0913 p50=0.0697 p99=0.3094 max=1.387 fps=10951.0
+17:40:31.838 mem end: private=33.97 MB working=36.10 MB video_local=56.50 MB handles=394

@@ -7,6 +7,7 @@
 	------------------------------------------------------------------------------------------------------- */
 
 #include "CvGameCoreDLLPCH.h"
+#include "MemoryHooks.h"
 #include "CvGameCoreUtils.h"
 #include "CvInternalGameCoreUtils.h"
 #include "CvGame.h"
@@ -34,6 +35,9 @@
 #include "CvWorldBuilderMapLoader.h"
 #include "CvTypes.h"
 #include "SqliteLoggerRegistrations.h"
+#include "MemoryDiagnostics.h"
+#include "EngineQueueGuard.h"
+#include "EngineAllocTrace.h"
 #include "CvDllNetMessageExt.h"
 
 #include "cvStopWatch.h"
@@ -72,6 +76,8 @@ extern "C" __declspec(dllimport) long __stdcall CoCreateGuid(GUID* pguid);
 
 #include "CvSpanSerialization.h"
 #include "CvEnumMapSerialization.h"
+#include "InstanceNames.h"
+#include "ViewMaskSync.h"
 
 //updated by pre-build hook
 #include "../commit_id.inc"
@@ -1591,7 +1597,7 @@ bool ExternalPause()
 	bool bPause = false;
 
 	// wait for an external mutex if it exists to make it easier to see what the AI is doing
-	HANDLE hMutex = ::OpenMutex(SYNCHRONIZE, FALSE, "TurnByTurn");
+	HANDLE hMutex = ::OpenMutex(SYNCHRONIZE, FALSE, InstanceNames::Get().szTurnByTurn);	// "TurnByTurn", or "TurnByTurn_<id>" under VP_INSTANCE
 	if (hMutex != NULL)
 	{
 		if (::WaitForSingleObject(hMutex, 0) == WAIT_OBJECT_0)
@@ -1619,6 +1625,17 @@ bool ExternalPause()
 //	---------------------------------------------------------------------------
 void CvGame::update()
 {
+	// Ahead of every early return, so a watcher can snapshot memory whatever screen the player is on.
+	MemoryDiagnostics::PollSnapshotRequest();
+	// Development tooling: run a Lua chunk an outside process asked for (see CvLuaSupport.h).
+	LuaSupport::PollExternalLuaRequest();
+	// One log line after a load that overfilled the EXE's UI message queue (see EngineQueueGuard.h).
+	EngineQueueGuard::ReportDrops();
+	// Turn marker and log flush for the opt-in EXE allocation trace (see EngineAllocTrace.h).
+	EngineAllocTrace::OnGameUpdate(getGameTurn());
+	// Opt-in: keep the EXE's per-view system mask within config.ini's [DisableSystems] (see ViewMaskSync.h).
+	ViewMaskSync::OnGameUpdate(getGameTurn());
+
 	if(IsWaitingForBlockingInput())
 	{
 		if(!GC.GetEngineUserInterface()->isDiploActive())
@@ -10970,6 +10987,7 @@ void CvGame::Serialize(Game& game, Visitor& visitor)
 //	--------------------------------------------------------------------------------
 void CvGame::Read(FDataStream& kStream)
 {
+	MEMHOOK_SCOPE(MEMTAG_SERIALIZE);
 	int iI = 0;
 
 	reset(NO_HANDICAP);
@@ -12938,6 +12956,10 @@ void CvGame::LogGameState(bool bLogHeaders) const
 	// Mirror WorldStateLog into the SQLite stats database
 	if (MOD_SQLITE_LOGGING)
 	{
+		// Sample the process's memory footprint first, before the batched logging below allocates
+		// its own buffers, so the numbers describe the game state rather than the logger.
+		MemoryDiagnostics::LogTurn();
+
 		// Mirror mapStateLog into stats.db. Gated purely behind the SQLite flag (independent of the
 		// CSV logging switches above) and internally guarded, so it is safe to call unconditionally.
 		LogMapPlotsState();

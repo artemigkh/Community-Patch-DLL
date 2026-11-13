@@ -1,0 +1,26 @@
+17:43:30.343 ==== test_host start pid 12080 label 'off' swap blit(DISCARD) buffers 1 format 28 msaa 1 vsync 0 load after size 1280x720 bb 2560x1440
+17:43:30.523 device FL b000 on 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:43:30.526 mem start: private=23.65 MB working=29.04 MB video_local=8.25 MB handles=331
+17:43:30.538 LoadLibraryW('C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\shell_composite.dll') after device creation (frame N) -> 5AD90000 (err 0) in 1.57 ms
+17:43:31.525 1s: frames 10555 mean 0.095 ms max 3.719 ms bb 2560x1440
+17:43:32.525 1s: frames 12393 mean 0.081 ms max 0.873 ms bb 2560x1440
+17:43:33.525 1s: frames 12585 mean 0.079 ms max 0.608 ms bb 2560x1440
+17:43:34.526 1s: frames 12091 mean 0.083 ms max 0.626 ms bb 2560x1440
+17:43:35.525 1s: frames 12236 mean 0.082 ms max 0.934 ms bb 2560x1440
+17:43:36.525 1s: frames 12483 mean 0.080 ms max 1.291 ms bb 2560x1440
+17:43:37.525 1s: frames 12342 mean 0.081 ms max 0.986 ms bb 2560x1440
+17:43:38.526 1s: frames 12507 mean 0.080 ms max 0.885 ms bb 2560x1440
+17:43:39.525 1s: frames 12437 mean 0.080 ms max 0.771 ms bb 2560x1440
+17:43:40.525 mem periodic: private=31.35 MB working=31.47 MB video_local=27.06 MB handles=377
+17:43:40.526 1s: frames 12767 mean 0.078 ms max 1.267 ms bb 2560x1440
+17:43:41.526 1s: frames 12258 mean 0.082 ms max 0.782 ms bb 2560x1440
+17:43:42.526 1s: frames 12363 mean 0.081 ms max 0.859 ms bb 2560x1440
+17:43:43.526 1s: frames 12319 mean 0.081 ms max 0.743 ms bb 2560x1440
+17:43:44.526 1s: frames 11670 mean 0.086 ms max 0.795 ms bb 2560x1440
+17:43:45.526 1s: frames 11793 mean 0.085 ms max 1.106 ms bb 2560x1440
+17:43:46.526 1s: frames 11096 mean 0.090 ms max 1.125 ms bb 2560x1440
+17:43:47.526 1s: frames 11763 mean 0.085 ms max 1.019 ms bb 2560x1440
+17:43:48.527 1s: frames 12354 mean 0.081 ms max 1.224 ms bb 2560x1440
+17:43:49.526 1s: frames 12823 mean 0.078 ms max 0.693 ms bb 2560x1440
+17:43:50.528 summary label=off frames=207593 mean=0.0819 p50=0.0686 p99=0.2570 max=1.291 fps=12211.4
+17:43:50.528 mem end: private=31.35 MB working=32.01 MB video_local=27.06 MB handles=377

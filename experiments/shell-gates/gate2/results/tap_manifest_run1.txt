@@ -1,0 +1,10 @@
+Local\VPTap_238 seq 238 copy 1024x1024 mips 11 arr 1 A8 ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x900 bytes 1398101 vram_delta_kb 1408
+Local\VPTap_239 seq 239 copy 1024x1024 mips 11 arr 1 A8 ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x900 bytes 1398101 vram_delta_kb 1408
+Local\VPTap_270 seq 270 copy 1024x1024 mips 11 arr 1 A8 ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x900 bytes 1398101 vram_delta_kb 1408
+Local\VPTap_155 seq 155 copy 2048x2048 mips 12 arr 1 BC3_TYPELESS ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x900 bytes 5592432 vram_delta_kb 5504
+Local\VPTap_154 seq 154 copy 1024x1024 mips 11 arr 1 BC3_TYPELESS ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x900 bytes 1398128 vram_delta_kb 1408
+Local\VPTap_181 seq 181 copy 2048x2048 mips 12 arr 1 BC3_TYPELESS ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x900 bytes 5592432 vram_delta_kb 5504
+Local\VPTap_308 seq 308 copy 512x512 mips 10 arr 1 RGBA16F ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x900 bytes 2796200 vram_delta_kb 2752
+Local\VPTap_311 seq 311 copy 512x512 mips 10 arr 1 RGBA8_TYPELESS ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x900 bytes 1398100 vram_delta_kb 1408
+Local\VPTap_335 seq 335 copy 512x512 mips 7 arr 1 RGBA8_TYPELESS ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x900 bytes 1398016 vram_delta_kb 2816
+legacy:1073749634 seq 1194 copy 128x128 mips 8 arr 54 BC1_TYPELESS ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x6 bytes 590544 vram_delta_kb 768

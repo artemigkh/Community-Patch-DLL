@@ -1,0 +1,47 @@
+{
+ "veto": {
+  "arm": "system-initiated activation, with and without the guard's WH_CBT veto",
+  "rows": [
+   {
+    "case": "first window on an empty desktop",
+    "guard": false,
+    "activated": true
+   },
+   {
+    "case": "active window A minimised then closed; B next in z-order",
+    "guard": false,
+    "B_activated_after_A_minimised": true,
+    "A_activated": true,
+    "B_activated_before": false,
+    "B_activated_after_A_died": true
+   },
+   {
+    "case": "first window on an empty desktop",
+    "guard": true,
+    "activated": false
+   },
+   {
+    "case": "active window A minimised then closed; B next in z-order",
+    "guard": true,
+    "B_activated_after_A_minimised": false,
+    "A_activated": true,
+    "B_activated_before": false,
+    "B_activated_after_A_died": false,
+    "guard_counters": {
+     "ShowWindow": {
+      "calls": 1,
+      "altered": 0
+     },
+     "SetWindowPos": {
+      "calls": 1,
+      "altered": 0
+     },
+     "ActivateVeto": {
+      "calls": 1,
+      "altered": 1
+     }
+    }
+   }
+  ]
+ }
+}

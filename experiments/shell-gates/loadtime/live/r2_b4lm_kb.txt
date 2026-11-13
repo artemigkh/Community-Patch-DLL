@@ -1,0 +1,21 @@
+s000_saveread.txt EXE:820783 < EXE:43d0c1 < EXE:64002d < EXE:630055 < EXE:7b0045 < EXE:4f0030 < EXE:4c0035 < EXE:5f002e < EXE:920069 < EXE:6f0035 < EXE:920061
+s001_saveread.txt EXE:820783 < EXE:43d0c1 < EXE:64002d < EXE:630055 < EXE:7b0045 < EXE:4f0030 < EXE:4c0035 < EXE:5f002e < EXE:920069 < EXE:6f0035 < EXE:920061
+s002_saveread.txt EXE:820783 < EXE:43d0c1 < EXE:64002d < EXE:630055 < EXE:7b0045 < EXE:4f0030 < EXE:4c0035 < EXE:5f002e < EXE:920069 < EXE:6f0035 < EXE:920061
+s003_saveread.txt EXE:820904 < EXE:43d0c1 < EXE:64002d < EXE:630055 < EXE:7b0045 < EXE:4f0030 < EXE:4c0035 < EXE:5f002e < EXE:920069 < EXE:6f0035 < EXE:920061
+s004_saveread.txt EXE:820783 < EXE:43d0c1 < EXE:64002d < EXE:630055 < EXE:7b0045 < EXE:4f0030 < EXE:4c0035 < EXE:5f002e < EXE:920069 < EXE:6f0035 < EXE:920061
+s005_saveread.txt EXE:820904 < EXE:43d0c1 < EXE:64002d < EXE:630055 < EXE:7b0045 < EXE:4f0030 < EXE:4c0035 < EXE:5f002e < EXE:920069 < EXE:6f0035 < EXE:920061
+s006_saveread.txt zlib1!inflateInit_+0xf3
+s007_dllread.txt EXE:?
+s008_dllread.txt zlib1!inflate+0x5b
+s009_dllread.txt EXE:? < EXE:5b9664 < EXE:5b9680 < EXE:6edc48 < EXE:4509ab < EXE:47fd38 < EXE:72e50f < EXE:5c93c8 < EXE:62cc9b < EXE:47fd38 < EXE:79479e < EXE:5c93c8 < EXE:530f2b < EXE:47fd38
+s010_terrain.txt EXE:?
+s011_terrain.txt EXE:?
+s012_terrain.txt EXE:? < 0x6aef5cc < EXE:76999a < 0xffffffff
+s013_terrain.txt MSVCR90!memcpy+0x5c < EXE:794171 < 0x3c3c3c3c < 0x3c3c3c3c < 0x3c3c3c3c < 0x3c3c3c3c < 0x3c3c3c3c < 0x3c3c3c3c < 0x3c3c3c3c < 0x3c3c3c3c < 0x3c3c3c3c < 0x3c3c3c3c < 0x3c3c3c3c < 0x3c3c3c3c
+s014_terrain.txt EXE:? < 0xd5dadee1 < 0xbdc4cbd1 < 0x9aa4aeb6 < nvgpucomp32!nvGetCompilerInterface+0x39c3ee < 0x1e334657 < EXE:5210508 < EXE:5210505 < EXE:5210505 < EXE:5210505 < EXE:5210505 < EXE:5210505 < EXE:5210505 < EXE:5210505
+s015_terrain.txt EXE:? < EXE:644943 < EXE:6449dd < EXE:6449dd < EXE:644a00 < EXE:6449dd < EXE:6449dd
+s016_terrain.txt d3dx9_42!D3DXComputeIMTFromPerTexelSignal+0x3f458 < EXE:74893a < EXE:5684ef < EXE:6abd43 < EXE:7bf28f < EXE:81d7ca < EXE:60bbd6
+s017_terrain.txt CvGameDatabaseWin32Final_Release!Database::Results::GetBool+0x153 < 0x49015c88 < lua51_Win32!luaopen_string+0xbec < lua51_Win32!lua_getinfo+0x1374 < lua51_Win32!lua_getinfo+0x14e4 < lua51_Win32!luaopen_table+0x28b9 < lua51_Win32!lua_getinfo+0x14f3 < lua51_Win32!lua_call+0x55 < lua51_Win32!lua_yield+0x7f < lua51_Win32!lua_pcall+0x53 < EXE:9045d5
+s018_gap.txt MSVCR90!$I10_OUTPUT+0x945 < MSVCR90!strerror_s+0x3560 < MSVCR90!_STRINGTOLD_L+0x98 < MSVCR90!strtod_l+0xa6 < MSVCR90!strtod+0x12 < MSVCP90!Stodx+0x24 < MSVCP90!Stofx+0x17 < MSVCP90!std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> < MSVCP90!std::num_get<unsigned < MSVCP90!std::basic_istream<char,std::char_traits<char> < EXE:82db4a < EXE:657057 < EXE:56d912 < EXE:73392c
+s019_ready.txt CvGameDatabaseWin32Final_Release!Database::ResultsCache::Prepare+0x55797 < CvGameDatabaseWin32Final_Release!Database::ResultsCache::Prepare+0x1266d < CvGameDatabaseWin32Final_Release!Database::ResultsCache::Prepare+0x55cb9 < CvGameDatabaseWin32Final_Release!Database::ResultsCache::Prepare+0x55ce4
+s020_ready.txt EXE:7bfc28 < EXE:7bf28f < EXE:81d7ca < EXE:8d7fc1 < EXE:8df12e

@@ -1,0 +1,38 @@
+17:50:14.056 ==== test_host start pid 18532 label '32-lat-novsync-srvmax' swap blit(DISCARD) buffers 1 format 28 msaa 1 vsync 0 load after size 1280x720 bb 2560x1440
+17:50:14.236 device FL b000 on 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:50:14.238 mem start: private=23.64 MB working=28.96 MB video_local=8.25 MB handles=331
+17:50:14.250 LoadLibraryW('C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\shell_composite.dll') after device creation (frame N) -> 63EA0000 (err 0) in 1.06 ms
+17:50:15.238 1s: frames 3248 mean 0.308 ms max 6.221 ms bb 2560x1440
+17:50:16.238 1s: frames 4026 mean 0.248 ms max 3.715 ms bb 2560x1440
+17:50:17.239 1s: frames 2414 mean 0.414 ms max 1.773 ms bb 2560x1440
+17:50:18.238 1s: frames 1540 mean 0.650 ms max 1.929 ms bb 2560x1440
+17:50:19.239 1s: frames 1785 mean 0.560 ms max 1.602 ms bb 2560x1440
+17:50:20.238 1s: frames 2291 mean 0.437 ms max 1.385 ms bb 2560x1440
+17:50:21.240 1s: frames 4098 mean 0.244 ms max 2.686 ms bb 2560x1440
+17:50:22.240 1s: frames 4281 mean 0.234 ms max 4.761 ms bb 2560x1440
+17:50:23.240 1s: frames 4680 mean 0.214 ms max 0.933 ms bb 2560x1440
+17:50:24.237 mem periodic: private=33.96 MB working=35.75 MB video_local=56.48 MB handles=396
+17:50:24.240 1s: frames 4734 mean 0.211 ms max 1.204 ms bb 2560x1440
+17:50:25.240 1s: frames 4765 mean 0.210 ms max 1.076 ms bb 2560x1440
+17:50:26.240 1s: frames 4449 mean 0.225 ms max 1.552 ms bb 2560x1440
+17:50:27.240 1s: frames 2970 mean 0.337 ms max 62.226 ms bb 2560x1440
+17:50:28.241 1s: frames 2330 mean 0.429 ms max 19.057 ms bb 2560x1440
+17:50:29.240 1s: frames 2018 mean 0.496 ms max 1.875 ms bb 2560x1440
+17:50:30.240 1s: frames 1972 mean 0.507 ms max 1.911 ms bb 2560x1440
+17:50:31.241 1s: frames 1971 mean 0.508 ms max 2.080 ms bb 2560x1440
+17:50:32.241 1s: frames 2040 mean 0.490 ms max 1.725 ms bb 2560x1440
+17:50:33.241 1s: frames 4115 mean 0.243 ms max 2.692 ms bb 2560x1440
+17:50:34.238 mem periodic: private=33.96 MB working=35.87 MB video_local=56.48 MB handles=396
+17:50:34.241 1s: frames 4318 mean 0.232 ms max 1.053 ms bb 2560x1440
+17:50:35.241 1s: frames 4500 mean 0.222 ms max 1.194 ms bb 2560x1440
+17:50:36.241 1s: frames 4677 mean 0.214 ms max 0.962 ms bb 2560x1440
+17:50:37.241 1s: frames 4690 mean 0.213 ms max 1.025 ms bb 2560x1440
+17:50:38.242 1s: frames 4333 mean 0.231 ms max 10.950 ms bb 2560x1440
+17:50:39.241 1s: frames 4500 mean 0.222 ms max 1.139 ms bb 2560x1440
+17:50:40.241 1s: frames 4783 mean 0.209 ms max 0.998 ms bb 2560x1440
+17:50:41.242 1s: frames 4657 mean 0.215 ms max 0.880 ms bb 2560x1440
+17:50:42.242 1s: frames 4548 mean 0.220 ms max 1.949 ms bb 2560x1440
+17:50:43.243 1s: frames 4500 mean 0.222 ms max 2.079 ms bb 2560x1440
+17:50:44.237 mem periodic: private=34.05 MB working=36.11 MB video_local=56.48 MB handles=398
+17:50:44.239 summary label=32-lat-novsync-srvmax frames=100070 mean=0.2698 p50=0.2179 p99=0.9394 max=62.226 fps=3706.3
+17:50:44.239 mem end: private=34.43 MB working=36.49 MB video_local=56.48 MB handles=398
