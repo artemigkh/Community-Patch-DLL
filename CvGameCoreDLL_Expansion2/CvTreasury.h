@@ -79,12 +79,9 @@ public:
 	int GetLifetimeGrossGold() const;
 	int CalculateBaseNetGold();
 	int CalculateBaseNetGoldTimes100();
-	int CalculateUnitCost(int iUnits = -1);
+	int CalculateUnitCost(int iUnits = -1) const;
 	int CalculateTotalCosts();
-	int GetExpensePerTurnUnitMaintenance() const
-	{
-		return m_iExpensePerTurnUnitMaintenance;
-	}
+	int GetExpensePerTurnUnitMaintenance() const;
 
 	// Other Maintenance
 	int GetBuildingGoldMaintenance() const;
