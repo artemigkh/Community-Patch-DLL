@@ -345,6 +345,7 @@ public:
 	BatchWriter BeginLogBatch(const std::string& strTableName);
 
 private:
+	friend class Statement;
 	friend class BatchWriter;
 
 	SqliteLogger();
@@ -370,12 +371,22 @@ private:
 	//! Maps a ColumnTypes value to its SQLite declared type name.
 	static const char* SqlTypeName(Database::ColumnTypes eType);
 
+	//! Executes a bound statement (pkResults) or an SQL text (szSql). When it fails because another
+	//! connection holds a lock on stats.db (SQLITE_BUSY or SQLITE_LOCKED), waits and executes it again,
+	//! a bounded number of times. Returns 0 on success, else the SQLite error code of the last attempt
+	//! (the message is in m_kConnection.ErrorMessage()). The first attempt is the only cost on success.
+	int ExecuteWithRetry(Database::Results* pkResults, const char* szSql);
+
+	//! Writes a failed statement's SQLite error code and message to the assert log.
+	void ReportFailure(const char* szWhat, const std::string& strTableName, int iErrorCode);
+
 	typedef std::map<std::string, TableDef> SchemaMap;
 	typedef std::map<std::string, Database::Results*> InsertMap;
 
 	Database::Connection m_kConnection;
 	bool m_bOpenAttempted;
 	bool m_bOpen;
+	int m_iNoRetryTurn;  //!< Turn in which a statement used up its retries: no more retries in that turn.
 
 	SchemaMap m_registeredTableSchemas;
 	InsertMap m_preparedInserts;

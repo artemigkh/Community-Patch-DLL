@@ -11,11 +11,32 @@
 // must be included after all other headers
 #include "LintFree.h"
 
+namespace
+{
+	// SQLite primary result codes (sqlite3.h is not part of the DLL's includes).
+	const int SQLITE_LOGGER_BUSY = 5;    // SQLITE_BUSY: another connection holds a lock on stats.db
+	const int SQLITE_LOGGER_LOCKED = 6;  // SQLITE_LOCKED: a conflicting lock inside this process
+
+	// Retries of a statement that failed on a lock, after the connection's own busy handler has given up
+	// (that handler already waits a few milliseconds per attempt inside every execution). 10 retries 20 ms
+	// apart add at most about 0.2 s plus the handler's waits per statement. When a statement uses them all
+	// up, the rest of that turn gets no retries, so a database locked for a long time cannot stall every row.
+	const int SQLITE_LOGGER_MAX_RETRIES = 10;
+	const DWORD SQLITE_LOGGER_RETRY_MS = 20;
+
+	bool IsLockError(int iErrorCode)
+	{
+		const int iPrimary = iErrorCode & 0xFF; // extended result codes carry the primary code in the low byte
+		return iPrimary == SQLITE_LOGGER_BUSY || iPrimary == SQLITE_LOGGER_LOCKED;
+	}
+}
+
 //	-----------------------------------------------------------------------------------------------
 SqliteLogger::SqliteLogger() :
 	m_kConnection(),
 	m_bOpenAttempted(false),
 	m_bOpen(false),
+	m_iNoRetryTurn(-1),
 	m_registeredTableSchemas(),
 	m_preparedInserts()
 {
@@ -61,6 +82,44 @@ const char* SqliteLogger::SqlTypeName(Database::ColumnTypes eType)
 	default:
 		return "NULL";
 	}
+}
+
+//	-----------------------------------------------------------------------------------------------
+int SqliteLogger::ExecuteWithRetry(Database::Results* pkResults, const char* szSql)
+{
+	// A failed sqlite3_step leaves a prepared statement ready to be stepped again with the same bindings (since
+	// SQLite 3.7.0 the next step resets it), so a retry repeats the whole insert: rows are neither lost nor doubled.
+	if (pkResults != NULL ? pkResults->Execute() : m_kConnection.Execute(szSql))
+		return 0;
+
+	int iErrorCode = m_kConnection.ErrorCode();
+	const int iTurn = GC.getGame().getElapsedGameTurns();
+	if (!IsLockError(iErrorCode) || m_iNoRetryTurn == iTurn)
+		return iErrorCode;
+
+	for (int iRetry = 0; iRetry < SQLITE_LOGGER_MAX_RETRIES; ++iRetry)
+	{
+		Sleep(SQLITE_LOGGER_RETRY_MS);
+		if (pkResults != NULL ? pkResults->Execute() : m_kConnection.Execute(szSql))
+			return 0;
+
+		iErrorCode = m_kConnection.ErrorCode();
+		if (!IsLockError(iErrorCode))
+			return iErrorCode;
+	}
+
+	m_iNoRetryTurn = iTurn;
+	return iErrorCode;
+}
+
+//	-----------------------------------------------------------------------------------------------
+void SqliteLogger::ReportFailure(const char* szWhat, const std::string& strTableName, int iErrorCode)
+{
+	ASSERT(false, "SqliteLogger: %s (table %s): SQLite error %d: %s", szWhat, strTableName.c_str(), iErrorCode,
+		m_kConnection.ErrorMessage() != NULL ? m_kConnection.ErrorMessage() : "(no message)");
+	(void)szWhat;
+	(void)strTableName;
+	(void)iErrorCode;
 }
 
 //	-----------------------------------------------------------------------------------------------
@@ -508,10 +567,9 @@ void SqliteLogger::Statement::execute()
 		return;
 	}
 
-	if (!m_pkResults->Execute())
-	{
-		ASSERT(false, "SqliteLogger: failed to execute insert");
-	}
+	const int iErrorCode = m_pkOwner->ExecuteWithRetry(m_pkResults, NULL);
+	if (iErrorCode != 0)
+		m_pkOwner->ReportFailure("failed to execute insert, row dropped", m_strTableName, iErrorCode);
 
 	// Leave the statement ready for the next row.
 	m_pkResults->Reset();
@@ -569,8 +627,16 @@ void SqliteLogger::BatchWriter::flush()
 	const size_t uiRows = m_buffer.size() / (size_t)iCallerCols;
 
 	// Write every buffered row inside a single transaction so the per-row commit overhead is paid
-	// once for the whole batch rather than once per row.
-	m_pkOwner->m_kConnection.BeginTransaction();
+	// once for the whole batch rather than once per row. IMMEDIATE takes the write lock at the start,
+	// where a busy database can be waited for without holding any lock; the inserts then cannot meet
+	// another writer, and only the COMMIT can still wait for readers (which SQLite lets us retry).
+	int iErrorCode = m_pkOwner->ExecuteWithRetry(NULL, "BEGIN IMMEDIATE");
+	if (iErrorCode != 0)
+	{
+		m_pkOwner->ReportFailure("failed to begin a batch, batch dropped", m_strTableName, iErrorCode);
+		m_buffer.clear();
+		return;
+	}
 
 	for (size_t uiRow = 0; uiRow < uiRows; ++uiRow)
 	{
@@ -600,16 +666,21 @@ void SqliteLogger::BatchWriter::flush()
 			}
 		}
 
-		if (!m_pkResults->Execute())
-		{
-			ASSERT(false, "SqliteLogger: failed to execute batched insert");
-		}
+		iErrorCode = m_pkOwner->ExecuteWithRetry(m_pkResults, NULL);
+		if (iErrorCode != 0)
+			m_pkOwner->ReportFailure("failed to execute batched insert, row dropped", m_strTableName, iErrorCode);
 	}
 
-	// Intentional: a failed row above asserts but does not abort the batch, and this is a plain
-	// commit with no rollback path. For best-effort stats logging, committing the rows that did
-	// succeed is preferable to discarding the whole batch on a single bad row.
-	m_pkOwner->m_kConnection.CommitTransaction();
+	// Intentional: a failed row above is reported but does not abort the batch. For best-effort stats
+	// logging, committing the rows that did succeed is preferable to discarding the whole batch on a
+	// single bad row. A COMMIT that still fails after its retries is rolled back, so the connection
+	// never stays inside a transaction.
+	iErrorCode = m_pkOwner->ExecuteWithRetry(NULL, "COMMIT");
+	if (iErrorCode != 0)
+	{
+		m_pkOwner->ReportFailure("failed to commit a batch, batch dropped", m_strTableName, iErrorCode);
+		m_pkOwner->m_kConnection.RollbackTransaction();
+	}
 
 	m_pkResults->Reset();
 	m_buffer.clear();
