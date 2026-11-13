@@ -709,7 +709,10 @@ void SqliteLogger::BatchWriter::flush()
 	if (iErrorCode != 0)
 	{
 		SQLITE_LOGGER_REPORT(m_pkOwner, "failed to commit a batch, batch dropped", m_strTableName, iErrorCode);
-		m_pkOwner->m_kConnection.RollbackTransaction();
+		// ROLLBACK as SQL, not Connection::RollbackTransaction(): the x64 server's remote-mode write recording hooks
+		// every database import of the DLL and refuses one it does not cover; Execute(sql) is covered and passes
+		// through for this (non-game) connection (one-off 9045, 2026-11-13)
+		m_pkOwner->m_kConnection.Execute("ROLLBACK");
 	}
 
 	m_pkResults->Reset();
