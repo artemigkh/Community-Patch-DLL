@@ -4049,7 +4049,7 @@ int CvLeague::CalculateStartingVotesForMember(PlayerTypes ePlayer, bool bFakeUN,
 	Member* thisMember = GetMember(ePlayer);
 	if (thisMember != NULL && thisMember->ePlayer != NO_PLAYER)
 	{
-		if (GC.getGame().getTurnSlice() == thisMember->m_startingVotesCacheTime)
+		if (GC.getGame().GetCacheStamp() == thisMember->m_startingVotesCacheTime)
 		{
 			if (bFakeUN)
 				return thisMember->m_startingVotesCachedIfUN;
@@ -4371,7 +4371,7 @@ int CvLeague::CalculateStartingVotesForMember(PlayerTypes ePlayer, bool bFakeUN,
 	}
 
 	// update cache
-	thisMember->m_startingVotesCacheTime = GC.getGame().getTurnSlice();
+	thisMember->m_startingVotesCacheTime = GC.getGame().GetCacheStamp();
 	thisMember->m_startingVotesCached = iVotes + iTotalBaseVotes;
 	thisMember->m_startingVotesCachedIfUN = iVotes + iTotalBaseVotesIfUN;
 

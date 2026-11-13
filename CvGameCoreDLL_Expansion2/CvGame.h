@@ -186,6 +186,7 @@ public:
 	int getMinutesPlayed() const;
 	void setTurnSlice(int iNewValue);
 	void changeTurnSlice(int iChange);
+	int GetCacheStamp() const;
 
 	void resetTurnTimer(bool resetGameTurnStart = true);
 	int getMaxTurnLen() const;
@@ -839,6 +840,7 @@ protected:
 	int m_iEstimateEndTurn;
 	int m_iDefaultEstimateEndTurn;
 	int m_iTurnSlice;
+	int m_iCacheStamp; // not serialized (bug 0116)
 	int m_iCutoffSlice;
 	int m_iNumCities;
 	int m_iTotalPopulation;
