@@ -240,6 +240,34 @@ bool SqliteLogger::IsEnabled()
 //	-----------------------------------------------------------------------------------------------
 int SqliteLogger::TableSchemaMatches(const std::string& strTableName, const TableDef& kColumns, int& iErrorCode)
 {
+	// The steps of PRAGMA table_info can meet another connection's lock too, and ExecuteWithRetry retries only
+	// the prepare: retry the whole read within the same time budget and per-turn cut-off (bug 0132: a table
+	// whose schema could not be read is not created, and every row of it is then lost).
+	int iMatch = ReadTableSchema(strTableName, kColumns, iErrorCode);
+	if (iMatch >= 0 || !IsLockError(iErrorCode))
+		return iMatch;
+
+	const int iTurn = GC.getGame().getElapsedGameTurns();
+	const DWORD uiStart = GetTickCount();
+	while (m_iNoRetryTurn != iTurn)
+	{
+		if (GetTickCount() - uiStart >= SQLITE_LOGGER_RETRY_BUDGET_MS)
+		{
+			m_iNoRetryTurn = iTurn;
+			break;
+		}
+		Sleep(SQLITE_LOGGER_RETRY_MS);
+
+		iMatch = ReadTableSchema(strTableName, kColumns, iErrorCode);
+		if (iMatch >= 0 || !IsLockError(iErrorCode))
+			break;
+	}
+	return iMatch;
+}
+
+//	-----------------------------------------------------------------------------------------------
+int SqliteLogger::ReadTableSchema(const std::string& strTableName, const TableDef& kColumns, int& iErrorCode)
+{
 	std::string strSql = "PRAGMA table_info(\"";
 	strSql += strTableName;
 	strSql += "\")";
