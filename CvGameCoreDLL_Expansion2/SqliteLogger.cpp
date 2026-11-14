@@ -18,10 +18,13 @@ namespace
 	const int SQLITE_LOGGER_LOCKED = 6;  // SQLITE_LOCKED: a conflicting lock inside this process
 
 	// Retries of a statement that failed on a lock, after the connection's own busy handler has given up
-	// (that handler already waits a few milliseconds per attempt inside every execution). 10 retries 20 ms
-	// apart add at most about 0.2 s plus the handler's waits per statement. When a statement uses them all
-	// up, the rest of that turn gets no retries, so a database locked for a long time cannot stall every row.
-	const int SQLITE_LOGGER_MAX_RETRIES = 10;
+	// (that handler already waits a few milliseconds per attempt inside every execution). A statement is
+	// retried every 20 ms until it succeeds or 10 s have passed since its first failure, so a lock that
+	// another connection holds for a few seconds (a reader, a database browser, a test's lock) only delays
+	// the row. When a statement uses up that time, the rest of that turn gets no retries, so a database
+	// locked for a long time stalls the game by at most one budget per turn. (Bug 0132: a budget of 10
+	// retries, about 0.3 s, lost rows and whole batches under locks of 2.5 s.)
+	const DWORD SQLITE_LOGGER_RETRY_BUDGET_MS = 10000;
 	const DWORD SQLITE_LOGGER_RETRY_MS = 20;
 
 	bool IsLockError(int iErrorCode)
@@ -113,7 +116,8 @@ int SqliteLogger::ExecuteWithRetry(Database::Results* pkResults, const char* szS
 	if (!IsLockError(iErrorCode) || m_iNoRetryTurn == iTurn)
 		return iErrorCode;
 
-	for (int iRetry = 0; iRetry < SQLITE_LOGGER_MAX_RETRIES; ++iRetry)
+	const DWORD uiStart = GetTickCount();
+	for (;;)
 	{
 		Sleep(SQLITE_LOGGER_RETRY_MS);
 		if (ExecuteOnce(pkResults, szSql))
@@ -122,6 +126,9 @@ int SqliteLogger::ExecuteWithRetry(Database::Results* pkResults, const char* szS
 		iErrorCode = m_kConnection.ErrorCode();
 		if (!IsLockError(iErrorCode))
 			return iErrorCode;
+
+		if (GetTickCount() - uiStart >= SQLITE_LOGGER_RETRY_BUDGET_MS) // unsigned difference: wrap-safe
+			break;
 	}
 
 	m_iNoRetryTurn = iTurn;
@@ -278,14 +285,20 @@ int SqliteLogger::TableSchemaMatches(const std::string& strTableName, const Tabl
 		return -1;
 	iErrorCode = 0;
 
+	// No column at all: the table does not exist (yet).
+	if (uiColumn == 0)
+		return 2;
+
 	// Match only if every expected column was found and there were no extras.
-	return (uiColumn == kColumns.size()) && (uiColumn > 0) ? 1 : 0;
+	return (uiColumn == kColumns.size()) ? 1 : 0;
 }
 
 //	-----------------------------------------------------------------------------------------------
 void SqliteLogger::CreateTable(const std::string& strTableName, const TableDef& kColumns)
 {
-	std::string strSql = "CREATE TABLE \"";
+	// IF NOT EXISTS: the schema check reads the connection's cached schema, so another connection may have
+	// created the table since; creating a table must never fail or replace one on that.
+	std::string strSql = "CREATE TABLE IF NOT EXISTS \"";
 	strSql += strTableName;
 	strSql += "\" (";
 
@@ -359,17 +372,28 @@ void SqliteLogger::RegisterTable(const std::string& strTableName, const TableDef
 		// anyway; the inserts then work if the table exists and are reported if it does not.
 		SQLITE_LOGGER_REPORT(this, "failed to read the table schema, table left as it is", strTableName, iErrorCode);
 	}
+	else if (iMatch == 2)
+	{
+		// Table is missing: create it. No DROP: a table that is not there needs none (bug 0132: the DROP
+		// IF EXISTS that every first registration in a game issued met a lock and was reported).
+		CreateTable(strTableName, kFullColumns);
+	}
 	else if (iMatch == 0)
 	{
-		// Table is missing or has a different schema: drop (if present) and (re)create.
+		// Table exists with a different schema (one that was read, not guessed): drop and recreate.
 		std::string strDrop = "DROP TABLE IF EXISTS \"";
 		strDrop += strTableName;
 		strDrop += "\"";
 		iErrorCode = ExecuteWithRetry(NULL, strDrop.c_str());
 		if (iErrorCode != 0)
+		{
+			// ASSERT expands to a block: braces keep the else below attached
 			SQLITE_LOGGER_REPORT(this, "failed to drop table", strTableName, iErrorCode);
-
-		CreateTable(strTableName, kFullColumns);
+		}
+		else
+		{
+			CreateTable(strTableName, kFullColumns);
+		}
 	}
 
 	m_registeredTableSchemas[strTableName] = kFullColumns;
@@ -656,14 +680,48 @@ void SqliteLogger::BatchWriter::flush()
 	// once for the whole batch rather than once per row. IMMEDIATE takes the write lock at the start,
 	// where a busy database can be waited for without holding any lock; the inserts then cannot meet
 	// another writer, and only the COMMIT can still wait for readers (which SQLite lets us retry).
+	// When the transaction cannot be begun, or its COMMIT fails and it is rolled back, the rows are
+	// still in the buffer and are written one by one (each insert its own transaction, each retried),
+	// so a lock costs at most single rows, never the whole batch (bug 0132).
 	int iErrorCode = m_pkOwner->ExecuteWithRetry(NULL, "BEGIN IMMEDIATE");
-	if (iErrorCode != 0)
+	if (iErrorCode == 0)
 	{
-		SQLITE_LOGGER_REPORT(m_pkOwner, "failed to begin a batch, batch dropped", m_strTableName, iErrorCode);
-		m_buffer.clear();
-		return;
+		InsertRows(uiRows, iCallerCols);
+
+		// Intentional: a failed row above is reported but does not abort the batch. For best-effort stats
+		// logging, committing the rows that did succeed is preferable to discarding the whole batch on a
+		// single bad row.
+		iErrorCode = m_pkOwner->ExecuteWithRetry(NULL, "COMMIT");
+		if (iErrorCode != 0)
+		{
+			// A COMMIT that still fails after its retries is rolled back, so the connection never stays inside a
+			// transaction; the rows are then written one by one below. ROLLBACK as SQL, not
+			// Connection::RollbackTransaction(): the x64 server's remote-mode write recording hooks every database
+			// import of the DLL and refuses one it does not cover; Execute(sql) is covered and passes through for
+			// this (non-game) connection (one-off 9045, 2026-11-13)
+			if (!m_pkOwner->m_kConnection.Execute("ROLLBACK"))
+			{
+				// Still inside the transaction: writing the rows again would only add them to it.
+				SQLITE_LOGGER_REPORT(m_pkOwner, "failed to commit or roll back a batch, batch dropped", m_strTableName, iErrorCode);
+				iErrorCode = 0;
+			}
+		}
 	}
 
+	if (iErrorCode != 0)
+	{
+		// No transaction (it could not be begun, or it was rolled back): each insert is its own transaction
+		// with its own retries.
+		InsertRows(uiRows, iCallerCols);
+	}
+
+	m_pkResults->Reset();
+	m_buffer.clear();
+}
+
+//	-----------------------------------------------------------------------------------------------
+void SqliteLogger::BatchWriter::InsertRows(size_t uiRows, int iCallerCols)
+{
 	for (size_t uiRow = 0; uiRow < uiRows; ++uiRow)
 	{
 		m_pkResults->Reset();
@@ -692,27 +750,10 @@ void SqliteLogger::BatchWriter::flush()
 			}
 		}
 
-		iErrorCode = m_pkOwner->ExecuteWithRetry(m_pkResults, NULL);
+		const int iErrorCode = m_pkOwner->ExecuteWithRetry(m_pkResults, NULL);
 		if (iErrorCode != 0)
 			SQLITE_LOGGER_REPORT(m_pkOwner, "failed to execute batched insert, row dropped", m_strTableName, iErrorCode);
 	}
-
-	// Intentional: a failed row above is reported but does not abort the batch. For best-effort stats
-	// logging, committing the rows that did succeed is preferable to discarding the whole batch on a
-	// single bad row. A COMMIT that still fails after its retries is rolled back, so the connection
-	// never stays inside a transaction.
-	iErrorCode = m_pkOwner->ExecuteWithRetry(NULL, "COMMIT");
-	if (iErrorCode != 0)
-	{
-		SQLITE_LOGGER_REPORT(m_pkOwner, "failed to commit a batch, batch dropped", m_strTableName, iErrorCode);
-		// ROLLBACK as SQL, not Connection::RollbackTransaction(): the x64 server's remote-mode write recording hooks
-		// every database import of the DLL and refuses one it does not cover; Execute(sql) is covered and passes
-		// through for this (non-game) connection (one-off 9045, 2026-11-13)
-		m_pkOwner->m_kConnection.Execute("ROLLBACK");
-	}
-
-	m_pkResults->Reset();
-	m_buffer.clear();
 }
 
 //	===============================================================================================

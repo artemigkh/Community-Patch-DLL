@@ -297,7 +297,8 @@ public:
 		RowBuilder BeginLogRow();
 
 		//! Writes all currently buffered rows to stats.db in a single transaction. Safe to call when
-		//! the buffer is empty (no-op) and safe to call repeatedly.
+		//! the buffer is empty (no-op) and safe to call repeatedly. When the transaction cannot be begun
+		//! or committed (stats.db locked by another connection), the rows are written one by one instead.
 		void flush();
 
 	private:
@@ -305,6 +306,9 @@ public:
 
 		//! Number of caller-declared columns (schema size minus the implicit GameId/Turn columns).
 		int CallerColumnCount() const;
+
+		//! Binds and inserts the first uiRows buffered rows, each with retries; reports a row that fails.
+		void InsertRows(size_t uiRows, int iCallerCols);
 
 		SqliteLogger* m_pkOwner;
 		std::string m_strTableName;
@@ -360,11 +364,11 @@ private:
 	void EnsureDictionaryTable();
 
 	//! Compares the live table schema (via PRAGMA table_info) against the supplied definition.
-	//! Returns 1 when it matches, 0 when the table is missing or differs, -1 when the schema could not be
-	//! read (iErrorCode then holds the SQLite error code).
+	//! Returns 1 when it matches, 0 when the table exists with a different schema, 2 when the table is
+	//! missing, -1 when the schema could not be read (iErrorCode then holds the SQLite error code).
 	int TableSchemaMatches(const std::string& strTableName, const TableDef& kColumns, int& iErrorCode);
 
-	//! Issues CREATE TABLE for the supplied definition.
+	//! Issues CREATE TABLE IF NOT EXISTS for the supplied definition.
 	void CreateTable(const std::string& strTableName, const TableDef& kColumns);
 
 	//! Builds and caches the prepared INSERT statement for a registered table.
@@ -378,7 +382,8 @@ private:
 	bool ExecuteOnce(Database::Results* pkResults, const char* szSql);
 
 	//! ExecuteOnce, and when it fails because another connection holds a lock on stats.db (SQLITE_BUSY
-	//! or SQLITE_LOCKED), waits and tries again, a bounded number of times. Returns 0 on success, else the
+	//! or SQLITE_LOCKED), waits and tries again for up to a fixed time (10 s; none for the rest of a turn
+	//! in which a statement used that time up). Returns 0 on success, else the
 	//! SQLite error code of the last attempt (the message is in m_kConnection.ErrorMessage()). The first
 	//! attempt is the only cost on success.
 	int ExecuteWithRetry(Database::Results* pkResults, const char* szSql);
