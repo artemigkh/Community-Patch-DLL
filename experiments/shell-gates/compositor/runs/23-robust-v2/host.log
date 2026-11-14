@@ -1,0 +1,49 @@
+18:04:19.835 ==== test_host start pid 41936 label '23-robust-v2' swap blit(DISCARD) buffers 1 format 28 msaa 1 vsync 1 load after size 1280x720 bb 0x0
+18:04:20.010 device FL b000 on 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+18:04:20.012 mem start: private=23.59 MB working=28.91 MB video_local=8.25 MB handles=331
+18:04:20.191 LoadLibraryW('C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\shell_composite.dll') after device creation (frame N) -> 5C810000 (err 0) in 1.01 ms
+18:04:21.014 1s: frames 164 mean 6.073 ms max 14.384 ms bb 1280x720
+18:04:22.020 1s: frames 166 mean 6.059 ms max 7.656 ms bb 1280x720
+18:04:23.024 1s: frames 166 mean 6.054 ms max 7.976 ms bb 1280x720
+18:04:24.030 1s: frames 166 mean 6.057 ms max 7.758 ms bb 1280x720
+18:04:25.037 1s: frames 166 mean 6.061 ms max 7.489 ms bb 1280x720
+18:04:26.017 scenario: minimize
+18:04:26.020 WM_SIZE minimized
+18:04:26.022 Present: occluded
+18:04:26.040 1s: frames 163 mean 6.060 ms max 7.803 ms bb 1280x720
+18:04:27.061 1s: frames 34 mean 29.723 ms max 32.593 ms bb 1280x720
+18:04:28.064 1s: frames 32 mean 31.365 ms max 32.486 ms bb 1280x720
+18:04:29.025 scenario: restore
+18:04:29.032 Present: visible again after 98 occluded presents
+18:04:29.072 1s: frames 36 mean 28.542 ms max 32.501 ms bb 1280x720
+18:04:30.016 mem periodic: private=33.32 MB working=34.93 MB video_local=23.34 MB handles=402
+18:04:30.076 1s: frames 155 mean 6.516 ms max 17.898 ms bb 1280x720
+18:04:31.082 1s: frames 166 mean 6.058 ms max 7.365 ms bb 1280x720
+18:04:32.016 scenario: window resize 1024x640
+18:04:32.017 ResizeBuffers(1024 x 640) [WM_SIZE] -> 0x00000000 (0.62 ms)
+18:04:32.019 window client resized to 1024x640
+18:04:32.082 1s: frames 166 mean 6.022 ms max 7.605 ms bb 1024x640
+18:04:33.086 1s: frames 166 mean 6.061 ms max 10.415 ms bb 1024x640
+18:04:34.093 1s: frames 166 mean 6.053 ms max 7.881 ms bb 1024x640
+18:04:35.014 scenario: ResizeBuffers to 1920x1080 (window unchanged)
+18:04:35.016 ResizeBuffers(1920 x 1080) [scenario] -> 0x00000000 (0.62 ms)
+18:04:35.099 1s: frames 166 mean 6.057 ms max 7.691 ms bb 1920x1080
+18:04:36.103 1s: frames 165 mean 6.098 ms max 10.886 ms bb 1920x1080
+18:04:37.110 1s: frames 166 mean 6.054 ms max 7.324 ms bb 1920x1080
+18:04:38.018 scenario: ResizeBuffers to 2560x1440
+18:04:38.019 ResizeBuffers(2560 x 1440) [scenario] -> 0x00000000 (0.58 ms)
+18:04:38.115 1s: frames 166 mean 6.056 ms max 7.441 ms bb 2560x1440
+18:04:39.120 1s: frames 160 mean 6.288 ms max 12.057 ms bb 2560x1440
+18:04:40.016 mem periodic: private=34.75 MB working=36.56 MB video_local=55.72 MB handles=430
+18:04:40.126 1s: frames 166 mean 6.055 ms max 7.723 ms bb 2560x1440
+18:04:41.016 scenario: window resize back to 1280x720
+18:04:41.020 ResizeBuffers(1280 x 720) [WM_SIZE] -> 0x00000000 (0.63 ms)
+18:04:41.020 window client resized to 1280x720
+18:04:41.132 1s: frames 165 mean 6.095 ms max 11.790 ms bb 1280x720
+18:04:42.136 1s: frames 166 mean 6.062 ms max 7.671 ms bb 1280x720
+18:04:43.143 1s: frames 166 mean 6.052 ms max 7.310 ms bb 1280x720
+18:04:44.015 scenario: fullscreen skipped (no --allow-fullscreen)
+18:04:44.147 1s: frames 166 mean 6.060 ms max 8.743 ms bb 1280x720
+18:04:45.151 1s: frames 165 mean 6.060 ms max 9.346 ms bb 1280x720
+18:04:46.016 summary label=23-robust-v2 frames=3378 mean=6.8091 p50=6.0773 p99=31.5315 max=32.593 fps=146.9
+18:04:46.017 mem end: private=34.89 MB working=36.86 MB video_local=23.34 MB handles=434

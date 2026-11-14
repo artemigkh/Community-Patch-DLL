@@ -1,0 +1,43 @@
+{
+ "startupinfo": {
+  "arm": "STARTUPINFO override of the first ShowWindow (on a separate desktop)",
+  "rows": [
+   {
+    "app_ShowWindow": 1,
+    "STARTUPINFO.wShowWindow": 4,
+    "placement": "showCmd=1 visible=1 iconic=0",
+    "activated": false
+   },
+   {
+    "app_ShowWindow": 1,
+    "STARTUPINFO.wShowWindow": 7,
+    "placement": "showCmd=2 visible=1 iconic=1",
+    "activated": false
+   },
+   {
+    "app_ShowWindow": 5,
+    "STARTUPINFO.wShowWindow": 4,
+    "placement": "showCmd=1 visible=1 iconic=0",
+    "activated": false
+   },
+   {
+    "app_ShowWindow": 10,
+    "STARTUPINFO.wShowWindow": 4,
+    "placement": "showCmd=1 visible=1 iconic=0",
+    "activated": false
+   },
+   {
+    "app_ShowWindow": 1,
+    "STARTUPINFO.wShowWindow": null,
+    "placement": "showCmd=1 visible=1 iconic=0",
+    "activated": true
+   },
+   {
+    "app_ShowWindow": 3,
+    "STARTUPINFO.wShowWindow": 4,
+    "placement": "showCmd=3 visible=1 iconic=0",
+    "activated": true
+   }
+  ]
+ }
+}

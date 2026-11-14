@@ -1,0 +1,66 @@
+   0.000 START pid=20256 desktop=Default startupinfo.flags=0x1 wShowWindow=4 lpDesktop=WinSta0\Default fg_at_start=00520F9A
+   0.016 CREATED hwnd=0068140A
+   0.016 MSG WM_SHOWWINDOW show=1
+   0.016 MSG WM_SIZE type=0 800x600
+   0.016 ShowWindow(1) -> 0; fg_is_me=0 iconic=0
+   0.016 SetForegroundWindow at start -> 1; fg_is_me=0
+   0.016 PLACEMENT showCmd=1 visible=1 iconic=0
+   0.016 SetWindowsHookExA(WH_KEYBOARD_LL) -> 0C1BB00C
+   0.016 RegisterRawInputDevices -> 1
+   0.203 D3D11CreateDeviceAndSwapChain hr=0x00000000 fl=0xb000 swap=discard(blt)
+   0.203 ADAPTER NVIDIA GeForce RTX 4080
+   0.203 ClipCursor -> 1
+   1.250 SEC fps=34 present_ok=34 occluded=0 other=0 frame=34 iconic=0 fg_is_me=0 active_is_me=0 focus_is_me=0 cloaked=0 rawkeys=0 rawmouse=0
+   2.219 STEAL SetForegroundWindow -> 1 SetActiveWindow -> 00000000 fg_is_me=0
+   2.234 SEC fps=32 present_ok=32 occluded=0 other=0 frame=66 iconic=0 fg_is_me=0 active_is_me=0 focus_is_me=0 cloaked=0 rawkeys=0 rawmouse=0
+   3.234 SEC fps=31 present_ok=31 occluded=0 other=0 frame=97 iconic=0 fg_is_me=0 active_is_me=0 focus_is_me=0 cloaked=0 rawkeys=0 rawmouse=0
+   4.219 STEAL SetForegroundWindow -> 1 SetActiveWindow -> 00000000 fg_is_me=0
+   4.250 SEC fps=32 present_ok=32 occluded=0 other=0 frame=129 iconic=0 fg_is_me=0 active_is_me=0 focus_is_me=0 cloaked=0 rawkeys=0 rawmouse=0
+   4.859 MSG WM_KEYDOWN vk=0x76 lParam=0x00410001 GetKeyState=0x0000 GetAsyncKeyState=0x0000 shiftKS=0x0000 shiftAKS=0x0000
+   4.922 MSG WM_KEYUP vk=0x76 lParam=0xc0410001 GetKeyState=0x0000 GetAsyncKeyState=0x0000 shiftKS=0x0000 shiftAKS=0x0000
+   5.016 MSG WM_KEYDOWN vk=0x10 lParam=0x002a0001 GetKeyState=0x8000 GetAsyncKeyState=0x8000 shiftKS=0x8000 shiftAKS=0x8000
+   5.016 MSG WM_KEYDOWN vk=0x77 lParam=0x00420001 GetKeyState=0x8000 GetAsyncKeyState=0x8000 shiftKS=0x8000 shiftAKS=0x8000
+   5.016 POLL GetAsyncKeyState(F8) DOWN
+   5.172 MSG WM_KEYUP vk=0x77 lParam=0xc0420001 GetKeyState=0x8000 GetAsyncKeyState=0x8000 shiftKS=0x8000 shiftAKS=0x8000
+   5.172 MSG WM_KEYUP vk=0x10 lParam=0xc02a0001 GetKeyState=0x8000 GetAsyncKeyState=0x8000 shiftKS=0x8000 shiftAKS=0x8000
+   5.219 SEC fps=155 present_ok=155 occluded=0 other=0 frame=284 iconic=0 fg_is_me=0 active_is_me=0 focus_is_me=0 cloaked=0 rawkeys=0 rawmouse=0
+   5.219 MSG WM_KEYDOWN vk=0x59 lParam=0x00150001 GetKeyState=0x0000 GetAsyncKeyState=0x0000 shiftKS=0x0000 shiftAKS=0x0000
+   5.219 MSG WM_CHAR ch=0x0079
+   5.219 POLL GetAsyncKeyState(F8) up
+   5.250 MSG WM_KEYUP vk=0x59 lParam=0xc0150001 GetKeyState=0x0000 GetAsyncKeyState=0x0000 shiftKS=0x0000 shiftAKS=0x0000
+   5.297 MSG WM_MOUSEMOVE x=200 y=150 wParam=0x0 cursor_client=(5145,954) lbuttonAKS=0x0000
+   5.297 MSG WM_LBUTTONDOWN x=200 y=150 wParam=0x1 cursor_client=(5145,954) lbuttonAKS=0x0000
+   5.297 MSG WM_LBUTTONUP x=200 y=150 wParam=0x0 cursor_client=(5145,954) lbuttonAKS=0x0000
+   5.609 MSG WM_SIZE type=1 0x0
+   6.219 STEAL SetForegroundWindow -> 1 SetActiveWindow -> 00000000 fg_is_me=0
+   6.219 SEC fps=15196 present_ok=65 occluded=15131 other=0 frame=15480 iconic=1 fg_is_me=0 active_is_me=0 focus_is_me=0 cloaked=0 rawkeys=0 rawmouse=0
+   7.219 SEC fps=26078 present_ok=0 occluded=26078 other=0 frame=41558 iconic=1 fg_is_me=0 active_is_me=0 focus_is_me=0 cloaked=0 rawkeys=0 rawmouse=0
+   8.219 STEAL SetForegroundWindow -> 1 SetActiveWindow -> 00000000 fg_is_me=0
+   8.219 SEC fps=25784 present_ok=0 occluded=25784 other=0 frame=67342 iconic=1 fg_is_me=0 active_is_me=0 focus_is_me=0 cloaked=0 rawkeys=0 rawmouse=0
+   9.219 SEC fps=25997 present_ok=0 occluded=25997 other=0 frame=93339 iconic=1 fg_is_me=0 active_is_me=0 focus_is_me=0 cloaked=0 rawkeys=0 rawmouse=0
+  10.219 STEAL SetForegroundWindow -> 1 SetActiveWindow -> 00000000 fg_is_me=0
+  10.219 SEC fps=24172 present_ok=0 occluded=24172 other=0 frame=117511 iconic=1 fg_is_me=0 active_is_me=0 focus_is_me=0 cloaked=0 rawkeys=0 rawmouse=0
+  10.609 MSG WM_KEYDOWN vk=0x76 lParam=0x00410001 GetKeyState=0x0000 GetAsyncKeyState=0x0000 shiftKS=0x0000 shiftAKS=0x0000
+  10.672 MSG WM_KEYUP vk=0x76 lParam=0xc0410001 GetKeyState=0x0000 GetAsyncKeyState=0x0000 shiftKS=0x0000 shiftAKS=0x0000
+  10.766 MSG WM_KEYDOWN vk=0x10 lParam=0x002a0001 GetKeyState=0x8000 GetAsyncKeyState=0x8000 shiftKS=0x8000 shiftAKS=0x8000
+  10.766 MSG WM_KEYDOWN vk=0x77 lParam=0x00420001 GetKeyState=0x8000 GetAsyncKeyState=0x8000 shiftKS=0x8000 shiftAKS=0x8000
+  10.766 POLL GetAsyncKeyState(F8) DOWN
+  10.922 MSG WM_KEYUP vk=0x77 lParam=0xc0420001 GetKeyState=0x8000 GetAsyncKeyState=0x8000 shiftKS=0x8000 shiftAKS=0x8000
+  10.922 MSG WM_KEYUP vk=0x10 lParam=0xc02a0001 GetKeyState=0x8000 GetAsyncKeyState=0x8000 shiftKS=0x8000 shiftAKS=0x8000
+  10.969 MSG WM_KEYDOWN vk=0x59 lParam=0x00150001 GetKeyState=0x0000 GetAsyncKeyState=0x0000 shiftKS=0x0000 shiftAKS=0x0000
+  10.969 MSG WM_CHAR ch=0x0079
+  10.969 POLL GetAsyncKeyState(F8) up
+  11.000 MSG WM_KEYUP vk=0x59 lParam=0xc0150001 GetKeyState=0x0000 GetAsyncKeyState=0x0000 shiftKS=0x0000 shiftAKS=0x0000
+  11.047 MSG WM_MOUSEMOVE x=200 y=150 wParam=0x0 cursor_client=(34217,32985) lbuttonAKS=0x0000
+  11.047 MSG WM_LBUTTONDOWN x=200 y=150 wParam=0x1 cursor_client=(34217,32985) lbuttonAKS=0x0000
+  11.047 MSG WM_LBUTTONUP x=200 y=150 wParam=0x0 cursor_client=(34217,32985) lbuttonAKS=0x0000
+  11.219 SEC fps=25100 present_ok=0 occluded=25100 other=0 frame=142611 iconic=1 fg_is_me=0 active_is_me=0 focus_is_me=0 cloaked=0 rawkeys=0 rawmouse=0
+  11.344 MSG WM_SIZE type=0 800x600
+  12.219 STEAL SetForegroundWindow -> 1 SetActiveWindow -> 00000000 fg_is_me=0
+  12.219 SEC fps=3747 present_ok=130 occluded=3617 other=0 frame=146358 iconic=0 fg_is_me=0 active_is_me=0 focus_is_me=0 cloaked=0 rawkeys=0 rawmouse=0
+  13.219 SEC fps=165 present_ok=165 occluded=0 other=0 frame=146523 iconic=0 fg_is_me=0 active_is_me=0 focus_is_me=0 cloaked=0 rawkeys=0 rawmouse=0
+  14.219 STEAL SetForegroundWindow -> 1 SetActiveWindow -> 00000000 fg_is_me=0
+  14.219 SEC fps=165 present_ok=165 occluded=0 other=0 frame=146688 iconic=0 fg_is_me=0 active_is_me=0 focus_is_me=0 cloaked=0 rawkeys=0 rawmouse=0
+  15.219 SEC fps=165 present_ok=165 occluded=0 other=0 frame=146853 iconic=0 fg_is_me=0 active_is_me=0 focus_is_me=0 cloaked=0 rawkeys=0 rawmouse=0
+  16.219 STEAL SetForegroundWindow -> 1 SetActiveWindow -> 00000000 fg_is_me=0
+  16.219 SEC fps=165 present_ok=165 occluded=0 other=0 frame=147018 iconic=0 fg_is_me=0 active_is_me=0 focus_is_me=0 cloaked=0 rawkeys=0 rawmouse=0

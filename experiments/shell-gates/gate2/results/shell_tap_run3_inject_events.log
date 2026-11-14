@@ -1,0 +1,22 @@
+01:35:19.173 [41796] ==== shell_tap.dll loaded into pid 16232 'C:\Program Files (x86)\Steam\steamapps\common\Sid Meier's Civilization V\CivilizationV_DX11.exe'; EXE 00240000..06759000 .text 00241000..00815D30; keep_min_bytes 16384 keep_max 8000 inject 1024 1024 76 max 2
+01:35:19.290 [41796] patch IDXGISwapChain::Present: vtbl 6C8320EC slot 8 orig 6C8E1170 -> hook 06B43550 ok (vtable page read-only (module))
+01:35:19.290 [41796] patch IDXGISwapChain1::Present1: vtbl 6C8320EC slot 22 orig 6C87BD00 -> hook 06B433E0 ok (vtable page read-only (module))
+01:35:19.290 [41796] patch IDXGIFactory::CreateSwapChain: vtbl 6C831218 slot 10 orig 6C8D8000 -> hook 06B42F10 ok (vtable page read-only (module))
+01:35:19.290 [41796] patch IDXGIFactory2::CreateSwapChainForHwnd: vtbl 6C831218 slot 15 orig 6C8D86D0 -> hook 06B42FA0 ok (vtable page read-only (module))
+01:35:45.414 [58072] adapter 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+01:35:45.414 [58072] adopted device 0A4056BC (FL b000, ExtendedResourceSharing 1, SharedResourceTier 3) via swap chain 27A5B0D8; EXE base 00240000; shader level [0x2e49edc] = 10; VRAM usage 521 MB
+01:35:45.414 [58072] patch ID3D11Device::CreateTexture2D: vtbl 6C946F5C slot 5 orig 6C9AB220 -> hook 06B43030 ok (vtable page read-only (module))
+01:35:45.414 [58072] patch ID3D11Device::CreateBuffer: vtbl 6C946F5C slot 3 orig 6C9BF200 -> hook 06B42810 ok (vtable page read-only (module))
+01:35:45.414 [58072] patch ID3D11Device::CreateInputLayout: vtbl 6C946F5C slot 11 orig 6CA09230 -> hook 06B42CC0 ok (vtable page read-only (module))
+01:35:45.414 [58072] patch ID3D11Device::CreateVertexShader: vtbl 6C946F5C slot 12 orig 6C9A2F90 -> hook 06B432B0 ok (vtable page read-only (module))
+01:35:45.414 [58072] patch ID3D11Device::CreatePixelShader: vtbl 6C946F5C slot 15 orig 6C9A74E0 -> hook 06B42DE0 ok (vtable page read-only (module))
+01:35:45.414 [58072] patch ID3D11Device::CreateGeometryShader: vtbl 6C946F5C slot 13 orig 6CA08CB0 -> hook 06B42A60 ok (vtable page read-only (module))
+01:35:45.414 [58072] patch ID3D11Device::CreateHullShader: vtbl 6C946F5C slot 16 orig 6CA090C0 -> hook 06B42B90 ok (vtable page read-only (module))
+01:35:45.414 [58072] patch ID3D11Device::CreateDomainShader: vtbl 6C946F5C slot 17 orig 6CA088C0 -> hook 06B42930 ok (vtable page read-only (module))
+01:36:01.270 [58072] export inject seq 154 name Local\VPTapB_154 hr 0x00000000
+01:36:01.279 [58072] export inject seq 158 name Local\VPTapB_158 hr 0x00000000
+01:36:19.415 [41796] summary: textures 1091, buffers 28, shaders 0, input layouts 0, kept 604 textures (264 MB), copies 0, injected 2, VRAM usage 698 MB
+01:37:19.543 [41796] summary: textures 1508, buffers 1404, shaders 0, input layouts 0, kept 785 textures (419 MB), copies 0, injected 2, VRAM usage 1312 MB
+01:38:19.668 [41796] summary: textures 1508, buffers 1410, shaders 0, input layouts 0, kept 785 textures (419 MB), copies 0, injected 2, VRAM usage 1013 MB
+01:36:01.270 [58072] TEX 154 1024x1024 mips 11 arr 1 BC3_TYPELESS ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x802 bytes 1398128 init 1 hr 0x00000000 ptr 8BD57B24 ret 008BC019 chain 008BC019 00543231 008BC019 008E0065 0082050D 00831CD2 005DCDA2 00833340 004C5DD1 008148F5 INJECTED-SHARED
+01:36:01.279 [58072] TEX 158 1024x1024 mips 11 arr 1 BC3_TYPELESS ms 1 usage 0 bind 0x8 cpu 0x0 misc 0x802 bytes 1398128 init 1 hr 0x00000000 ptr 8BD589E4 ret 008BC019 chain 008BC019 00543231 008BC019 008E0065 0082050D 00831CD2 005DCDA2 00833340 004C5DD1 008148F5 INJECTED-SHARED

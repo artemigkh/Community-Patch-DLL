@@ -1,0 +1,27 @@
+17:45:11.650 ==== test_host start pid 21944 label 'off' swap blit(DISCARD) buffers 1 format 28 msaa 1 vsync 0 load after size 1280x720 bb 2560x1440
+17:45:11.912 device FL b000 on 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:45:11.914 mem start: private=23.69 MB working=29.04 MB video_local=8.25 MB handles=331
+17:45:11.927 LoadLibraryW('C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\shell_composite.dll') after device creation (frame N) -> 63030000 (err 0) in 1.08 ms
+17:45:12.914 1s: frames 10449 mean 0.096 ms max 3.902 ms bb 2560x1440
+17:45:13.915 1s: frames 11296 mean 0.089 ms max 0.671 ms bb 2560x1440
+17:45:14.915 1s: frames 11489 mean 0.087 ms max 0.851 ms bb 2560x1440
+17:45:15.914 1s: frames 11116 mean 0.090 ms max 1.040 ms bb 2560x1440
+17:45:16.915 1s: frames 11794 mean 0.085 ms max 0.851 ms bb 2560x1440
+17:45:17.915 1s: frames 10551 mean 0.095 ms max 0.899 ms bb 2560x1440
+17:45:18.915 1s: frames 8649 mean 0.116 ms max 1.010 ms bb 2560x1440
+17:45:19.915 1s: frames 7735 mean 0.129 ms max 1.158 ms bb 2560x1440
+17:45:20.914 1s: frames 10258 mean 0.098 ms max 1.040 ms bb 2560x1440
+17:45:21.914 mem periodic: private=31.81 MB working=31.59 MB video_local=27.06 MB handles=377
+17:45:21.916 1s: frames 11383 mean 0.088 ms max 0.709 ms bb 2560x1440
+17:45:22.914 1s: frames 11912 mean 0.084 ms max 0.680 ms bb 2560x1440
+17:45:23.914 1s: frames 12355 mean 0.081 ms max 0.756 ms bb 2560x1440
+17:45:24.915 1s: frames 11652 mean 0.086 ms max 0.664 ms bb 2560x1440
+17:45:25.916 1s: frames 11235 mean 0.089 ms max 1.193 ms bb 2560x1440
+17:45:26.916 1s: frames 11516 mean 0.087 ms max 0.686 ms bb 2560x1440
+17:45:27.915 1s: frames 12188 mean 0.082 ms max 0.612 ms bb 2560x1440
+17:45:28.916 1s: frames 11858 mean 0.084 ms max 0.752 ms bb 2560x1440
+17:45:29.916 1s: frames 11837 mean 0.084 ms max 0.549 ms bb 2560x1440
+17:45:30.917 1s: frames 12573 mean 0.080 ms max 0.821 ms bb 2560x1440
+17:45:31.914 mem periodic: private=31.81 MB working=32.09 MB video_local=27.06 MB handles=377
+17:45:31.918 summary label=off frames=190279 mean=0.0893 p50=0.0686 p99=0.2894 max=1.910 fps=11192.9
+17:45:31.918 mem end: private=31.81 MB working=32.09 MB video_local=27.06 MB handles=377

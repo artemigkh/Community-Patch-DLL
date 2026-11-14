@@ -1,0 +1,26 @@
+17:43:10.099 ==== test_host start pid 55360 label 'nodll' swap blit(DISCARD) buffers 1 format 28 msaa 1 vsync 0 load none size 1280x720 bb 2560x1440
+17:43:10.276 device FL b000 on 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:43:10.278 mem start: private=23.82 MB working=29.12 MB video_local=8.25 MB handles=331
+17:43:11.278 1s: frames 11503 mean 0.087 ms max 3.797 ms bb 2560x1440
+17:43:12.277 1s: frames 12487 mean 0.080 ms max 0.783 ms bb 2560x1440
+17:43:13.277 1s: frames 12707 mean 0.079 ms max 0.824 ms bb 2560x1440
+17:43:14.278 1s: frames 12643 mean 0.079 ms max 0.855 ms bb 2560x1440
+17:43:15.278 1s: frames 12184 mean 0.082 ms max 0.826 ms bb 2560x1440
+17:43:16.277 1s: frames 12133 mean 0.082 ms max 0.880 ms bb 2560x1440
+17:43:17.278 1s: frames 12733 mean 0.079 ms max 0.691 ms bb 2560x1440
+17:43:18.277 1s: frames 12610 mean 0.079 ms max 0.928 ms bb 2560x1440
+17:43:19.278 1s: frames 11581 mean 0.086 ms max 0.971 ms bb 2560x1440
+17:43:20.278 mem periodic: private=30.19 MB working=31.29 MB video_local=27.06 MB handles=374
+17:43:20.278 1s: frames 11375 mean 0.088 ms max 1.034 ms bb 2560x1440
+17:43:21.278 1s: frames 12323 mean 0.081 ms max 1.072 ms bb 2560x1440
+17:43:22.278 1s: frames 11668 mean 0.086 ms max 1.015 ms bb 2560x1440
+17:43:23.278 1s: frames 11949 mean 0.084 ms max 0.881 ms bb 2560x1440
+17:43:24.278 1s: frames 12215 mean 0.082 ms max 1.009 ms bb 2560x1440
+17:43:25.278 1s: frames 11853 mean 0.084 ms max 0.799 ms bb 2560x1440
+17:43:26.278 1s: frames 12117 mean 0.083 ms max 1.309 ms bb 2560x1440
+17:43:27.278 1s: frames 12485 mean 0.080 ms max 0.833 ms bb 2560x1440
+17:43:28.278 1s: frames 12434 mean 0.080 ms max 0.922 ms bb 2560x1440
+17:43:29.278 1s: frames 12337 mean 0.081 ms max 0.746 ms bb 2560x1440
+17:43:30.278 mem periodic: private=30.27 MB working=31.84 MB video_local=27.06 MB handles=376
+17:43:30.280 summary label=nodll frames=206946 mean=0.0821 p50=0.0686 p99=0.2582 max=1.309 fps=12173.3
+17:43:30.280 mem end: private=30.27 MB working=31.84 MB video_local=27.06 MB handles=376

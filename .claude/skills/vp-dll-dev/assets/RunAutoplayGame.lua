@@ -1,0 +1,23 @@
+-- Automation entry point: start a game with the currently configured PreGame settings.
+-- Launched as: CivilizationV_DX11.exe -Automation RunAutoplayGame.lua
+--
+-- KEEP THIS TO THE ONE LINE BELOW. The -Automation Lua state is a bare MainState with no
+-- base library whatsoever: print, pcall, pairs, tostring, PreGame, GameInfo and even
+-- `debug` are ALL nil. Calling any of them raises an error that aborts this file, and
+-- since its only job is to call SerialEventStartGame, the game then boots to the main
+-- menu and sits there. `Events` is one of the few globals that does exist.
+--
+-- Verified empirically on 2026-09-06 across six probe runs:
+--   * print  -> nil   (RunAutoplayGame.lua:29: attempt to call global 'print')
+--   * pcall  -> nil   (RunAutoplayGame.lua:81: attempt to call global 'pcall')
+--   * debug  -> nil   (so debug.getregistry()._LOADED._G is NOT reachable from here,
+--                      regardless of EnableLuaDebugLibrary, which is 1 in config.ini)
+-- Passing "-Automation RunAutoplayGame.lua" as a single argv element instead of two
+-- changed nothing. The map therefore CANNOT be configured from this file; see SKILL.md
+-- under "Choosing the map a start run generates".
+--
+-- Diagnostic trick if you ever need output from here: MainState print does not reach
+-- Lua.log, but runtime errors do, and the message names the global that was indexed. So
+-- `SOME_DESCRIPTIVE_NAME.x = 1` after the line below reports a fact without stopping the
+-- game. vp_game.py ignores errors containing "VPDEV_DIAG" for exactly this purpose.
+Events.SerialEventStartGame();

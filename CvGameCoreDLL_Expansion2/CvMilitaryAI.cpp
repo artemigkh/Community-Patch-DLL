@@ -6,6 +6,7 @@
 	All rights reserved. 
 	------------------------------------------------------------------------------------------------------- */
 #include "CvGameCoreDLLPCH.h"
+#include "MemoryHooks.h"
 #include "ICvDLLUserInterface.h"
 #include "CvGameCoreUtils.h"
 #include "CvMinorCivAI.h"
@@ -488,6 +489,7 @@ void CvMilitaryAI::SetTurnStrategyAdopted(MilitaryAIStrategyTypes eStrategy, int
 /// Process through all the military activities for a player's turn
 void CvMilitaryAI::DoTurn()
 {
+	MEMHOOK_SCOPE(MEMTAG_MILITARY_AI);
 	ScanForBarbarians();
 	UpdateBaseData();
 	UpdateDefenseState();

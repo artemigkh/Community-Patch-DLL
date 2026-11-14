@@ -1,0 +1,23 @@
+17:29:19.101 shell_server start pid 34120 size 1920x1080 rate 60.0
+17:29:19.115 adapter 0: 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7 VRAM 16048 MB
+17:29:19.115 adapter 1: 'Microsoft Basic Render Driver' LUID 000000000000F569 VRAM 0 MB (software)
+17:29:19.115 using adapter 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:29:19.339 device created, feature level b100
+17:29:19.340 section 'Local\VPShellSection' created
+17:29:19.341 texture generation 1: 1920x1080 BGRA8 shared as 'Local\VPShellWorld_34120_1'
+17:29:19.341 mem start: private=60.06 MB working=37.74 MB video_local=8.25 MB
+17:29:20.341 1s: rendered 61 published 61 overwritten(unconsumed) 60 skipped 0 | acquire max 7.20 ms | client consumed total 0 | gen 1 1920x1080
+17:29:21.342 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.18 ms | client consumed total 0 | gen 1 1920x1080
+17:29:22.358 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.16 ms | client consumed total 0 | gen 1 1920x1080
+17:29:23.358 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.24 ms | client consumed total 0 | gen 1 1920x1080
+17:29:24.375 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.13 ms | client consumed total 0 | gen 1 1920x1080
+17:29:25.392 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.14 ms | client consumed total 0 | gen 1 1920x1080
+17:29:26.408 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.25 ms | client consumed total 0 | gen 1 1920x1080
+17:29:27.409 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.16 ms | client consumed total 0 | gen 1 1920x1080
+17:29:28.425 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.22 ms | client consumed total 0 | gen 1 1920x1080
+17:29:29.342 mem periodic: private=60.96 MB working=39.80 MB video_local=25.13 MB
+17:29:29.425 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.21 ms | client consumed total 0 | gen 1 1920x1080
+17:29:30.442 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.15 ms | client consumed total 0 | gen 1 1920x1080
+17:29:31.441 1s: rendered 60 published 60 overwritten(unconsumed) 60 skipped 0 | acquire max 0.15 ms | client consumed total 0 | gen 1 1920x1080
+17:29:32.458 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.13 ms | client consumed total 0 | gen 1 1920x1080
+17:29:33.475 1s: rendered 61 published 61 overwritten(unconsumed) 61 skipped 0 | acquire max 0.15 ms | client consumed total 0 | gen 1 1920x1080

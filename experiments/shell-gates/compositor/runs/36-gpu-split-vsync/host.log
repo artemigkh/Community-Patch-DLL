@@ -1,0 +1,49 @@
+18:05:30.017 ==== test_host start pid 19196 label '36-gpu-split-vsync' swap blit(DISCARD) buffers 1 format 28 msaa 1 vsync 1 load after size 1280x720 bb 2560x1440
+18:05:30.200 device FL b000 on 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+18:05:30.202 mem start: private=23.80 MB working=29.15 MB video_local=8.25 MB handles=331
+18:05:30.388 LoadLibraryW('C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\shell_composite.dll') after device creation (frame N) -> 5B300000 (err 0) in 1.81 ms
+18:05:31.203 1s: frames 158 mean 6.299 ms max 11.841 ms bb 2560x1440
+18:05:32.208 1s: frames 166 mean 6.046 ms max 7.770 ms bb 2560x1440
+18:05:33.215 1s: frames 166 mean 6.058 ms max 8.257 ms bb 2560x1440
+18:05:34.219 1s: frames 166 mean 6.061 ms max 7.949 ms bb 2560x1440
+18:05:35.224 1s: frames 166 mean 6.055 ms max 7.324 ms bb 2560x1440
+18:05:36.232 1s: frames 166 mean 6.057 ms max 8.224 ms bb 2560x1440
+18:05:37.236 1s: frames 166 mean 6.060 ms max 7.655 ms bb 2560x1440
+18:05:38.241 1s: frames 166 mean 6.056 ms max 8.322 ms bb 2560x1440
+18:05:39.247 1s: frames 160 mean 6.283 ms max 12.104 ms bb 2560x1440
+18:05:40.204 mem periodic: private=33.54 MB working=34.58 MB video_local=56.48 MB handles=399
+18:05:40.252 1s: frames 166 mean 6.060 ms max 7.264 ms bb 2560x1440
+18:05:41.258 1s: frames 166 mean 6.055 ms max 7.696 ms bb 2560x1440
+18:05:42.265 1s: frames 166 mean 6.057 ms max 7.728 ms bb 2560x1440
+18:05:43.269 1s: frames 162 mean 6.214 ms max 11.793 ms bb 2560x1440
+18:05:44.275 1s: frames 166 mean 6.053 ms max 7.653 ms bb 2560x1440
+18:05:45.280 1s: frames 166 mean 6.055 ms max 8.064 ms bb 2560x1440
+18:05:46.286 1s: frames 160 mean 6.288 ms max 12.258 ms bb 2560x1440
+18:05:47.291 1s: frames 166 mean 6.055 ms max 7.718 ms bb 2560x1440
+18:05:48.298 1s: frames 166 mean 6.058 ms max 7.682 ms bb 2560x1440
+18:05:49.302 1s: frames 166 mean 6.059 ms max 7.487 ms bb 2560x1440
+18:05:50.206 mem periodic: private=33.59 MB working=35.20 MB video_local=56.48 MB handles=401
+18:05:50.309 1s: frames 166 mean 6.055 ms max 7.792 ms bb 2560x1440
+18:05:51.315 1s: frames 165 mean 6.095 ms max 11.591 ms bb 2560x1440
+18:05:52.319 1s: frames 166 mean 6.061 ms max 7.372 ms bb 2560x1440
+18:05:53.325 1s: frames 163 mean 6.164 ms max 11.866 ms bb 2560x1440
+18:05:54.331 1s: frames 166 mean 6.059 ms max 7.717 ms bb 2560x1440
+18:05:55.342 1s: frames 165 mean 6.098 ms max 11.776 ms bb 2560x1440
+18:05:56.343 1s: frames 163 mean 6.166 ms max 11.878 ms bb 2560x1440
+18:05:57.347 1s: frames 166 mean 6.055 ms max 7.563 ms bb 2560x1440
+18:05:58.352 1s: frames 166 mean 6.062 ms max 7.463 ms bb 2560x1440
+18:05:59.357 1s: frames 162 mean 6.203 ms max 12.235 ms bb 2560x1440
+18:06:00.206 mem periodic: private=33.75 MB working=35.29 MB video_local=56.48 MB handles=405
+18:06:00.366 1s: frames 166 mean 6.060 ms max 8.182 ms bb 2560x1440
+18:06:01.369 1s: frames 166 mean 6.061 ms max 7.686 ms bb 2560x1440
+18:06:02.374 1s: frames 165 mean 6.088 ms max 11.633 ms bb 2560x1440
+18:06:03.381 1s: frames 166 mean 6.058 ms max 7.017 ms bb 2560x1440
+18:06:04.387 1s: frames 166 mean 6.062 ms max 6.878 ms bb 2560x1440
+18:06:05.391 1s: frames 161 mean 6.240 ms max 11.842 ms bb 2560x1440
+18:06:06.398 1s: frames 166 mean 6.058 ms max 7.556 ms bb 2560x1440
+18:06:07.398 1s: frames 165 mean 6.060 ms max 7.798 ms bb 2560x1440
+18:06:08.408 1s: frames 164 mean 6.133 ms max 11.778 ms bb 2560x1440
+18:06:09.413 1s: frames 164 mean 6.164 ms max 11.900 ms bb 2560x1440
+18:06:10.207 mem periodic: private=33.75 MB working=35.29 MB video_local=56.48 MB handles=405
+18:06:10.207 summary label=36-gpu-split-vsync frames=6069 mean=6.0965 p50=6.0565 p99=7.6862 max=12.258 fps=164.0
+18:06:10.207 mem end: private=33.75 MB working=35.31 MB video_local=56.48 MB handles=405

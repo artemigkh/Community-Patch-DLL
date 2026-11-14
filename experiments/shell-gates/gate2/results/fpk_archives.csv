@@ -1,0 +1,148 @@
+archive,version,files,bytes,by_ext
+Resource\Common\AncientWondersModels.fpk,6,81,1920596,.gr2:73 .fxsxml:5 .ftsxml:2 .gsd:1
+Resource\Common\BabylonianModels.fpk,6,118,6271324,.gr2:90 .fxsxml:10 .xml:9 .ftsxml:3 .fsmxml:2 .dge:2 .psb:1 .gsd:1
+Resource\Common\BuildingModels.fpk,6,65,1036700,.fxsxml:31 .gr2:31 .ftsxml:2 .gsd:1
+Resource\Common\CityModels.fpk,6,46,2168828,.fxsxml:22 .gr2:22 .xml:1 .gsd:1
+Resource\Common\ConquestDeluxeModels.fpk,6,616,59441184,.gr2:518 .fxsxml:55 .ftsxml:19 .dge:14 .tga:5 .psb:2 .fsmxml:2 .gsd:1
+Resource\Common\DenmarkModels.fpk,6,198,15917924,.gr2:179 .fxsxml:10 .ftsxml:5 .dge:1 .fsmxml:1 .tga:1 .gsd:1
+Resource\Common\EffectData.fpk,6,383,3223616,.psb:319 .gr2:30 .fxsxml:25 .xml:6 .ftsxml:2 .xsd:1
+Resource\Common\Expansion1LeaderModels.fpk,6,684,97869540,.gr2:575 .fxsxml:59 .dge:24 .ftsxml:14 .fsmxml:11 .gsd:1
+Resource\Common\Expansion1Models.fpk,6,2117,31847164,.gr2:1899 .fxsxml:118 .ftsxml:78 .psb:21 .gsd:1
+Resource\Common\Expansion2LeaderModels.fpk,6,675,93135540,.gr2:562 .fxsxml:55 .dge:33 .ftsxml:13 .fsmxml:11 .gsd:1
+Resource\Common\Expansion2Models.fpk,6,2694,37167148,.gr2:2379 .fxsxml:175 .ftsxml:107 .psb:30 .dge:1 .fsmxml:1 .gsd:1
+Resource\Common\FeatureModels.fpk,6,52,126860,.gr2:29 .fxsxml:15 .ftsxml:7 .gsd:1
+Resource\Common\HutsBarbarianFortModels.fpk,6,38,1155956,.fxsxml:14 .gr2:14 .ftsxml:9 .gsd:1
+Resource\Common\ImprovementModels.fpk,6,616,15523868,.gr2:222 .fxsxml:219 .ftsxml:172 .xml:1 .xsd:1 .gsd:1
+Resource\Common\IncanModels.fpk,6,73,9892824,.gr2:56 .dge:7 .fxsxml:6 .ftsxml:1 .fsmxml:1 .gsd:1 .xml:1
+Resource\Common\KoreaModels.fpk,6,136,15971164,.gr2:117 .fxsxml:8 .ftsxml:4 .psb:3 .dge:1 .fsmxml:1 .tga:1 .gsd:1
+Resource\Common\LeaderModels.fpk,6,1411,214830992,.gr2:1050 .fxsxml:170 .dge:66 .xml:47 .tga:31 .ftsxml:23 .fsmxml:21 .psd:1 .max:1 .gsd:1
+Resource\Common\MiscData.fpk,6,240,8122048,.gr2:112 .fxsxml:65 .ftsxml:41 .xml:13 .ddtxml:6 .csv:1 .ftbxml:1 .png:1
+Resource\Common\MongolModels.fpk,6,133,12268312,.gr2:111 .fxsxml:10 .dge:7 .ftsxml:3 .fsmxml:1 .gsd:1
+Resource\Common\PolynesiaModels.fpk,6,176,14831936,.gr2:137 .fxsxml:19 .dge:9 .ftsxml:4 .fsmxml:3 .psb:2 .tga:1 .gsd:1
+Resource\Common\SoundData.fpk,6,3757,107085916,.wav:3516 .mp3:241
+Resource\Common\SpanishModels.fpk,6,302,14193232,.gr2:268 .fxsxml:16 .ftsxml:9 .xml:7 .tga:1 .gsd:1
+Resource\Common\TempModels.fpk,6,115,4355324,.gr2:69 .fxsxml:45 .gsd:1
+Resource\Common\TerrainModels.fpk,6,34,12503036,.txt:10 .gr2:9 .lean:5 .xml:3 .bat:3 .xsd:1 .tga:1 .csv:1 .gsd:1
+Resource\Common\UnitModels.fpk,6,4246,62730908,.gr2:3769 .fxsxml:186 .ftsxml:139 .dge:123 .fsmxml:14 .xml:5 .tga:4 .xsd:2 .psd:2 .ini:1 .gsd:1
+Resource\Common\Upgrade1Models.fpk,6,87,1085160,.gr2:55 .fxsxml:19 .psb:6 .ftsxml:5 .lean:1 .gsd:1
+Resource\Common\WonderModels.fpk,6,78,6189600,.gr2:36 .fxsxml:31 .ftsxml:4 .ddtxml:3 .xsd:1 .xml:1 .png:1 .gsd:1
+Resource\DX9\AmericanWashingtonTextures.fpk,6,66,13617700,.dds:41 .fic:25
+Resource\DX9\AncientWondersTextures.fpk,6,94,6114624,.dds:94
+Resource\DX9\ArabiaHarunAl-RashidTextures.fpk,6,85,19712752,.dds:48 .fic:37
+Resource\DX9\AssyriaAshurbanipalTextures.fpk,6,49,11009048,.dds:31 .fic:18
+Resource\DX9\AustriaMariaTheresaTextures.fpk,6,68,10050636,.dds:41 .fic:27
+Resource\DX9\AztecMontezumaTextures.fpk,6,87,20390872,.dds:50 .fic:37
+Resource\DX9\BabylonianNebuchadnezzarTextures.fpk,6,122,20449704,.dds:97 .fic:25
+Resource\DX9\BrazilPedroTextures.fpk,6,48,8208264,.dds:30 .fic:18
+Resource\DX9\BuildingTextures.fpk,6,64,5189688,.dds:64
+Resource\DX9\ByzantiumEmpressTheodoraTextures.fpk,6,59,6404076,.dds:36 .fic:23
+Resource\DX9\CarthageDidoTextures.fpk,6,61,6086316,.dds:40 .fic:21
+Resource\DX9\CeltsBoudiccaTextures.fpk,6,61,15733500,.dds:36 .fic:25
+Resource\DX9\ChineseWuTextures.fpk,6,67,12847808,.dds:40 .fic:27
+Resource\DX9\CityTextures.fpk,6,50,5515184,.dds:50
+Resource\DX9\ConquestDeluxeTextures.fpk,6,403,60822224,.dds:313 .fic:90
+Resource\DX9\DecalTextures.fpk,6,75,9642748,.dds:75
+Resource\DX9\DenmarkTextures.fpk,6,170,23177044,.dds:147 .fic:23
+Resource\DX9\EffectTextures.fpk,6,190,15195772,.dds:190
+Resource\DX9\EgyptianRamessesTextures.fpk,6,80,13749212,.dds:46 .fic:34
+Resource\DX9\EnglandElizabethTextures.fpk,6,63,16234572,.dds:37 .fic:26
+Resource\DX9\EthiopiaHaileSelassieTextures.fpk,6,67,10505080,.dds:39 .fic:28
+Resource\DX9\EthiopiaHaileSelassieXP2Textures.fpk,6,67,10505080,.dds:39 .fic:28
+Resource\DX9\Expansion1BuildingsTextures.fpk,6,119,14183952,.dds:119
+Resource\DX9\Expansion1EffectsTextures.fpk,6,11,1729344,.dds:11
+Resource\DX9\Expansion1UITextures.fpk,6,726,86168056,.dds:726
+Resource\DX9\Expansion1UnitsTextures.fpk,6,122,13327668,.dds:122
+Resource\DX9\Expansion2BuildingsTextures.fpk,6,218,21936172,.dds:218
+Resource\DX9\Expansion2EffectsTextures.fpk,6,5,99320,.dds:5
+Resource\DX9\Expansion2UITextures.fpk,6,1467,128219376,.dds:1467
+Resource\DX9\Expansion2UnitsTextures.fpk,6,178,19783508,.dds:178
+Resource\DX9\FeatureTextures.fpk,6,8,1050152,.dds:8
+Resource\DX9\FrenchNapoleonTextures.fpk,6,86,18253308,.dds:49 .fic:37
+Resource\DX9\GermanBismarckTextures.fpk,6,71,15862328,.dds:42 .fic:29
+Resource\DX9\GreeceAlexanderTextures.fpk,6,87,21878764,.dds:50 .fic:37
+Resource\DX9\HunsAttilaTextures.fpk,6,58,16537988,.dds:37 .fic:21
+Resource\DX9\HutsBarbarianFortTextures.fpk,6,53,3549012,.dds:53
+Resource\DX9\ImprovementTextures.fpk,6,209,14666416,.dds:209
+Resource\DX9\IncanPachacutiTextures.fpk,6,65,13452664,.dds:41 .fic:24
+Resource\DX9\IndianGandhiTextures.fpk,6,87,14282792,.dds:50 .fic:37
+Resource\DX9\IndonesiaGajahTextures.fpk,6,50,9481428,.dds:31 .fic:19
+Resource\DX9\IroquoisHiawathaTextures.fpk,6,91,18942904,.dds:52 .fic:39
+Resource\DX9\JapaneseOdaNobunugaTextures.fpk,6,74,12529328,.dds:43 .fic:31
+Resource\DX9\KoreaTextures.fpk,6,128,13419268,.dds:108 .fic:20
+Resource\DX9\LeadersTextures.fpk,6,1,268,.dds:1
+Resource\DX9\MayaPacalTheGreatTextures.fpk,6,60,11240432,.dds:40 .fic:20
+Resource\DX9\MiscTextures.fpk,6,598,74828624,.dds:542 .fic:56
+Resource\DX9\MongolGehghis_KhanTextures.fpk,6,146,14699520,.dds:109 .fic:37
+Resource\DX9\MoroccoAlmansurTextures.fpk,6,58,7215252,.dds:37 .fic:21
+Resource\DX9\NetherlandsWilliamOfOrangeTextures.fpk,6,69,9845744,.dds:41 .fic:28
+Resource\DX9\OttomanSuliemanTextures.fpk,6,100,17131224,.dds:56 .fic:44
+Resource\DX9\PersiaDariusTextures.fpk,6,61,11012568,.dds:37 .fic:24
+Resource\DX9\PolandCasimirTextures.fpk,6,64,10136660,.dds:39 .fic:25
+Resource\DX9\PolynesiaTextures.fpk,6,183,20564876,.dds:158 .fic:25
+Resource\DX9\PortugalMariaTextures.fpk,6,71,11026160,.dds:43 .fic:28
+Resource\DX9\RomanCaesarTextures.fpk,6,56,12103868,.dds:34 .fic:22
+Resource\DX9\RussianCatherineTextures.fpk,6,90,18949504,.dds:53 .fic:37
+Resource\DX9\ShoshonePocatelloTextures.fpk,6,52,11382556,.dds:32 .fic:20
+Resource\DX9\SiamRamkhamaengTextures.fpk,6,63,17110788,.dds:38 .fic:25
+Resource\DX9\SonghaiAskiaTextures.fpk,6,66,19680592,.dds:39 .fic:27
+Resource\DX9\SpainIsabellaExp1Textures.fpk,6,48,11218552,.dds:30 .fic:18
+Resource\DX9\SpainIsabellaTextures.fpk,6,230,33251352,.dds:188 .fic:42
+Resource\DX9\SteamPunkTextures.fpk,6,10,9167808,.dds:10
+Resource\DX9\StrategicViewTextures.fpk,6,201,11055992,.dds:201
+Resource\DX9\SwedenGustavusAdolphusTextures.fpk,6,41,13006532,.dds:27 .fic:14
+Resource\DX9\TerrainTextures.fpk,6,126,93140280,.dds:126
+Resource\DX9\UITextures.fpk,6,1421,162125240,.dds:1410 .fic:11
+Resource\DX9\UnitsTextures.fpk,6,372,39344924,.dds:372
+Resource\DX9\Upgrade1Textures.fpk,6,394,43093844,.dds:394
+Resource\DX9\VeniceDandoloTextures.fpk,6,53,14430644,.dds:33 .fic:20
+Resource\DX9\WonderTextures.fpk,6,134,10653632,.dds:134
+Resource\DX9\ZuluShakaTextures.fpk,6,73,14285024,.dds:43 .fic:30
+Resource\DX9_Low\AmericanWashingtonTexturesDX9Low.fpk,6,11,183084,.dds:11
+Resource\DX9_Low\ArabiaHarunAl-RashidTexturesDX9Low.fpk,6,10,166436,.dds:10
+Resource\DX9_Low\AssyriaAshurbanipalTexturesDX9Low.fpk,6,10,166472,.dds:10
+Resource\DX9_Low\AustriaMariaTheresaTexturesDX9Low.fpk,6,10,166396,.dds:10
+Resource\DX9_Low\AztecMontezumaTexturesDX9Low.fpk,6,10,166436,.dds:10
+Resource\DX9_Low\BabylonianNebuchadnezzarTexturesDX9Low.fpk,6,10,166484,.dds:10
+Resource\DX9_Low\BrazilPedroTexturesDX9Low.fpk,6,10,166396,.dds:10
+Resource\DX9_Low\ByzantiumEmpressTheodoraTexturesDX9Low.fpk,6,10,166432,.dds:10
+Resource\DX9_Low\CarthageDidoTexturesDX9Low.fpk,6,12,199656,.dds:12
+Resource\DX9_Low\CeltsBoudiccaTexturesDX9Low.fpk,6,10,166432,.dds:10
+Resource\DX9_Low\ChineseWuTexturesDX9Low.fpk,6,10,166364,.dds:10
+Resource\DX9_Low\CityTexturesDX9Low.fpk,6,6,99820,.dds:6
+Resource\DX9_Low\DenmarkTexturesDX9Low.fpk,6,10,166436,.dds:10
+Resource\DX9_Low\EgyptianRamessesTexturesDX9Low.fpk,6,10,166432,.dds:10
+Resource\DX9_Low\EnglandElizabethTexturesDX9Low.fpk,6,10,166436,.dds:10
+Resource\DX9_Low\EthiopiaHaileSelassieTexturesDX9Low.fpk,6,10,166432,.dds:10
+Resource\DX9_Low\EthiopiaHaileSelassieXP2TexturesDX9Low.fpk,6,10,166432,.dds:10
+Resource\DX9_Low\FrenchNapoleonTexturesDX9Low.fpk,6,10,166432,.dds:10
+Resource\DX9_Low\GermanBismarckTexturesDX9Low.fpk,6,10,166432,.dds:10
+Resource\DX9_Low\GreeceAlexanderTexturesDX9Low.fpk,6,12,324076,.dds:11 .fic:1
+Resource\DX9_Low\HunsAttilaTexturesDX9Low.fpk,6,11,183040,.dds:11
+Resource\DX9_Low\IndianGandhiTexturesDX9Low.fpk,6,10,166404,.dds:10
+Resource\DX9_Low\IndonesiaGajahTexturesDX9Low.fpk,6,10,166396,.dds:10
+Resource\DX9_Low\IroquoisHiawathaTexturesDX9Low.fpk,6,10,166432,.dds:10
+Resource\DX9_Low\JapaneseOdaNobunugaTexturesDX9Low.fpk,6,10,166392,.dds:10
+Resource\DX9_Low\KoreaTexturesDX9Low.fpk,6,12,199696,.dds:12
+Resource\DX9_Low\MayaPacalTheGreatTexturesDX9Low.fpk,6,12,199664,.dds:12
+Resource\DX9_Low\MiscTexturesDX9Low.fpk,6,14,232952,.dds:14
+Resource\DX9_Low\MongolGehghis_KhanTexturesDX9Low.fpk,6,14,767612,.dds:13 .fic:1
+Resource\DX9_Low\MoroccoAlmansurTexturesDX9Low.fpk,6,10,166432,.dds:10
+Resource\DX9_Low\NetherlandsWilliamOfOrangeTexturesDX9Low.fpk,6,10,166432,.dds:10
+Resource\DX9_Low\OttomanSuliemanTexturesDX9Low.fpk,6,10,166432,.dds:10
+Resource\DX9_Low\PersiaDariusTexturesDX9Low.fpk,6,10,166404,.dds:10
+Resource\DX9_Low\PolandCasimirTexturesDX9Low.fpk,6,10,166432,.dds:10
+Resource\DX9_Low\PolynesiaTexturesDX9Low.fpk,6,10,166444,.dds:10
+Resource\DX9_Low\PortugalMariaTexturesDX9Low.fpk,6,10,166404,.dds:10
+Resource\DX9_Low\RomanCaesarTexturesDX9Low.fpk,6,10,166432,.dds:10
+Resource\DX9_Low\RussianCatherineTexturesDX9Low.fpk,6,10,166436,.dds:10
+Resource\DX9_Low\ShoshonePocatelloTexturesDX9Low.fpk,6,10,166436,.dds:10
+Resource\DX9_Low\SiamRamkhamaengTexturesDX9Low.fpk,6,10,166472,.dds:10
+Resource\DX9_Low\SonghaiAskiaTexturesDX9Low.fpk,6,10,166396,.dds:10
+Resource\DX9_Low\SpainIsabellaExp1TexturesDX9Low.fpk,6,10,166432,.dds:10
+Resource\DX9_Low\SpainIsabellaTexturesDX9Low.fpk,6,22,366128,.dds:22
+Resource\DX9_Low\SwedenGustavusAdolphusTexturesDX9Low.fpk,6,10,166432,.dds:10
+Resource\DX9_Low\TerrainTexturesDX9Low.fpk,6,45,12073500,.dds:45
+Resource\DX9_Low\UITexturesDX9Low.fpk,6,2,33304,.dds:2
+Resource\DX9_Low\Upgrade1TexturesDX9Low.fpk,6,3,49952,.dds:3
+Resource\DX9_Low\VeniceDandoloTexturesDX9Low.fpk,6,10,166432,.dds:10
+Resource\DX9_Low\ZuluShakaTexturesDX9Low.fpk,6,10,166396,.dds:10

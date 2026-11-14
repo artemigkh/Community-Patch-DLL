@@ -1,0 +1,12 @@
+17:33:12.023 ==== test_host start pid 24828 label '17-load-before' swap blit(DISCARD) buffers 1 format 28 msaa 1 vsync 1 load before size 1280x720 bb 0x0
+17:33:12.023 LoadLibraryW('C:\Users\Art\Documents\GitHub\Community-Patch-DLL\.claude\worktrees\shell-gates-d8e422\experiments\shell-gates\compositor\bin\shell_composite.dll') before device creation -> 66950000 (err 0) in 0.85 ms
+17:33:12.265 device FL b000 on 'NVIDIA GeForce RTX 4080' LUID 000000000000E0D7
+17:33:12.267 mem start: private=29.85 MB working=32.93 MB video_local=16.50 MB handles=399
+17:33:13.271 1s: frames 144 mean 6.930 ms max 12.106 ms bb 1280x720
+17:33:14.271 1s: frames 155 mean 6.463 ms max 12.004 ms bb 1280x720
+17:33:15.279 1s: frames 160 mean 6.272 ms max 12.329 ms bb 1280x720
+17:33:16.282 1s: frames 156 mean 6.455 ms max 11.488 ms bb 1280x720
+17:33:17.287 1s: frames 166 mean 6.047 ms max 8.183 ms bb 1280x720
+17:33:18.293 1s: frames 166 mean 6.058 ms max 7.920 ms bb 1280x720
+17:33:19.269 summary label=17-load-before frames=648 mean=6.1785 p50=6.0815 p99=11.1721 max=11.643 fps=161.9
+17:33:19.269 mem end: private=33.34 MB working=33.98 MB video_local=23.34 MB handles=396
