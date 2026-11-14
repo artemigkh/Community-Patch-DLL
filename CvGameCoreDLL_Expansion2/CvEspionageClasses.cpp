@@ -6671,35 +6671,35 @@ FDataStream& operator<<(FDataStream& saveTo, const CvPlayerEspionage& readFrom)
 	saveTo << uiVersion;
 	MOD_SERIALIZE_INIT_WRITE(saveTo);
 
-	saveTo << readFrom.m_aSpyList.size();
+	saveTo << (uint)readFrom.m_aSpyList.size();
 	for(uint i = 0; i < readFrom.m_aSpyList.size(); i++)
 	{
 		saveTo << readFrom.m_aSpyList[i];
 	}
 
-	saveTo << readFrom.m_aaPlayerStealableTechList.size();
+	saveTo << (uint)readFrom.m_aaPlayerStealableTechList.size();
 	for(uint uiCiv = 0; uiCiv < readFrom.m_aaPlayerStealableTechList.size(); uiCiv++)
 	{
-		saveTo << readFrom.m_aaPlayerStealableTechList[uiCiv].size();
+		saveTo << (uint)readFrom.m_aaPlayerStealableTechList[uiCiv].size();
 		for(uint uiTech = 0; uiTech < readFrom.m_aaPlayerStealableTechList[uiCiv].size(); uiTech++)
 		{
 			saveTo << readFrom.m_aaPlayerStealableTechList[uiCiv][uiTech];
 		}
 	}
 
-	saveTo << readFrom.m_aiNumTechsToStealList.size();
+	saveTo << (uint)readFrom.m_aiNumTechsToStealList.size();
 	for(uint uiCiv = 0; uiCiv < readFrom.m_aiNumTechsToStealList.size(); uiCiv++)
 	{
 		saveTo << readFrom.m_aiNumTechsToStealList[uiCiv];
 	}
 	
-	saveTo << readFrom.m_aiNumSpyActionsDone.size();
+	saveTo << (uint)readFrom.m_aiNumSpyActionsDone.size();
 	for(uint uiCiv = 0; uiCiv < readFrom.m_aiNumSpyActionsDone.size(); uiCiv++)
 	{
 		saveTo << readFrom.m_aiNumSpyActionsDone[uiCiv];
 	}
 
-	saveTo << readFrom.m_aSpyNotificationMessages.size();
+	saveTo << (uint)readFrom.m_aSpyNotificationMessages.size();
 	for(uint ui = 0; ui < readFrom.m_aSpyNotificationMessages.size(); ui++)
 	{
 		saveTo << readFrom.m_aSpyNotificationMessages[ui].m_iCityX;
@@ -6712,7 +6712,7 @@ FDataStream& operator<<(FDataStream& saveTo, const CvPlayerEspionage& readFrom)
 		saveTo << readFrom.m_aSpyNotificationMessages[ui].m_iGWID;
 	}
 
-	saveTo << readFrom.m_aIntrigueNotificationMessages.size();
+	saveTo << (uint)readFrom.m_aIntrigueNotificationMessages.size();
 	for(uint ui = 0; ui < readFrom.m_aIntrigueNotificationMessages.size(); ui++)
 	{
 		saveTo << readFrom.m_aIntrigueNotificationMessages[ui].m_eDiscoveringPlayer;
@@ -10556,43 +10556,43 @@ FDataStream& operator<<(FDataStream& saveTo, const CvEspionageAI& readFrom)
 	saveTo << uiVersion;
 	MOD_SERIALIZE_INIT_WRITE(saveTo);
 
-	saveTo << readFrom.m_aiCivOutOfTechTurn.size();
+	saveTo << (uint)readFrom.m_aiCivOutOfTechTurn.size();
 	for(uint ui = 0; ui < readFrom.m_aiCivOutOfTechTurn.size(); ui++)
 	{
 		saveTo << readFrom.m_aiCivOutOfTechTurn[ui];
 	}
 
-	saveTo << readFrom.m_aiNumSpiesCaught.size();
+	saveTo << (uint)readFrom.m_aiNumSpiesCaught.size();
 	for(uint ui = 0; ui < readFrom.m_aiNumSpiesCaught.size(); ui++)
 	{
 		saveTo << readFrom.m_aiNumSpiesCaught[ui];
 	}
 
-	saveTo << readFrom.m_aiNumSpiesKilled.size();
+	saveTo << (uint)readFrom.m_aiNumSpiesKilled.size();
 	for(uint ui = 0; ui < readFrom.m_aiNumSpiesKilled.size(); ui++)
 	{
 		saveTo << readFrom.m_aiNumSpiesKilled[ui];
 	}
 
-	saveTo << readFrom.m_aiNumSpiesDied.size();
+	saveTo << (uint)readFrom.m_aiNumSpiesDied.size();
 	for(uint ui = 0; ui < readFrom.m_aiNumSpiesDied.size(); ui++)
 	{
 		saveTo << readFrom.m_aiNumSpiesDied[ui];
 	}
 
-	saveTo << readFrom.m_aiTurnLastSpyCaught.size();
+	saveTo << (uint)readFrom.m_aiTurnLastSpyCaught.size();
 	for(uint ui = 0; ui < readFrom.m_aiTurnLastSpyCaught.size(); ui++)
 	{
 		saveTo << readFrom.m_aiTurnLastSpyCaught[ui];
 	}
 
-	saveTo << readFrom.m_aiTurnLastSpyKilled.size();
+	saveTo << (uint)readFrom.m_aiTurnLastSpyKilled.size();
 	for(uint ui = 0; ui < readFrom.m_aiTurnLastSpyKilled.size(); ui++)
 	{
 		saveTo << readFrom.m_aiTurnLastSpyKilled[ui];
 	}
 
-	saveTo << readFrom.m_aiTurnLastSpyDied.size();
+	saveTo << (uint)readFrom.m_aiTurnLastSpyDied.size();
 	for(uint ui = 0; ui < readFrom.m_aiTurnLastSpyDied.size(); ui++)
 	{
 		saveTo << readFrom.m_aiTurnLastSpyDied[ui];
