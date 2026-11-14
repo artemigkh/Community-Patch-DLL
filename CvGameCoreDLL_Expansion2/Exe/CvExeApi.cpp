@@ -1,4 +1,8 @@
 #include "CvGameCoreDLLPCH.h"
+
+// Out of process (VP_OUT_OF_PROCESS) no Civ V EXE hosts the DLL: there is nothing to detect or hook, so this
+// file compiles to nothing and Exe::* answers as for an unknown EXE (CvExe.cpp).
+#if !defined(VP_OUT_OF_PROCESS)
 #include "CvExeApi.h"
 #include "CvExeSymbols.h"
 #include "LintFree.h"
@@ -67,3 +71,5 @@ const volatile DWORD* ExeApi::g_EventSystemLocalMachine()
 		ExeSymbols::Get(EXE_g_EventSystemLocalMachine)
 	);
 }
+
+#endif // !VP_OUT_OF_PROCESS
