@@ -12,11 +12,100 @@
 
 #include <vector>
 #include <set>
+#include <new>
 #include "CvEnums.h"
 
+// A minimal vector for trivially copyable elements that keeps the first N elements inside the object and only
+// allocates heap storage when it grows beyond that. clear() releases any heap storage again.
+// Each player keeps three of these for every plot of the map. With std::vector, every list that was ever written
+// kept its own small heap block for the rest of the game (hundreds of thousands of blocks on large maps), which
+// fragments the 32-bit address space. Most lists are empty and most of the others hold a single entry, so with
+// N = 1 the danger map needs no heap blocks for them and each plot entry keeps the size it had with std::vector.
+// Elements are kept in insertion order, exactly as std::vector does.
+template<typename T, unsigned int N>
+class CvInlineVector
+{
+public:
+	typedef T value_type;
+	typedef T* iterator;
+	typedef const T* const_iterator;
+	typedef unsigned int size_type;
+
+	CvInlineVector() : m_uSize(0), m_uCapacity(N) {}
+	CvInlineVector(const CvInlineVector& other) : m_uSize(0), m_uCapacity(N) { append(other); }
+	~CvInlineVector() { clear(); }
+
+	CvInlineVector& operator=(const CvInlineVector& other)
+	{
+		if (this != &other)
+		{
+			clear();
+			append(other);
+		}
+		return *this;
+	}
+
+	iterator begin() { return data(); }
+	iterator end() { return data() + m_uSize; }
+	const_iterator begin() const { return data(); }
+	const_iterator end() const { return data() + m_uSize; }
+
+	size_type size() const { return m_uSize; }
+	bool empty() const { return m_uSize == 0; }
+
+	void push_back(const T& value)
+	{
+		const T copy(value); // value may refer to an element that grow() moves
+		if (m_uSize == m_uCapacity)
+			grow(m_uCapacity * 2 > 4 ? m_uCapacity * 2 : 4);
+		new (data() + m_uSize) T(copy);
+		m_uSize++;
+	}
+
+	// removes all elements and frees any heap storage
+	void clear()
+	{
+		if (isOnHeap())
+			::operator delete(m_storage.pHeap);
+		m_uSize = 0;
+		m_uCapacity = N;
+	}
+
+private:
+	bool isOnHeap() const { return m_uCapacity > N; }
+	T* data() { return isOnHeap() ? m_storage.pHeap : reinterpret_cast<T*>(m_storage.auInline); }
+	const T* data() const { return isOnHeap() ? m_storage.pHeap : reinterpret_cast<const T*>(m_storage.auInline); }
+
+	void grow(size_type uNewCapacity)
+	{
+		T* pNew = static_cast<T*>(::operator new(uNewCapacity * sizeof(T)));
+		T* pOld = data();
+		for (size_type i = 0; i < m_uSize; i++)
+			new (pNew + i) T(pOld[i]);
+		if (isOnHeap())
+			::operator delete(m_storage.pHeap);
+		m_storage.pHeap = pNew;
+		m_uCapacity = uNewCapacity;
+	}
+
+	void append(const CvInlineVector& other)
+	{
+		for (const_iterator it = other.begin(); it != other.end(); ++it)
+			push_back(*it);
+	}
+
+	size_type m_uSize;
+	size_type m_uCapacity; // N while the elements are stored inline
+	union
+	{
+		T* pHeap;
+		unsigned int auInline[(N * sizeof(T) + sizeof(unsigned int) - 1) / sizeof(unsigned int)];
+	} m_storage;
+};
+
 // Stores all possible damage sources on a tile (terrain, improvements, cities, units)
-typedef std::vector<std::pair<PlayerTypes,int>> DangerUnitVector;
-typedef std::vector<std::pair<PlayerTypes,int>> DangerCityVector;
+typedef CvInlineVector<std::pair<PlayerTypes,int>, 1> DangerUnitVector;
+typedef CvInlineVector<std::pair<PlayerTypes,int>, 1> DangerCityVector;
 typedef std::set<std::pair<PlayerTypes,int>> UnitSet;
 
 //todo: return more information on top of the total danger
@@ -46,10 +135,10 @@ struct CvDangerPlotContents
 		m_iImprovementDamage = 0;
 		m_iFogCount = 0;
 
-		//make sure the allocated size doesn't grow too much over time
-		m_apUnits.clear(); if (m_apUnits.capacity() > 5) { DangerUnitVector().swap(m_apUnits); m_apUnits.reserve(5); }
-		m_apCities.clear(); //cities are fairly static so don't care to prune
-		m_apCaptureUnits.clear(); if (m_apCaptureUnits.capacity() > 5) { DangerUnitVector().swap(m_apCaptureUnits); }
+		//short lists live inside the plot entry, longer ones release their heap storage here
+		m_apUnits.clear();
+		m_apCities.clear();
+		m_apCaptureUnits.clear();
 	};
 
 	int GetDanger(const CvUnit* pUnit, const SUnitIDValueContainer& extraUnitDamage, int iExtraDamage, AirActionType iAirAction);

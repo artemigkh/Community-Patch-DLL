@@ -551,7 +551,14 @@ void CvPlayerEspionage::LogSpyStatus()
 		case SPY_STATE_COUNTER_INTEL:
 			if (MOD_BALANCE_VP)
 			{
-				strMsg.Format("COUNTERING INTEL in %s. Current Mission: %s", pCity->getName().c_str(), GC.getCityEventChoiceInfo(eMission)->GetDescription());
+				if (eMission != NO_EVENT_CHOICE_CITY)
+				{
+					strMsg.Format("COUNTERING INTEL in %s. Current Mission: %s", pCity->getName().c_str(), GC.getCityEventChoiceInfo(eMission)->GetDescription());
+				}
+				else
+				{
+					strMsg.Format("COUNTERING INTEL in %s. No Current Mission.", pCity->getName().c_str());
+				}
 			}
 			else
 			{

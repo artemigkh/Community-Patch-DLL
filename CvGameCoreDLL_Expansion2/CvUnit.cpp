@@ -15529,6 +15529,15 @@ std::map<CvUnit*, CvPlot*> CvUnit::DoSquadPlotAssignments(CvPlot* pDestPlot, boo
 	return unitToPlotMap;
 }
 
+// Orders squad move assignments by unit ID
+struct SquadMoveUnitIDLess
+{
+	bool operator()(const std::pair<CvUnit*, CvPlot*>& lhs, const std::pair<CvUnit*, CvPlot*>& rhs) const
+	{
+		return lhs.first->GetID() < rhs.first->GetID();
+	}
+};
+
 void CvUnit::DoSquadMovement(CvPlot* pDestPlot, bool escort)
 {
 	VALIDATE_OBJECT();
@@ -15537,8 +15546,12 @@ void CvUnit::DoSquadMovement(CvPlot* pDestPlot, bool escort)
 
 	SetSquadDestination(pDestPlot);
 
+	// The map is ordered by unit address, which differs from run to run; send the missions in unit ID order instead
+	std::vector< std::pair<CvUnit*, CvPlot*> > unitMoves(unitToPlotMap.begin(), unitToPlotMap.end());
+	std::sort(unitMoves.begin(), unitMoves.end(), SquadMoveUnitIDLess());
+
 	// Now that we have all the units to move and tiles for them, send the move missions
-	for (std::map<CvUnit*, CvPlot*>::iterator it = unitToPlotMap.begin(); it != unitToPlotMap.end(); ++it)
+	for (std::vector< std::pair<CvUnit*, CvPlot*> >::iterator it = unitMoves.begin(); it != unitMoves.end(); ++it)
 	{
 		CvUnit* pLoopUnit = it->first;
 		CvPlot* targetPlot = it->second;
@@ -20562,8 +20575,8 @@ void CvUnit::setXY(int iX, int iY, bool bGroup, bool bUpdate, bool bShow, bool b
 												if (MOD_WH_MILITARY_LOG)
 													MILITARYLOG(getOwner(), strBuffer.c_str(), plot(), pLoopUnit->getOwner());
 												
-												Localization::String strMessage = Localization::Lookup("TXT_KEY_UNIT_LOST");
-												Localization::String strSummary = strMessage;
+												strMessage = Localization::Lookup("TXT_KEY_UNIT_LOST");
+												strSummary = strMessage;
 											}
 
 											CvNotifications* pNotification = GET_PLAYER(pLoopUnit->getOwner()).GetNotifications();
