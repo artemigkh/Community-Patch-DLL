@@ -345,6 +345,7 @@ public:
 	BatchWriter BeginLogBatch(const std::string& strTableName);
 
 private:
+	friend class Statement;
 	friend class BatchWriter;
 
 	SqliteLogger();
@@ -359,7 +360,9 @@ private:
 	void EnsureDictionaryTable();
 
 	//! Compares the live table schema (via PRAGMA table_info) against the supplied definition.
-	bool TableSchemaMatches(const std::string& strTableName, const TableDef& kColumns);
+	//! Returns 1 when it matches, 0 when the table is missing or differs, -1 when the schema could not be
+	//! read (iErrorCode then holds the SQLite error code).
+	int TableSchemaMatches(const std::string& strTableName, const TableDef& kColumns, int& iErrorCode);
 
 	//! Issues CREATE TABLE for the supplied definition.
 	void CreateTable(const std::string& strTableName, const TableDef& kColumns);
@@ -370,12 +373,26 @@ private:
 	//! Maps a ColumnTypes value to its SQLite declared type name.
 	static const char* SqlTypeName(Database::ColumnTypes eType);
 
+	//! One attempt: both arguments = prepare szSql into *pkResults; pkResults only = step that bound
+	//! statement; szSql only = run szSql to its end. True on success.
+	bool ExecuteOnce(Database::Results* pkResults, const char* szSql);
+
+	//! ExecuteOnce, and when it fails because another connection holds a lock on stats.db (SQLITE_BUSY
+	//! or SQLITE_LOCKED), waits and tries again, a bounded number of times. Returns 0 on success, else the
+	//! SQLite error code of the last attempt (the message is in m_kConnection.ErrorMessage()). The first
+	//! attempt is the only cost on success.
+	int ExecuteWithRetry(Database::Results* pkResults, const char* szSql);
+
+	//! The SQLite message of the connection's last error, never NULL (for the failure reports).
+	const char* LastErrorMessage() const;
+
 	typedef std::map<std::string, TableDef> SchemaMap;
 	typedef std::map<std::string, Database::Results*> InsertMap;
 
 	Database::Connection m_kConnection;
 	bool m_bOpenAttempted;
 	bool m_bOpen;
+	int m_iNoRetryTurn;  //!< Turn in which a statement used up its retries: no more retries in that turn.
 
 	SchemaMap m_registeredTableSchemas;
 	InsertMap m_preparedInserts;
