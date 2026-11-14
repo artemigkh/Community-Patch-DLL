@@ -2708,7 +2708,11 @@ void CreateMiniDump(EXCEPTION_POINTERS* pep)
 #else
 		"Release\n"
 #endif
+#if defined(_WIN64)
+		"Architecture: x64\n"
+#else
 		"Architecture: Win32 (x86)\n"
+#endif
 		"OS: Windows %d.%d (Build %d) SP%d.%d\n"
 		"dbghelp.dll: %s",
 		CURRENT_GAMECORE_VERSION,
@@ -2901,24 +2905,36 @@ static bool IsRangeReadable(const void* p, SIZE_T n)
 // address-space exhaustion. Returns the number of frames appended.
 static int AppendStackScan(char* szOut, size_t cchOut, const CONTEXT* pCtx, int nMax)
 {
+#if !defined(_M_IX86) && !defined(_M_X64)
+	// Other architectures: the scan reads ESP/RSP and decodes x86/x64 CALL encodings.
+	(void)szOut; (void)cchOut; (void)pCtx; (void)nMax;
+	return 0;
+#else
 	size_t used = strlen(szOut);
 	int nFound = 0;
 
-	// Crash-time stack bounds: ESP from the exception context, stack top from
+	// Crash-time stack bounds: ESP/RSP from the exception context, stack top from
 	// the TEB (NT_TIB::StackBase) - the filter runs on the faulting thread.
+	// Stack slots are pointer-sized: ULONG_PTR is DWORD on x86, 8 bytes on x64.
+	// IsPrecededByCall also holds on x64: E8 rel32, FF /2 (REX prefixes sit
+	// before the FF byte; FF 15 disp32 is the RIP-relative and CFG form).
 	NT_TIB* pTib = (NT_TIB*)NtCurrentTeb();
-	DWORD* pStack = (DWORD*)(pCtx->Esp & ~(DWORD)3);
-	DWORD* pStackTop = (DWORD*)pTib->StackBase;
+#if defined(_M_X64)
+	ULONG_PTR* pStack = (ULONG_PTR*)(pCtx->Rsp & ~(ULONG_PTR)7);
+#else
+	ULONG_PTR* pStack = (ULONG_PTR*)(pCtx->Esp & ~(ULONG_PTR)3);
+#endif
+	ULONG_PTR* pStackTop = (ULONG_PTR*)pTib->StackBase;
 
-	// Hard caps so a corrupt ESP cannot spin the filter: 16k DWORDs = 64 KB.
+	// Hard caps so a corrupt ESP cannot spin the filter: 16k slots = 64 KB (x86), 128 KB (x64).
 	int iScanBudget = 16384;
 
-	for (DWORD* p = pStack; p < pStackTop && iScanBudget-- > 0 && nFound < nMax; ++p)
+	for (ULONG_PTR* p = pStack; p < pStackTop && iScanBudget-- > 0 && nFound < nMax; ++p)
 	{
-		if (!IsRangeReadable(p, sizeof(DWORD)))
+		if (!IsRangeReadable(p, sizeof(ULONG_PTR)))
 			break; // walked off the committed stack
 
-		DWORD dwVal = *p;
+		ULONG_PTR dwVal = *p;
 		if (dwVal < 0x10000)
 			continue; // below any module
 
@@ -2927,7 +2943,8 @@ static int AppendStackScan(char* szOut, size_t cchOut, const CONTEXT* pCtx, int 
 		                        (LPCSTR)(UINT_PTR)dwVal, &hMod))
 			continue; // not inside any loaded module
 
-		DWORD dwRva = dwVal - (DWORD)(UINT_PTR)hMod;
+		// A PE image is under 4 GB, so the RVA fits 32 bits on x64 as well.
+		DWORD dwRva = (DWORD)(dwVal - (UINT_PTR)hMod);
 		if (dwRva < 0x1000)
 			continue; // inside the PE headers, not code
 
@@ -2948,7 +2965,18 @@ static int AppendStackScan(char* szOut, size_t cchOut, const CONTEXT* pCtx, int 
 	}
 	szOut[used] = '\0';
 	return nFound;
+#endif
 }
+
+// printf formats for addresses and sizes in the crash report: unchanged on x86,
+// full width on x64 (a 32-bit format would truncate the vararg).
+#if defined(_WIN64)
+#define CRASH_ADDR_FMT "%016I64x"
+#define CRASH_SIZE_FMT "%I64u"
+#else
+#define CRASH_ADDR_FMT "%08x"
+#define CRASH_SIZE_FMT "%u"
+#endif
 
 LONG WINAPI CustomFilter(EXCEPTION_POINTERS* ExceptionInfo)
 {
@@ -2956,7 +2984,7 @@ LONG WINAPI CustomFilter(EXCEPTION_POINTERS* ExceptionInfo)
 
 	DWORD exceptionCode = ExceptionInfo ? ExceptionInfo->ExceptionRecord->ExceptionCode : 0;
 	void* exceptionAddress = ExceptionInfo ? ExceptionInfo->ExceptionRecord->ExceptionAddress : NULL;
-	DWORD exceptionAddressAdjusted = (DWORD)exceptionAddress ;
+	UINT_PTR exceptionAddressAdjusted = (UINT_PTR)exceptionAddress ;
 
 	char szCrashModule[MAX_PATH] = "???" ;
 	if( exceptionAddress != NULL )
@@ -2967,7 +2995,7 @@ LONG WINAPI CustomFilter(EXCEPTION_POINTERS* ExceptionInfo)
 			if (!GetModuleFileNameA(hModule, szCrashModule, MAX_PATH))
 				_snprintf_s(szCrashModule, MAX_PATH, _TRUNCATE, "???") ;
 
-			exceptionAddressAdjusted = (DWORD)exceptionAddress - (DWORD)hModule ;
+			exceptionAddressAdjusted = (UINT_PTR)exceptionAddress - (UINT_PTR)hModule ;
 		}
 	}
 
@@ -3085,9 +3113,9 @@ LONG WINAPI CustomFilter(EXCEPTION_POINTERS* ExceptionInfo)
 	//below 0xC00, where the unsigned subtraction would wrap to a bogus offset.
 	char szLocationFile[MAX_PATH + 32];
 	if (exceptionAddressAdjusted >= 0xC00)
-		_snprintf_s(szLocationFile, _countof(szLocationFile), _TRUNCATE, "%s+0x%08x", GetOnlyFilename(szCrashModule), exceptionAddressAdjusted - 0xC00);
+		_snprintf_s(szLocationFile, _countof(szLocationFile), _TRUNCATE, "%s+0x" CRASH_ADDR_FMT, GetOnlyFilename(szCrashModule), exceptionAddressAdjusted - 0xC00);
 	else
-		_snprintf_s(szLocationFile, _countof(szLocationFile), _TRUNCATE, "n/a (address 0x%08x is not a module code offset)", exceptionAddressAdjusted);
+		_snprintf_s(szLocationFile, _countof(szLocationFile), _TRUNCATE, "n/a (address 0x" CRASH_ADDR_FMT " is not a module code offset)", exceptionAddressAdjusted);
 
 	// Automated first-pass classification so the log itself answers the most
 	// common triage questions. Access violations carry the access kind and
@@ -3095,7 +3123,12 @@ LONG WINAPI CustomFilter(EXCEPTION_POINTERS* ExceptionInfo)
 	// An execute of address 0 is a call through a NULL function pointer -
 	// on 32-bit almost always downstream of memory exhaustion (an allocation
 	// returned NULL and a vtable/callback was never written).
+#if defined(_WIN64)
+	// x64: the low 2 GB can be fragmented while the process has terabytes free.
+	bool bAddressSpaceLow = (largestFreeBlockSize < (16u * 1024 * 1024));
+#else
 	bool bAddressSpaceLow = (largestFreeBlockLowSize < (16u * 1024 * 1024));
+#endif
 	char szCrashClass[512];
 	if (g_bPreconditionFired)
 	{
@@ -3113,12 +3146,12 @@ LONG WINAPI CustomFilter(EXCEPTION_POINTERS* ExceptionInfo)
 				bAddressSpaceLow ? " - likely 32-bit address space exhaustion (see largest free block below)" : "");
 		else if (uTargetAddr < 0x10000)
 			_snprintf_s(szCrashClass, _countof(szCrashClass), _TRUNCATE,
-				"Access violation: %s 0x%08x (NULL or near-NULL object%s)",
-				szKind, (DWORD)uTargetAddr,
+				"Access violation: %s 0x" CRASH_ADDR_FMT " (NULL or near-NULL object%s)",
+				szKind, uTargetAddr,
 				bAddressSpaceLow ? "; low address space may have failed an allocation" : "");
 		else
 			_snprintf_s(szCrashClass, _countof(szCrashClass), _TRUNCATE,
-				"Access violation: %s 0x%08x", szKind, (DWORD)uTargetAddr);
+				"Access violation: %s 0x" CRASH_ADDR_FMT, szKind, uTargetAddr);
 	}
 	else if (exceptionCode == 0xE06D7363)
 	{
@@ -3162,20 +3195,20 @@ LONG WINAPI CustomFilter(EXCEPTION_POINTERS* ExceptionInfo)
 		"Exception: 0x%08x (%s)\n"
 		"Crash class: %s\n"
 		"Location (in file): %s\n"
-		"Location (live memory): 0x%08x+0x%08x\n"
+		"Location (live memory): 0x" CRASH_ADDR_FMT "+0x" CRASH_ADDR_FMT "\n"
 		"Time: %s\n"
 		"Minidump: %s\n"
 		"%s"
 		"OS Info: %s\n"
 		"Memory markers\n"
 		"minAddress / maxAddress / maxMemory(k)\n"
-		"0x%p / 0x%p / %u\n"
+		"0x%p / 0x%p / " CRASH_SIZE_FMT "\n"
 		"committed(k) / reserved(k) / free(k)\n"
-		"Sub2G: %u / %u / %u\n"
-		"Total: %u / %u / %u\n"
+		"Sub2G: " CRASH_SIZE_FMT " / " CRASH_SIZE_FMT " / " CRASH_SIZE_FMT "\n"
+		"Total: " CRASH_SIZE_FMT " / " CRASH_SIZE_FMT " / " CRASH_SIZE_FMT "\n"
 		"Largest free block: base / size(k)\n"
-		"Sub2G: 0x%p / %u\n"
-		"Total: 0x%p / %u\n"
+		"Sub2G: 0x%p / " CRASH_SIZE_FMT "\n"
+		"Total: 0x%p / " CRASH_SIZE_FMT "\n"
 		"DLL-Version: %s\n"
 #ifdef VPDEBUG
 		"Configuration: DEBUG\n"
@@ -3187,7 +3220,7 @@ LONG WINAPI CustomFilter(EXCEPTION_POINTERS* ExceptionInfo)
 		exceptionCode, GetExceptionDescription(exceptionCode),
 		szCrashClass,
 		szLocationFile,
-		exceptionAddress,exceptionAddressAdjusted,
+		(UINT_PTR)exceptionAddress,exceptionAddressAdjusted,
 		szTimestamp,
 #if defined(MOD_DEBUG_MINIDUMP)
 		szMiniDumpStatus,
