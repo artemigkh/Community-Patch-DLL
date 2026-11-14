@@ -366,7 +366,11 @@ private:
 	//! Compares the live table schema (via PRAGMA table_info) against the supplied definition.
 	//! Returns 1 when it matches, 0 when the table exists with a different schema, 2 when the table is
 	//! missing, -1 when the schema could not be read (iErrorCode then holds the SQLite error code).
+	//! Retries a read that met a lock like ExecuteWithRetry does.
 	int TableSchemaMatches(const std::string& strTableName, const TableDef& kColumns, int& iErrorCode);
+
+	//! One attempt of TableSchemaMatches (same results).
+	int ReadTableSchema(const std::string& strTableName, const TableDef& kColumns, int& iErrorCode);
 
 	//! Issues CREATE TABLE IF NOT EXISTS for the supplied definition.
 	void CreateTable(const std::string& strTableName, const TableDef& kColumns);
