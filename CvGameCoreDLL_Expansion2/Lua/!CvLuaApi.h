@@ -32,7 +32,7 @@ void luaVp_applyMetatable(lua_State* L, int idx, DWORD typeTag);
 inline void luaEx_quickset(lua_State* L,int table,const char* key,int v) { lua_pushvalue(L,table); lua_pushinteger(L,v); lua_setfield(L,-2,key); lua_pop(L,1); }
 inline void luaEx_quickset(lua_State* L,int table,const char* key,bool v) { lua_pushvalue(L,table); lua_pushboolean(L,v); lua_setfield(L,-2,key); lua_pop(L,1); }
 inline void luaEx_quickset(lua_State* L,int table,const char* key,const char* v) { lua_pushvalue(L,table); lua_pushstring(L,v); lua_setfield(L,-2,key); lua_pop(L,1); }
-inline void luaEx_pushtag(lua_State* L,DWORD tag) { lua_pushlightuserdata(L,(void*)tag); }
+inline void luaEx_pushtag(lua_State* L,DWORD tag) { lua_pushlightuserdata(L,(void*)(UINT_PTR)tag); }
 
 inline void luaEx_putfunc(lua_State* L,int table,const char* name,lua_CFunction func,bool unsafe=false) {
 	if(name==NULL||func==NULL) return;

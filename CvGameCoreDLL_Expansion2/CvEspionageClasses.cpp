@@ -7829,7 +7829,7 @@ void CvEspionageAI::DoTurn()
 	std::stable_sort(aCityScores.begin(), aCityScores.end(), ScoreCityEntryHighEval());
 
 	// first pass: process only those spies that are already in the cities with the highest scores
-	for (uint i = 0; i < min((uint)pEspionage->GetNumAliveSpies(), aCityScores.size()); i++)
+	for (uint i = 0; i < min<size_t>((uint)pEspionage->GetNumAliveSpies(), aCityScores.size()); i++)
 	{
 		CvCity* pCity = aCityScores[i].m_pCity;
 		if (!pCity)
