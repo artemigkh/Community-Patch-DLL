@@ -4173,7 +4173,7 @@ FDataStream& operator>>(FDataStream& kStream, CvPathNodeArray& writeTo)
 {
 	writeTo.clear();
 
-	size_t count = 0;
+	uint count = 0;
 	CvPathNode current;
 
 	kStream >> count;
@@ -4189,7 +4189,7 @@ FDataStream& operator>>(FDataStream& kStream, CvPathNodeArray& writeTo)
 //cannot use templated serialziation because this is a derived class
 FDataStream& operator<<(FDataStream& kStream, const CvPathNodeArray& readFrom)
 {
-	kStream << readFrom.size();
+	kStream << (uint)readFrom.size();
 	for (size_t i = 0; i < readFrom.size(); i++)
 		kStream << readFrom.at(i);
 
