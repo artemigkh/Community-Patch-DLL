@@ -2154,7 +2154,13 @@ void SetPreconditionFired()
 // the file, but rewrites it from its own in-memory copy, so a value written
 // by the DLL at runtime would be lost.
 static bool g_bMiniDumpDisabledByUser = false;
+#if defined(VP_OUT_OF_PROCESS)
+// Out of process nobody sees the game's windows, and a modal dialog would block the process: error dialogs
+// are always off. crashes.log, CvAssert.log and minidumps are written as usual.
+static bool g_bPopupsDisabledByUser = true;
+#else
 static bool g_bPopupsDisabledByUser = false;
+#endif
 // Which source disabled each feature, for crashes.log and the debug output.
 static char g_szMiniDumpOptOutSource[96] = "";
 static char g_szPopupsOptOutSource[96] = "";
@@ -2404,6 +2410,13 @@ static void ReadCrashOptOuts()
 		g_szMiniDumpOptOutSource, _countof(g_szMiniDumpOptOutSource));
 	g_bPopupsDisabledByUser = FindOptOutSource("crashlogs\\nopopups.please", "VP_ERROR_POPUPS", "ErrorPopups", wszIniPath,
 		g_szPopupsOptOutSource, _countof(g_szPopupsOptOutSource));
+#if defined(VP_OUT_OF_PROCESS)
+	if (!g_bPopupsDisabledByUser)
+	{
+		g_bPopupsDisabledByUser = true;
+		strcpy_s(g_szPopupsOptOutSource, _countof(g_szPopupsOptOutSource), "out-of-process build");
+	}
+#endif
 
 	if (g_bPopupsDisabledByUser)
 	{

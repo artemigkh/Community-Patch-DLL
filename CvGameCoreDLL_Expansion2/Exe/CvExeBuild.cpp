@@ -1,4 +1,8 @@
 #include "CvGameCoreDLLPCH.h"
+
+// Out of process (VP_OUT_OF_PROCESS) no Civ V EXE hosts the DLL: there is nothing to detect or hook, so this
+// file compiles to nothing and Exe::* answers as for an unknown EXE (CvExe.cpp).
+#if !defined(VP_OUT_OF_PROCESS)
 #include "CvExeBuild.h"
 #include "LintFree.h"
 
@@ -116,3 +120,5 @@ DWORD ExeBuild::ToRuntimeAddress(DWORD dwVA, unsigned int uiLen)
 
 	return GetImageBase() + dwRva;
 }
+
+#endif // !VP_OUT_OF_PROCESS
