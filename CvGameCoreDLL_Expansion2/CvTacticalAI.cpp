@@ -9436,7 +9436,7 @@ bool CvTacticalPosition::makeNextAssignments(int iMaxBranches, int iMaxChoicesPe
 
 	//sometimes we want to do combo moves, ie swaps should have the combined score of two moves
 	//be generous when checking the candidates, so 5x the number of children we want in the end
-	const size_t iMaxCandidates = max(iMaxBranches * 5u, gOverAllChoices.size() / 2);
+	const size_t iMaxCandidates = max<size_t>(iMaxBranches * 5u, gOverAllChoices.size() / 2);
 	const size_t nChoices = gOverAllChoices.size();
 
 	for (size_t iI = 0; iI < min(nChoices, iMaxCandidates); iI++)

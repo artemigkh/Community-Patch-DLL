@@ -3252,7 +3252,7 @@ vector<OptionWithScore<pair<CvUnit*, BuilderDirective>>> CvHomelandAI::GetWeight
 		BuilderDirective eDirective = *it;
 		if (ignoredDirectives.find(eDirective) != ignoredDirectives.end())
 		{
-			aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(make_pair<CvUnit*, BuilderDirective>(NULL, eDirective), INT_MIN));
+			aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(pair<CvUnit*, BuilderDirective>(NULL, eDirective), INT_MIN));
 			continue;
 		}
 
@@ -3262,14 +3262,14 @@ vector<OptionWithScore<pair<CvUnit*, BuilderDirective>>> CvHomelandAI::GetWeight
 
 		if (eDirective.m_eBuild == NO_BUILD)
 		{
-			aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(make_pair<CvUnit*, BuilderDirective>(NULL, eDirective), INT_MIN));
+			aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(pair<CvUnit*, BuilderDirective>(NULL, eDirective), INT_MIN));
 			continue;
 		}
 
 		// Player settings, e.g. only build plans
 		if (!m_pPlayer->GetBuilderTaskingAI()->IsDirectiveAllowedBySettings(eDirective))
 		{
-			aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(make_pair<CvUnit*, BuilderDirective>(NULL, eDirective), INT_MIN));
+			aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(pair<CvUnit*, BuilderDirective>(NULL, eDirective), INT_MIN));
 			continue;
 		}
 
@@ -3278,7 +3278,7 @@ vector<OptionWithScore<pair<CvUnit*, BuilderDirective>>> CvHomelandAI::GetWeight
 		{
 			if (iBestWeightedScore != INT_MIN)
 			{
-				aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(make_pair<CvUnit*, BuilderDirective>(NULL, eDirective), INT_MIN));
+				aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(pair<CvUnit*, BuilderDirective>(NULL, eDirective), INT_MIN));
 				continue;
 			}
 			iCurrentPlanPriority = eDirective.m_iPlanPriority;
@@ -3287,13 +3287,13 @@ vector<OptionWithScore<pair<CvUnit*, BuilderDirective>>> CvHomelandAI::GetWeight
 		// If the score is lower than the best weighted score we have found, it will never be better than the best weighted score
 		if (GetDirectiveWeight(eDirective, 0, 0) <= iBestWeightedScore)
 		{
-			aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(make_pair<CvUnit*, BuilderDirective>(NULL, eDirective), INT_MIN));
+			aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(pair<CvUnit*, BuilderDirective>(NULL, eDirective), INT_MIN));
 			continue;
 		}
 
 		if (!IsBestDirectiveForPlot(eDirective, aDirectives))
 		{
-			aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(make_pair<CvUnit*, BuilderDirective>(NULL, eDirective), INT_MIN));
+			aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(pair<CvUnit*, BuilderDirective>(NULL, eDirective), INT_MIN));
 			continue;
 		}
 
@@ -3352,7 +3352,7 @@ vector<OptionWithScore<pair<CvUnit*, BuilderDirective>>> CvHomelandAI::GetWeight
 		if (iBestBuilderWeightedScore > iBestWeightedScore)
 			iBestWeightedScore = iBestBuilderWeightedScore;
 
-		aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(make_pair<CvUnit*, BuilderDirective>(pBestBuilder, eDirective), iBestBuilderWeightedScore));
+		aWeightedDirectives.push_back(OptionWithScore<pair<CvUnit*, BuilderDirective>>(pair<CvUnit*, BuilderDirective>(pBestBuilder, eDirective), iBestBuilderWeightedScore));
 	}
 
 	std::stable_sort(aWeightedDirectives.begin(), aWeightedDirectives.end());

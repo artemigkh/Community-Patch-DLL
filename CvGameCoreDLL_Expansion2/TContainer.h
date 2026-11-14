@@ -37,7 +37,13 @@ int GetJonRand(int iRange);
 //Get() keeps a small direct-mapped lookup cache for that thread only, because
 //the UI thread can call into the game concurrently.
 extern unsigned long g_ulTContainerCacheThread;
-inline bool TContainerUseCache() { return g_ulTContainerCacheThread != 0 && __readfsdword(0x24) == g_ulTContainerCacheThread; }
+//the current thread's id from its TEB (ClientId.UniqueThread): fs:[0x24] on x86, gs:[0x48] on x64
+#if defined(_M_X64)
+inline unsigned long TContainerThreadId() { return __readgsdword(0x48); }
+#else
+inline unsigned long TContainerThreadId() { return __readfsdword(0x24); }
+#endif
+inline bool TContainerUseCache() { return g_ulTContainerCacheThread != 0 && TContainerThreadId() == g_ulTContainerCacheThread; }
 
 //the ordered container
 template <class T>
