@@ -135,7 +135,7 @@ public:
 		return isValid(m_iXdest,m_iYdest);
 	}
 
-	inline unsigned short GetCurrentGenerationID() const
+	inline unsigned int GetCurrentGenerationID() const
 	{
 		return m_iCurrentGenerationID;
 	}
@@ -243,7 +243,7 @@ protected:
 	CvAEnd udUninitializeFunc;					// Called at the end to uninitialize any run specific data
 
 	SPathFinderUserData m_sData;				// Data passed back to functions
-	unsigned short m_iCurrentGenerationID;		// the cache in each node is tagged with a generation ID which is incremented for each call
+	unsigned int m_iCurrentGenerationID;		// the cache in each node is tagged with a generation ID which is incremented for each call
 
 	int m_iColumns;	
 	int m_iRows;

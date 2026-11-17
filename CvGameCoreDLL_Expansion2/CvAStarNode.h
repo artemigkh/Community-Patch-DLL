@@ -101,7 +101,7 @@ struct CvPathNodeCacheData
 	short plotMovementCostAdder;
 
 	//tell us when to update the cache ...
-	unsigned short iGenerationID;
+	unsigned int iGenerationID;
 
 	//end turn danger for the current search, computed on first use
 	//mutable because the cost functions get this struct as const

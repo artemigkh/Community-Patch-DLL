@@ -355,7 +355,7 @@ bool CvAStar::FindPathWithCurrentConfiguration(int iXstart, int iYstart, int iXd
 
 	//this is the version number for the node cache
 	m_iCurrentGenerationID++;
-	if (m_iCurrentGenerationID==0xFFFF)
+	if (m_iCurrentGenerationID==0) //32 bits: wraps only after four billion searches; 0 is the stamp of a cleared node
 		m_iCurrentGenerationID = 1;
 
 	m_iXdest = iXdest;
