@@ -3875,7 +3875,22 @@ CvUnitCombat::ATTACK_RESULT CvUnitCombat::AttackAir(CvUnit& kAttacker, CvPlot& t
 			}
 			kCombatInfo.setVisualizeCombat(isTargetVisibleToActivePlayer);
 
-			CvInterfacePtr<ICvCombatInfo1> pDllCombatInfo(new CvDllCombatInfo(&kCombatInfo));
+			// Visual only. When the air unit takes damage, the engine's combat animation has the defender fire back
+			// with its anti-air animation. The submarine models have no transition to that animation, so the strike
+			// waits for a return shot that never comes and plays until the engine's 20-second combat limit (during
+			// AI turns the game waits for it). For a submarine the engine is told that the defender does not fire
+			// back and deals no damage in this combat; the game result below still uses the real values, and the
+			// attacker's final damage is shown as usual.
+			CvCombatInfo kEngineCombatInfo;
+			kEngineCombatInfo = kCombatInfo;
+			const UnitCombatTypes eSubmarineCombat = (UnitCombatTypes)GC.getInfoTypeForString("UNITCOMBAT_SUBMARINE", true);
+			if (eSubmarineCombat != NO_UNITCOMBAT && pDefender->getUnitCombatType() == eSubmarineCombat)
+			{
+				kEngineCombatInfo.setDamageInflicted(BATTLE_UNIT_DEFENDER, 0);
+				kEngineCombatInfo.setDefenderRetaliates(false);
+			}
+
+			CvInterfacePtr<ICvCombatInfo1> pDllCombatInfo(new CvDllCombatInfo(&kEngineCombatInfo));
 			uiParentEventID = gDLL->GameplayUnitCombat(pDllCombatInfo.get());
 
 			// Set the combat units so that other missions do not continue until combat is over.
