@@ -1620,6 +1620,9 @@ void CvUnit::reset(int iID, UnitTypes eUnit, PlayerTypes eOwner, bool bConstruct
 	m_iScenarioData = 0;
 
 	m_unitMoveLocs.clear();
+#if defined(VP64_PROTO_QMOVE_COALESCE)
+	m_pkQMovePendingPlot = NULL; // ticket 4677
+#endif
 
 	uninitInfos();
 
@@ -20997,6 +21000,14 @@ void CvUnit::setXY(int iX, int iY, bool bGroup, bool bUpdate, bool bShow, bool b
 			{
 				QueueMoveForVisualization(pNewPlot);
 			}
+#if defined(VP64_PROTO_QMOVE_COALESCE)
+			else if(CvPreGame::quickMovement() && QMoveActive())
+			{
+				// ticket 4677: keep the newest step; posted by QMoveFlushPendingTeleport. The clear is SetPosition's.
+				m_unitMoveLocs.clear();
+				m_pkQMovePendingPlot = pNewPlot;
+			}
+#endif
 			else
 			{
 				SetPosition(pNewPlot);
@@ -21671,7 +21682,13 @@ void CvUnit::setMoves(int iNewValue)
 	{
 		m_iMoves = max(0,iNewValue);
 
+#if defined(VP64_PROTO_QMOVE_COALESCE)
+		QMoveSuppressFlush(1); // ticket 4677: the dim flag does not post a pending teleport
+#endif
 		CvInterfacePtr<ICvUnit1> pDllUnit(new CvDllUnit(this));
+#if defined(VP64_PROTO_QMOVE_COALESCE)
+		QMoveSuppressFlush(-1);
+#endif
 		gDLL->GameplayUnitShouldDimFlag(pDllUnit.get(), /*bDim*/ getMoves() <= 0);
 
 		if(IsSelected())
@@ -29839,6 +29856,66 @@ void CvUnit::SetPosition(CvPlot* pkPlot)
 
 	m_unitMoveLocs.clear();
 }
+
+#if defined(VP64_PROTO_QMOVE_COALESCE)
+//	--------------------------------------------------------------------------------
+// c5-64bit-patch ticket 4677 (see CvUnit.h). s_dwQMoveThread is the thread of the running ICvGame1::Update while the
+// prototype is on, else 0; the pending member and the suppression count are touched only on that thread.
+static DWORD s_dwQMoveThread = 0;
+static int s_iQMoveSuppress = 0;
+static int s_iQMoveMode = -1; // -1 = not read yet
+
+bool CvUnit::QMoveActive()
+{
+	return s_dwQMoveThread != 0 && s_dwQMoveThread == GetCurrentThreadId();
+}
+
+void CvUnit::QMoveSuppressFlush(int iDelta)
+{
+	if(QMoveActive())
+		s_iQMoveSuppress += iDelta;
+}
+
+void CvUnit::QMoveBeginUpdate()
+{
+	if(s_iQMoveMode < 0)
+	{
+		const char* szMode = getenv("VP64_PROTO_QMOVE_MODE");
+		s_iQMoveMode = (szMode && szMode[0] == '0') ? 0 : 1;
+	}
+	s_iQMoveSuppress = 0;
+	s_dwQMoveThread = s_iQMoveMode ? GetCurrentThreadId() : 0;
+}
+
+void CvUnit::QMoveEndUpdate()
+{
+	if(!QMoveActive())
+		return;
+	s_iQMoveSuppress = 0;
+	for(int iPlayer = 0; iPlayer < MAX_PLAYERS; iPlayer++)
+	{
+		CvPlayer& kPlayer = GET_PLAYER((PlayerTypes)iPlayer);
+		int iLoop = 0;
+		for(CvUnit* pLoopUnit = kPlayer.firstUnit(&iLoop); pLoopUnit != NULL; pLoopUnit = kPlayer.nextUnit(&iLoop))
+		{
+			pLoopUnit->QMoveFlushPendingTeleport();
+		}
+	}
+	s_dwQMoveThread = 0;
+}
+
+void CvUnit::QMoveFlushPendingTeleport()
+{
+	if(m_pkQMovePendingPlot == NULL || s_iQMoveSuppress > 0 || !QMoveActive())
+		return;
+	CvPlot* pkPlot = m_pkQMovePendingPlot;
+	m_pkQMovePendingPlot = NULL; // before the wrapper below, whose constructor calls this again
+	// as SetPosition, without its m_unitMoveLocs.clear(): that ran at the deferred step (setXY), as in stock
+	CvInterfacePtr<ICvUnit1> pDllUnit(new CvDllUnit(this));
+	CvInterfacePtr<ICvPlot1> pDllPlot(new CvDllPlot(pkPlot));
+	gDLL->GameplayUnitTeleported(pDllUnit.get(), pDllPlot.get());
+}
+#endif
 
 //	--------------------------------------------------------------------------------
 const CvSyncArchive<CvUnit>& CvUnit::getSyncArchive() const

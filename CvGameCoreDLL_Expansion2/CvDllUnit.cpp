@@ -17,6 +17,11 @@ CvDllUnit::CvDllUnit(CvUnit* pUnit)
 	, m_pUnit(pUnit)
 {
 	ASSERT(pUnit != NULL, "SHOULD NOT HAPPEN");
+#if defined(VP64_PROTO_QMOVE_COALESCE)
+	// c5-64bit-patch ticket 4677: any engine call about the unit first posts its pending Quick Movement teleport
+	if(pUnit != NULL)
+		pUnit->QMoveFlushPendingTeleport();
+#endif
 }
 //------------------------------------------------------------------------------
 CvDllUnit::~CvDllUnit()

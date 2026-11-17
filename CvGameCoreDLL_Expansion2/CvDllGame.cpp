@@ -494,7 +494,13 @@ void CvDllGame::UnitIsMoving()
 //------------------------------------------------------------------------------
 void CvDllGame::Update()
 {
+#if defined(VP64_PROTO_QMOVE_COALESCE)
+	CvUnit::QMoveBeginUpdate(); // c5-64bit-patch ticket 4677
+#endif
 	m_pGame->update();
+#if defined(VP64_PROTO_QMOVE_COALESCE)
+	CvUnit::QMoveEndUpdate(); // posts every pending Quick Movement teleport before the frame can pump queue B
+#endif
 }
 //------------------------------------------------------------------------------
 void CvDllGame::UpdateSelectionList()

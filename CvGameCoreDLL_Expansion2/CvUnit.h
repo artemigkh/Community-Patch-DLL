@@ -2326,6 +2326,21 @@ protected:
 	void QueueMoveForVisualization(CvPlot* pkPlot);
 	void PublishQueuedVisualizationMoves();
 
+#if defined(VP64_PROTO_QMOVE_COALESCE)
+	// c5-64bit-patch ticket 4677 (epic 0437, D165 rank 3), evidence only, off in every product build: under Quick
+	// Movement, setXY keeps a unit's newest plot step here instead of posting GameplayUnitTeleported per step. The
+	// pending teleport is posted before any other engine call about the unit (every CvDllUnit wrapper of it, except
+	// setMoves' dim flag) and at the end of every ICvGame1::Update, so no frame sees a stale position. Only the
+	// thread running the Update defers; any other thread posts as stock. Transient: never serialised, and not part
+	// of HasQueuedVisualizationMoves() (game logic reads that in CvUnitMission::ContinueMission).
+	// Runtime: VP64_PROTO_QMOVE_MODE=0 posts as stock (default 1).
+	void QMoveFlushPendingTeleport();
+	static void QMoveBeginUpdate();
+	static void QMoveEndUpdate();
+	static bool QMoveActive();
+	static void QMoveSuppressFlush(int iDelta);
+#endif
+
 	bool EmergencyRebase();
 	bool CheckDOWNeededForMove(int iX, int iY, bool bPopup = true);
 	MoveResult UnitAttackWithMove(int iX, int iY, int iFlags);
@@ -2708,6 +2723,9 @@ protected:
 
 	//not serialized
 	std::vector<CvPlot*> m_unitMoveLocs;
+#if defined(VP64_PROTO_QMOVE_COALESCE)
+	CvPlot* m_pkQMovePendingPlot; // ticket 4677: not serialized
+#endif
 
 	int m_iEmbarkedAllWaterCount;
 	int m_iEmbarkedDeepWaterCount;
