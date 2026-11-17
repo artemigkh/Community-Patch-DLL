@@ -116,6 +116,9 @@ void CvDangerPlots::UpdateDanger()
 	// * save game loaded (need to reconstruct m_DangerPlots). do not change m_knownUnits / m_vanishedUnits --> called from ui thread!
 	// * new turn (enemy units moved). update both both m_knownUnits / m_vanishedUnits
 	// * dirty flag (war state change, new enemies). update m_knownUnits, keep m_vanishedUnits
+#if defined(VP64_COUNT_PARALLEL)
+	VP64Count::DangerBegin(m_ePlayer);
+#endif
 
 	bool bReload = (m_iTurnBuilt == -1);
 	bool bTurnChange = !bReload && (m_iTurnBuilt != GC.getGame().getGameTurn());
@@ -161,6 +164,12 @@ void CvDangerPlots::UpdateDanger()
 		PlotIndexContainer dummy;
 		UpdateDangerInternal(dummy, bTurnChange, bWarChange);
 	}
+#if defined(VP64_COUNT_PARALLEL)
+	VP64Count::DangerEnd(m_ePlayer);
+#endif
+#if defined(VP64_COUNT_ANY)
+	VP64Count::OnEvent(VP64Count::EV_DANGER_UPDATE);
+#endif
 }
 
 //fog of war is dangerous, but we don't know whether we will take the damage or not ...
