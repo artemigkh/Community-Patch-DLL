@@ -503,8 +503,74 @@ CvPlot* plotXYWithRangeCheck(int iX, int iY, int iDX, int iDY, int iRange)
 	return plotXY(iX, iY, iDX, iDY);
 }
 
+#if defined(VP64_SPEED_KITDEMO)
+// c5-64bit-patch ticket 4803 (epic 0504): the speed kit's demonstration package, never merged into a pin. One kept
+// value: the distances this thread computed last, in a small direct-mapped table keyed by everything plotDistance
+// reads (both plots, the grid size and the wrap flags), so a stored entry stays exact for as long as it is kept.
+// thread_local: nothing is shared between the ui thread and the game-core thread (the two-thread hazard).
+#include "VP64SpeedVerify.h"
+namespace
+{
+int plotDistanceOriginal(int iX1, int iY1, int iX2, int iY2)
+{
+	int iX1H = xToHexspaceX(iX1,iY1);
+	int iX2H = xToHexspaceX(iX2,iY2);
+
+	//reconstruct the Z coordinate
+	int iZ1H = -iX1H-iY1;
+	int iZ2H = -iX2H-iY2;
+
+	//todo: fixme. wrapping does not work correctly for large distances
+	int iDX = dxWrap(iX2H - iX1H);
+	int iDY = dyWrap(iY2 - iY1);
+	int iDZ = dxWrap(iZ2H - iZ1H); //x and z have same range
+
+	return (abs(iDX) + abs(iDY) + abs(iDZ)) / 2;
+}
+
+struct KitDemoEntry
+{
+	int iUsed, iX1, iY1, iX2, iY2, iW, iH, iWrap, iDist;
+};
+const unsigned int kKitDemoSlots = 1024;
+thread_local KitDemoEntry t_aKitDemo[kKitDemoSlots];
+
+int plotDistanceKept(int iX1, int iY1, int iX2, int iY2)
+{
+	const CvMap& kMap = GC.getMap();
+	const int iW = kMap.getGridWidth();
+	const int iH = kMap.getGridHeight();
+	const int iWrap = (kMap.isWrapX() ? 1 : 0) | (kMap.isWrapY() ? 2 : 0);
+	unsigned int h = (unsigned int)iX1 * 73856093u ^ (unsigned int)iY1 * 19349663u ^ (unsigned int)iX2 * 83492791u ^ (unsigned int)iY2 * 2654435761u;
+	KitDemoEntry& e = t_aKitDemo[(h ^ (h >> 16)) & (kKitDemoSlots - 1)];
+	if (!(e.iUsed && e.iX1 == iX1 && e.iY1 == iY1 && e.iX2 == iX2 && e.iY2 == iY2 && e.iW == iW && e.iH == iH && e.iWrap == iWrap))
+	{
+		int iDist = plotDistanceOriginal(iX1, iY1, iX2, iY2);
+#if defined(VP64_SPEED_KITDEMO_SPOIL)
+		if (VP64_SPEED_SPOIL_NOW("KITDEMO", VP64_SPEED_KITDEMO_SPOIL))
+			iDist += 1; // the negative control: one kept value made wrong on purpose
+#endif
+		e.iUsed = 1; e.iX1 = iX1; e.iY1 = iY1; e.iX2 = iX2; e.iY2 = iY2; e.iW = iW; e.iH = iH; e.iWrap = iWrap;
+		e.iDist = iDist;
+	}
+	const int iFast = e.iDist;
+#if defined(VP64_SPEED_KITDEMO_VERIFY)
+	const int iOrig = plotDistanceOriginal(iX1, iY1, iX2, iY2);
+	VP64_SPEED_CHECK_K("KITDEMO", "plotDistance", iFast, iOrig, iX1, iY1, iX2, iY2);
+	return iOrig;
+#else
+	return iFast;
+#endif
+}
+}
+#endif
+#line 506
 int plotDistance(int iX1, int iY1, int iX2, int iY2)
 {
+#if defined(VP64_SPEED_KITDEMO)
+	return plotDistanceKept(iX1, iY1, iX2, iY2);
+#endif
+#line 508
 	int iX1H = xToHexspaceX(iX1,iY1);
 	int iX2H = xToHexspaceX(iX2,iY2);
 
