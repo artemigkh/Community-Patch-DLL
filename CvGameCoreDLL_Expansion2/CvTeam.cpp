@@ -3755,6 +3755,9 @@ void CvTeam::changeBorderObstacleCount(int iChange)
 	if(iChange != 0)
 	{
 		m_iBorderObstacleCount = (m_iBorderObstacleCount + iChange);
+#if defined(VP64_PROTO_REACH)
+		VP64Reach::TeamPlotsEvent(GetID(), VP64Reach::GR_BORDER_OBSTACLE);
+#endif
 		ASSERT(getBorderObstacleCount() >= 0);
 	}
 }
@@ -4106,6 +4109,10 @@ void CvTeam::makeHasMet(TeamTypes eIndex, bool bSuppressMessages)
 		return;
 
 	m_abHasMet[eIndex] = true;
+#if defined(VP64_PROTO_REACH)
+	VP64Reach::TeamEvent(GetID());
+	VP64Reach::TeamEvent(eIndex);
+#endif
 	SetTurnTeamMet(eIndex, GC.getGame().getGameTurn());
 
 	updateTechShare();
@@ -4387,7 +4394,17 @@ void CvTeam::setAtWar(TeamTypes eIndex, bool bNewValue, bool bAggressorPacifier)
 	}
 
 	m_abAggressorPacifier[eIndex] = bAggressorPacifier;
+#if defined(VP64_PROTO_REACH)
+	bool bVP64WarChange = (m_abAtWar[eIndex] != bNewValue);
+#endif
 	m_abAtWar[eIndex] = bNewValue;
+#if defined(VP64_PROTO_REACH)
+	if (bVP64WarChange)
+	{
+		VP64Reach::TeamEvent(GetID());
+		VP64Reach::TeamEvent(eIndex);
+	}
+#endif
 
 	if (bNewValue)
 	{
@@ -4881,6 +4898,10 @@ void CvTeam::SetAllowsOpenBordersToTeam(TeamTypes eIndex, bool bNewValue)
 	if (IsAllowsOpenBordersToTeam(eIndex) != bNewValue)
 	{
 		m_abOpenBorders[eIndex] = bNewValue;
+#if defined(VP64_PROTO_REACH)
+		VP64Reach::TeamEvent(GetID());
+		VP64Reach::TeamEvent(eIndex);
+#endif
 
 		for (int iPlayerLoop = 0; iPlayerLoop < MAX_PLAYERS; iPlayerLoop++)
 		{
@@ -6184,6 +6205,9 @@ void CvTeam::setHasTech(TechTypes eIndex, bool bNewValue, PlayerTypes ePlayer, b
 	int iChange = (bNewValue) ? 1 : -1;
 	if(GetTeamTechs()->HasTech(eIndex) != bNewValue)
 	{
+#if defined(VP64_PROTO_REACH)
+		VP64Reach::TeamEvent(GetID());
+#endif
 		if (MOD_ENABLE_ACHIEVEMENTS)
 		{
 			CvPlayerAI& kResearchingPlayer = GET_PLAYER(ePlayer);
@@ -7444,6 +7468,9 @@ void CvTeam::setHasTech(TechTypes eIndex, bool bNewValue, PlayerTypes ePlayer, b
 		{
 			gDLL->GameplayTechAcquired(GetID(), eIndex);
 		}
+#if defined(VP64_PROTO_REACH)
+		VP64Reach::TeamEvent(GetID());
+#endif
 	}
 }
 
@@ -9449,6 +9476,10 @@ void CvTeam::setVassal(TeamTypes eIndex, bool bNewValue, bool bVoluntary)
 
 	m_eMaster = bNewValue ? eIndex : NO_TEAM;
 	m_bIsVoluntaryVassal = bNewValue ? bVoluntary : false;
+#if defined(VP64_PROTO_REACH)
+	VP64Reach::TeamEvent(GetID());
+	VP64Reach::TeamEvent(eIndex);
+#endif
 }
 
 //	-----------------------------------------------------------------------------------------------

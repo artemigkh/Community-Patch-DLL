@@ -6858,6 +6858,14 @@ void CvPlot::setOwner(PlayerTypes eNewValue, int iAcquiringCityID, bool bCheckUn
 		// ACTUALLY CHANGE OWNERSHIP HERE
 		setOwningCity(eNewValue, iAcquiringCityID);
 		m_eOwner = eNewValue;
+#if defined(VP64_PROTO_REACH)
+		VP64Reach::PlotEvent(this);
+		if (isCity())
+		{
+			VP64Reach::PlayerEvent(eOldOwner);
+			VP64Reach::PlayerEvent(eNewValue);
+		}
+#endif
 
 		if (MOD_EVENTS_TILE_IMPROVEMENTS) {
 			GAMEEVENTINVOKE_HOOK(GAMEEVENT_TileOwnershipChanged, getX(), getY(), getOwner(), eOldOwner);
@@ -7250,6 +7258,9 @@ void CvPlot::setPlotType(PlotTypes eNewValue, bool bRecalculate, bool bRebuildGr
 		GAMEEVENTINVOKE_HOOK(GAMEEVENT_TerraformingPlot, TERRAFORMINGEVENT_PLOT, m_iX, m_iY, 0, eNewValue, m_ePlotType, -1, -1);
 
 	m_ePlotType = eNewValue;
+#if defined(VP64_PROTO_REACH)
+	VP64Reach::PlotEvent(this);
+#endif
 
 	updateYield();
 	updateImpassable();
@@ -7474,6 +7485,9 @@ void CvPlot::setTerrainType(TerrainTypes eNewValue, bool bRecalculate, bool bReb
 			GAMEEVENTINVOKE_HOOK(GAMEEVENT_TerraformingPlot, TERRAFORMINGEVENT_TERRAIN, m_iX, m_iY, 0, eNewValue, m_eTerrainType, -1, -1);
 
 		m_eTerrainType = eNewValue;
+#if defined(VP64_PROTO_REACH)
+		VP64Reach::PlotEvent(this);
+#endif
 
 		updateYield();
 		updateImpassable();
@@ -7579,6 +7593,9 @@ void CvPlot::setFeatureType(FeatureTypes eNewValue)
 		}
 
 		m_eFeatureType = eNewValue;
+#if defined(VP64_PROTO_REACH)
+		VP64Reach::PlotEvent(this);
+#endif
 		CvCity* pOwningCity = getEffectiveOwningCity();
 		if(pOwningCity != NULL)
 		{
@@ -8148,6 +8165,10 @@ void CvPlot::setIsCity(bool bValue, int iCityID, int iWorkRange)
 	}
 
 	m_bIsCity = bValue;
+#if defined(VP64_PROTO_REACH)
+	VP64Reach::PlotEvent(this);
+	VP64Reach::PlayerEvent(getOwner());
+#endif
 	updateYield();
 }
 
@@ -8476,6 +8497,9 @@ void CvPlot::setImprovementType(ImprovementTypes eNewValue, PlayerTypes eBuilder
 		}
 
 		m_eImprovementType = eNewValue;
+#if defined(VP64_PROTO_REACH)
+		VP64Reach::PlotEvent(this);
+#endif
 		if (MOD_GLOBAL_STACKING_RULES)
 		{
 			calculateAdditionalUnitsFromImprovement();
@@ -9115,6 +9139,9 @@ void CvPlot::SetImprovementPillaged(bool bPillaged, bool bEvents)
 	if (bPillaged != bWasPillaged)
 	{
 		m_bImprovementPillaged = bPillaged;
+#if defined(VP64_PROTO_REACH)
+		VP64Reach::PlotEvent(this);
+#endif
 
 		calculateAdditionalUnitsFromImprovement();
 
@@ -9360,6 +9387,9 @@ void CvPlot::setRouteType(RouteTypes eNewValue, PlayerTypes eBuilder)
 
 		// Route switch here!
 		m_eRouteType = eNewValue;
+#if defined(VP64_PROTO_REACH)
+		VP64Reach::PlotEvent(this);
+#endif
 
 		// Apply new effects (maintenance and resource usage)
 		if(eNewValue != NO_ROUTE && !isCity())
@@ -9427,6 +9457,9 @@ void CvPlot::SetRoutePillaged(bool bPillaged, bool bEvents)
 
 	//city connections will be recalculated on turn start for each player!
 	m_bRoutePillaged = bPillaged;
+#if defined(VP64_PROTO_REACH)
+	VP64Reach::PlotEvent(this);
+#endif
 
 	if (bEvents && MOD_EVENTS_TILE_IMPROVEMENTS)
 		GAMEEVENTINVOKE_HOOK(GAMEEVENT_TileRouteChanged, getX(), getY(), getOwner(), getRouteType(), getRouteType(), IsRoutePillaged());
@@ -9784,6 +9817,9 @@ void CvPlot::setOwningCity(PlayerTypes ePlayer, int iCityID)
 	CvCity* pNewCity = ::GetPlayerCity(IDInfo(ePlayer, iCityID));
 
 	m_owningCity = IDInfo(ePlayer, iCityID);
+#if defined(VP64_PROTO_REACH)
+	VP64Reach::PlotEvent(this);
+#endif
 	
 	// change improvement ownership
 	ImprovementTypes eImprovement = getImprovementType();
@@ -11549,6 +11585,10 @@ PlotVisibilityChangeResult CvPlot::changeVisibilityCount(TeamTypes eTeam, int iC
 
 	// Apparently it's legal to decrease sight below zero - so catch that
 	m_aiVisibilityCount[eTeam] = max(0, m_aiVisibilityCount[eTeam] + iChange);
+#if defined(VP64_PROTO_REACH)
+	if (bOldVisibility != (m_aiVisibilityCount[eTeam] > 0))
+		VP64Reach::TeamPlotEvent(this, eTeam);
+#endif
 
 	// Remember the maximum
 	m_aiVisibilityCountThisTurnMax[eTeam] = max(m_aiVisibilityCountThisTurnMax[eTeam], m_aiVisibilityCount[eTeam]);
@@ -12039,6 +12079,9 @@ bool CvPlot::setRevealed(TeamTypes eTeam, bool bNewValue, CvUnit* pUnit, bool bT
 	{
 		bVisibilityUpdated = true;
 		m_bfRevealed.ToggleBit(eTeam);
+#if defined(VP64_PROTO_REACH)
+		VP64Reach::TeamPlotEvent(this, eTeam);
+#endif
 		bool bEligibleForAchievement = MOD_ENABLE_ACHIEVEMENTS ? GET_PLAYER(GC.getGame().getActivePlayer()).isHuman(ISHUMAN_ACHIEVEMENTS) && !GC.getGame().isGameMultiPlayer() : false;
 
 		if (area())
@@ -12543,6 +12586,9 @@ bool CvPlot::setRevealedImprovementType(TeamTypes eTeam, ImprovementTypes eNewVa
 	if(eOldImprovementType != eNewValue)
 	{
 		m_aeRevealedImprovementType[eTeam] = eNewValue;
+#if defined(VP64_PROTO_REACH)
+		VP64Reach::TeamPlotEvent(this, eTeam);
+#endif
 		if(eTeam == GC.getGame().getActiveTeam())
 		{
 			updateSymbols();
@@ -12604,6 +12650,9 @@ bool CvPlot::setRevealedRouteType(TeamTypes eTeam, RouteTypes eNewValue)
 			setLayoutDirty(true);
 		}
 		m_aeRevealedRouteType[eTeam] = eNewValue;
+#if defined(VP64_PROTO_REACH)
+		VP64Reach::TeamPlotEvent(this, eTeam);
+#endif
 		return true;
 	}
 	return false;
@@ -13043,6 +13092,10 @@ void CvPlot::changeInvisibleVisibilityCountUnit(TeamTypes eTeam, int iChange)
 		//--------
 
 		bNewInvisibleVisible = isInvisibleVisibleUnit(eTeam);
+#if defined(VP64_PROTO_REACH)
+		if (bOldInvisibleVisible != bNewInvisibleVisible)
+			VP64Reach::TeamPlotEvent(this, eTeam);
+#endif
 		if (bOldInvisibleVisible != bNewInvisibleVisible)
 		{
 			TeamTypes activeTeam = GC.getGame().getActiveTeam();
@@ -13138,6 +13191,10 @@ void CvPlot::changeInvisibleVisibilityCount(TeamTypes eTeam, InvisibleTypes eInv
 		//--------
 
 		bNewInvisibleVisible = isInvisibleVisible(eTeam, eInvisible);
+#if defined(VP64_PROTO_REACH)
+		if (bOldInvisibleVisible != bNewInvisibleVisible)
+			VP64Reach::TeamPlotEvent(this, eTeam);
+#endif
 
 		if (bOldInvisibleVisible != bNewInvisibleVisible)
 		{

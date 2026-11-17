@@ -21848,6 +21848,10 @@ void CvCity::ChangeBorderObstacleCity(int iChange)
 void CvCity::SetBorderObstacleCity(int iValue)
 {
 	VALIDATE_OBJECT();
+#if defined(VP64_PROTO_REACH)
+	if (m_iBorderObstacleCity != iValue)
+		VP64Reach::PlayerPlotsEvent(getOwner(), VP64Reach::GR_BORDER_OBSTACLE);
+#endif
 	m_iBorderObstacleCity = iValue;
 }
 
@@ -21873,6 +21877,10 @@ void CvCity::ChangeBorderObstacleWater(int iChange)
 void CvCity::SetBorderObstacleWater(int iValue)
 {
 	VALIDATE_OBJECT();
+#if defined(VP64_PROTO_REACH)
+	if (m_iBorderObstacleWater != iValue)
+		VP64Reach::PlayerPlotsEvent(getOwner(), VP64Reach::GR_BORDER_OBSTACLE);
+#endif
 	m_iBorderObstacleWater = iValue;
 }
 

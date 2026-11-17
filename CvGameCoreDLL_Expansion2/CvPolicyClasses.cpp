@@ -4266,6 +4266,9 @@ void CvPlayerPolicies::SetPolicy(PolicyTypes eIndex, bool bNewValue, bool bFree)
 	if (HasPolicy(eIndex) != bNewValue)
 	{
 		m_pabHasPolicy[eIndex] = bNewValue;
+#if defined(VP64_PROTO_REACH)
+		VP64Reach::PlayerEvent(GetPlayer()->GetID());
+#endif
 		m_pabFreePolicy[eIndex] = bFree;
 		int iChange = bNewValue ? 1 : -1;
 		if (bFree) 

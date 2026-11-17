@@ -33259,6 +33259,9 @@ void CvPlayer::changeBorderObstacleCount(int iChange)
 	if(iChange != 0)
 	{
 		m_iBorderObstacleCount = (m_iBorderObstacleCount + iChange);
+#if defined(VP64_PROTO_REACH)
+		VP64Reach::PlayerPlotsEvent(GetID(), VP64Reach::GR_BORDER_OBSTACLE);
+#endif
 		ASSERT(getBorderObstacleCount() >= 0);
 	}
 }

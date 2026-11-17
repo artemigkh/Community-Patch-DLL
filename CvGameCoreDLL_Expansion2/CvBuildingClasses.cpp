@@ -5967,6 +5967,11 @@ void CvCityBuildings::SetNumRealBuildingTimed(BuildingTypes eIndex, int iNewValu
 	int iChangeNumRealBuilding = iNewValue - GetNumRealBuilding(eIndex);
 	if (iChangeNumRealBuilding == 0)
 		return;
+#if defined(VP64_PROTO_REACH)
+	VP64Reach::TeamEvent(m_pCity->getTeam());
+	VP64Reach::PlayerEvent(m_pCity->getOwner());
+	VP64Reach::PlotEvent(m_pCity->plot());
+#endif
 
 	CvBuildingEntry* buildingEntry = GC.getBuildingInfo(eIndex);
 	if (!buildingEntry)
@@ -6252,6 +6257,11 @@ void CvCityBuildings::SetNumFreeBuilding(BuildingTypes eIndex, int iNewValue)
 
 	if(GetNumFreeBuilding(eIndex) != iNewValue)
 	{
+#if defined(VP64_PROTO_REACH)
+		VP64Reach::TeamEvent(m_pCity->getTeam());
+		VP64Reach::PlayerEvent(m_pCity->getOwner());
+		VP64Reach::PlotEvent(m_pCity->plot());
+#endif
 		if (iNewValue>0)
 		{
 			if (std::find(m_buildingsThatExistAtLeastOnce.begin(), m_buildingsThatExistAtLeastOnce.end(), eIndex) == m_buildingsThatExistAtLeastOnce.end())

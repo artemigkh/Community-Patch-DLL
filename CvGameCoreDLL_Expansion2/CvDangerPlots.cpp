@@ -70,7 +70,11 @@ bool CvDangerPlots::UpdateDangerSingleUnit(const CvUnit* pLoopUnit, bool bIgnore
 	else
 		iFlags |= CvUnit::MOVEFLAG_IGNORE_ZOC;
 
+#if defined(VP64_PROTO_REACH)
+	ReachablePlots reachablePlots = VP64Reach::DangerReach(pLoopUnit,iFlags,plotsToIgnoreForZOC);
+#else
 	ReachablePlots reachablePlots = TacticalAIHelpers::GetAllPlotsInReachThisTurn(pLoopUnit,pLoopUnit->plot(),iFlags,0,pLoopUnit->maxMoves(),plotsToIgnoreForZOC);
+#endif
 
 	if (pLoopUnit->IsCanAttackRanged())
 	{
@@ -1016,3 +1020,7 @@ std::vector<CvUnit*> CvDangerPlotContents::GetPossibleAttackers(TeamTypes eTeamF
 
 	return vResult;
 }
+#if defined(VP64_PROTO_REACH)
+// prototype (b) of ticket 4674 (never in a product build)
+#include "VP64ProtoReach.inl"
+#endif

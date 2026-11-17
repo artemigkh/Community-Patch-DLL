@@ -2115,6 +2115,9 @@ void CvUnit::kill(bool bDelay, PlayerTypes ePlayer /*= NO_PLAYER*/)
 	//nothing to do
 	if (bDelay && isDelayedDeath())
 		return;
+#if defined(VP64_PROTO_REACH)
+	VP64Reach::UnitEvent(this);
+#endif
 
 	VALIDATE_OBJECT();
 	CvUnit* pTransportUnit = NULL;
@@ -7144,6 +7147,9 @@ void CvUnit::setEmbarked(bool bValue)
 {
 	VALIDATE_OBJECT();
 	m_bEmbarked = bValue;
+#if defined(VP64_PROTO_REACH)
+	VP64Reach::UnitEvent(this);
+#endif
 }
 
 //	--------------------------------------------------------------------------------
@@ -20514,6 +20520,9 @@ void CvUnit::setXY(int iX, int iY, bool bGroup, bool bUpdate, bool bShow, bool b
 	}
 
 	ASSERT(plot() == pNewPlot, "plot is expected to equal pNewPlot");
+#if defined(VP64_PROTO_REACH)
+	VP64Reach::UnitMove(pOldPlot, pNewPlot);
+#endif
 
 	if(pNewPlot != NULL)
 	{
@@ -20555,6 +20564,9 @@ void CvUnit::setXY(int iX, int iY, bool bGroup, bool bUpdate, bool bShow, bool b
 		if (m_iMapLayer == DEFAULT_UNIT_MAP_LAYER)
 		{
 			pNewPlot->addUnit(this, bUpdate);
+#if defined(VP64_PROTO_REACH)
+			VP64Reach::UnitMove(NULL, pNewPlot);
+#endif
 			if (isNativeDomain(pNewPlot))
 				pNewPlot->area()->changeUnitsPerPlayer(getOwner(), +1);
 			pNewCity = pNewPlot->getPlotCity();
@@ -26024,6 +26036,9 @@ void CvUnit::setTransportUnit(CvUnit* pTransportUnit)
 
 			SetActivityType(ACTIVITY_AWAKE);
 		}
+#if defined(VP64_PROTO_REACH)
+		VP64Reach::UnitEvent(this);
+#endif
 	}
 }
 
@@ -27848,6 +27863,9 @@ void CvUnit::setHasPromotion(PromotionTypes eIndex, bool bNewValue)
 	CvPromotionEntry& thisPromotion = *GC.getPromotionInfo(eIndex);
 	if (isHasPromotion(eIndex) != bNewValue)
 	{
+#if defined(VP64_PROTO_REACH)
+		VP64Reach::UnitEvent(this);
+#endif
 		if (bNewValue && getUnitInfo().CannotEmbark())
 		{
 			if (thisPromotion.IsAllowsEmbarkation() || thisPromotion.IsEmbarkedAllWater())

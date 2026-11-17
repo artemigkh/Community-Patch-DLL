@@ -248,6 +248,9 @@ typedef wchar_t          wchar;
 #include "CvAchievementInfo.h"
 #include "CvCorporationClasses.h"
 #include "CvContractClasses.h"
+#if defined(VP64_PROTO_REACH)
+#include "VP64ProtoReach.h"
+#endif
 
 using namespace fastdelegate;
 

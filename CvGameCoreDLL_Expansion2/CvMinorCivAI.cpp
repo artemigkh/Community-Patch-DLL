@@ -10977,6 +10977,15 @@ bool CvMinorCivAI::SetAllyInternal(PlayerTypes eNewAlly)
 	}
 
 	m_eAlly = eNewAlly;
+#if defined(VP64_PROTO_REACH)
+	if (eOldAlly != eNewAlly)
+	{
+		VP64Reach::PlayerPlotsEvent(m_pPlayer->GetID(), VP64Reach::GR_MINOR_ALLY);
+		VP64Reach::TeamEvent(m_pPlayer->getTeam());
+		VP64Reach::PlayerEvent(eOldAlly);
+		VP64Reach::PlayerEvent(eNewAlly);
+	}
+#endif
 	m_iTurnAllied = GC.getGame().getGameTurn();
 
 	// Seed the GP counter?
@@ -11283,6 +11292,10 @@ void CvMinorCivAI::SetFriends(PlayerTypes ePlayer, bool bValue)
 
 	if (m_abFriends[ePlayer] != bValue)
 		GET_PLAYER(ePlayer).GetDiplomacyAI()->LogMinorStatusChange(m_pPlayer->GetID(), bValue ? "gained friend" : "lost friend");
+#if defined(VP64_PROTO_REACH)
+	if (m_abFriends[ePlayer] != bValue)
+		VP64Reach::PlayerPlotsEvent(m_pPlayer->GetID(), VP64Reach::GR_MINOR_FRIENDS);
+#endif
 
 	m_abFriends[ePlayer] = bValue;
 }
@@ -11686,6 +11699,10 @@ void CvMinorCivAI::DoSetBonus(PlayerTypes ePlayer, bool bAdd, bool bFriendChange
 void CvMinorCivAI::DoUpdateNumThreateningBarbarians()
 {
 	m_iNumThreateningBarbarians = GetNumThreateningBarbarians() + GetNumThreateningMajors();
+#if defined(VP64_PROTO_REACH)
+	if (m_iNumThreateningBarbarians > 0 && !m_bAllowMajorsToIntrude)
+		VP64Reach::PlayerPlotsEvent(m_pPlayer->GetID(), VP64Reach::GR_MINOR_INTRUDE);
+#endif
 	if (m_iNumThreateningBarbarians > 0)
 		m_bAllowMajorsToIntrude = true;
 }
@@ -11694,6 +11711,9 @@ void CvMinorCivAI::DoUpdateNumThreateningBarbarians()
 void CvMinorCivAI::DoIntrusion()
 {
 	int iNumThreateningBarbariansLastTurn = m_iNumThreateningBarbarians;
+#if defined(VP64_PROTO_REACH)
+	bool bVP64IntrudeBefore = m_bAllowMajorsToIntrude;
+#endif
 	DoUpdateNumThreateningBarbarians();
 
 	//allow major players in our territory for one turn after the barbarians have been vanquished
@@ -11711,6 +11731,10 @@ void CvMinorCivAI::DoIntrusion()
 			break;
 		}
 	}
+#if defined(VP64_PROTO_REACH)
+	if (m_bAllowMajorsToIntrude != bVP64IntrudeBefore)
+		VP64Reach::PlayerPlotsEvent(m_pPlayer->GetID(), VP64Reach::GR_MINOR_INTRUDE);
+#endif
 
 	vector<PlayerTypes> vIntruders;
 
