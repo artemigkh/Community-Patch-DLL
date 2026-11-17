@@ -510,4 +510,9 @@ protected:
 	UnitKillCount killCount;
 };
 
+// Map layout in budgeted batches (see CvMap.cpp)
+void UpdatePlotLayoutBatched(CvPlot& kPlot, bool bDebug);
+void UpdateDeferredLayout();
+bool IsMapLayoutHeld(bool bDebug);
+
 #endif

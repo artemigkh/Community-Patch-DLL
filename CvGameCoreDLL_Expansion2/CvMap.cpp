@@ -34,6 +34,372 @@ typedef struct tagMSG* LPMSG;
 #include "LintFree.h"
 
 //////////////////////////////////////////////////////////////////////////////
+// Map layout in budgeted batches
+//
+// The batching of upstream pull request LoneGazebo/Community-Patch-DLL#13397
+// ("Fix the LocalMachine event stream overflow on map layout", vaderkos,
+// head 6d0c0f6d3, GPL-3.0 like this file), without its dependency #13379:
+// the EXE is read by a small reader below instead of the Exe/ address table,
+// and the load-screen hold and the chat warnings, which need new Lua and text
+// files, are left out. Deferred plots are laid out in later frames instead.
+//
+// The engine sends map graphics (farm fields, route curves, stencils) to the
+// renderer through its LocalMachine event stream: per channel a double buffer
+// of 4 MB per frame, and no writer checks its capacity. A whole-map plot
+// layout (on load, or when the active player changes) can publish more than
+// 4 MB in one frame and write past the buffer, which corrupts the memory
+// after it (a crash or an endless loop in the EXE's dispatcher).
+//
+// The reader never writes the EXE. It only reads the current channel and its
+// buffer swap counter, on the three EXE builds whose addresses are known, and
+// only after the EXE's own code is found to use exactly those addresses and
+// sizes. On any other EXE, and in the 64-bit DLL (no EXE in its process),
+// layout runs as before.
+//////////////////////////////////////////////////////////////////////////////
+namespace
+{
+
+#if !defined(_WIN64)
+struct EventStreamBuild
+{
+	const char* szName;
+	DWORD dwTimeDateStamp;
+	DWORD dwChannelVA;    // the current event channel (first dword of the event system)
+	DWORD dwContainersVA; // one container per channel: two buffers, then the swap counter
+	DWORD dwReserveVA;    // code that reserves a record in the current container
+	DWORD dwDebugInfoVA;  // code that reads the current container's largest published size
+};
+
+const EventStreamBuild EVENT_STREAM_BUILDS[] =
+{
+	{ "DX11",   0x546CD0A8, 0x01A0E400, 0x01A0F080, 0x00870760, 0x006A60E9 },
+	{ "DX9",    0x546CCB59, 0x019FE200, 0x019FEE80, 0x00896310, 0x007A2BB9 },
+	{ "Tablet", 0x546CD5F8, 0x01A0FE80, 0x01A10B00, 0x00872200, 0x00550409 },
+};
+
+const DWORD EXE_PREFERRED_BASE = 0x400000;
+const DWORD CONTAINER_SIZE = 0x800180;
+const DWORD CONTAINER_BUFFER_SIZE = 0x400080;
+const DWORD CONTAINER_SWAP_COUNTER = 0x800100;
+const DWORD CONTAINER_MAX_PUBLISHED = 0x800104;
+const DWORD BUFFER_HEADER_SIZE = 0x80;
+const DWORD NUM_EVENT_CHANNELS = 2;
+
+bool IsReadableRange(DWORD_PTR dwAddress, DWORD dwSize)
+{
+	DWORD_PTR dwAt = dwAddress;
+	const DWORD_PTR dwEnd = dwAddress + dwSize;
+
+	while (dwAt < dwEnd)
+	{
+		MEMORY_BASIC_INFORMATION kInfo;
+
+		if (VirtualQuery(reinterpret_cast<const void*>(dwAt), &kInfo, sizeof(kInfo)) != sizeof(kInfo))
+		{
+			return false;
+		}
+
+		const DWORD dwReadable = PAGE_READONLY | PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READ
+			| PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY;
+
+		if (kInfo.State != MEM_COMMIT || (kInfo.Protect & (PAGE_GUARD | PAGE_NOACCESS)) != 0
+			|| (kInfo.Protect & dwReadable) == 0)
+		{
+			return false;
+		}
+
+		const DWORD_PTR dwRegionEnd = reinterpret_cast<DWORD_PTR>(kInfo.BaseAddress) + kInfo.RegionSize;
+
+		if (dwRegionEnd <= dwAt)
+		{
+			return false;
+		}
+
+		dwAt = dwRegionEnd;
+	}
+
+	return true;
+}
+
+bool ReadExeDword(DWORD_PTR dwAddress, DWORD& dwValue)
+{
+	if (!IsReadableRange(dwAddress, sizeof(DWORD)))
+	{
+		return false;
+	}
+
+	memcpy(&dwValue, reinterpret_cast<const void*>(dwAddress), sizeof(DWORD));
+
+	return true;
+}
+
+bool ExeDwordEquals(DWORD_PTR dwAddress, DWORD dwExpected)
+{
+	DWORD dwValue = 0;
+
+	return ReadExeDword(dwAddress, dwValue) && dwValue == dwExpected;
+}
+
+// 0 = not resolved yet, 1 = usable, 2 = not usable
+volatile LONG g_lEventStreamState = 0;
+DWORD_PTR g_dwChannelAddress = 0;
+DWORD_PTR g_dwContainersAddress = 0;
+
+void ResolveEventStream()
+{
+	const HMODULE hExe = GetModuleHandle(NULL);
+	const DWORD_PTR dwBase = reinterpret_cast<DWORD_PTR>(hExe);
+	const IMAGE_DOS_HEADER* pDos = reinterpret_cast<const IMAGE_DOS_HEADER*>(hExe);
+	DWORD dwTimeDateStamp = 0;
+
+	if (hExe && IsReadableRange(dwBase, sizeof(IMAGE_DOS_HEADER)) && pDos->e_magic == IMAGE_DOS_SIGNATURE
+		&& IsReadableRange(dwBase + pDos->e_lfanew, sizeof(IMAGE_NT_HEADERS)))
+	{
+		const IMAGE_NT_HEADERS* pNt = reinterpret_cast<const IMAGE_NT_HEADERS*>(dwBase + pDos->e_lfanew);
+
+		if (pNt->Signature == IMAGE_NT_SIGNATURE)
+		{
+			dwTimeDateStamp = pNt->FileHeader.TimeDateStamp;
+		}
+	}
+
+	for (int i = 0; i < (int)(sizeof(EVENT_STREAM_BUILDS) / sizeof(EVENT_STREAM_BUILDS[0])); i++)
+	{
+		const EventStreamBuild& kBuild = EVENT_STREAM_BUILDS[i];
+
+		if (kBuild.dwTimeDateStamp != dwTimeDateStamp)
+		{
+			continue;
+		}
+
+		const DWORD_PTR dwChannel = kBuild.dwChannelVA - EXE_PREFERRED_BASE + dwBase;
+		const DWORD_PTR dwContainers = kBuild.dwContainersVA - EXE_PREFERRED_BASE + dwBase;
+		const DWORD_PTR dwReserve = kBuild.dwReserveVA - EXE_PREFERRED_BASE + dwBase;
+		const DWORD_PTR dwDebugInfo = kBuild.dwDebugInfoVA - EXE_PREFERRED_BASE + dwBase;
+
+		// The EXE's own code must name these addresses and sizes (relocated
+		// operands of its instructions), or the reader stays off.
+		const bool bVerified =
+			ExeDwordEquals(dwReserve + 0x01, (DWORD)dwChannel)
+			&& ExeDwordEquals(dwReserve + 0x07, CONTAINER_SIZE)
+			&& ExeDwordEquals(dwReserve + 0x0D, (DWORD)dwContainers)
+			&& ExeDwordEquals(dwReserve + 0x13, CONTAINER_SWAP_COUNTER)
+			&& ExeDwordEquals(dwReserve + 0x1C, CONTAINER_BUFFER_SIZE)
+			&& ExeDwordEquals(dwReserve + 0x31, BUFFER_HEADER_SIZE)
+			&& ExeDwordEquals(dwDebugInfo + 0x02, (DWORD)dwChannel)
+			&& ExeDwordEquals(dwDebugInfo + 0x08, CONTAINER_SIZE)
+			&& ExeDwordEquals(dwDebugInfo + 0x0E, (DWORD)(dwContainers + CONTAINER_MAX_PUBLISHED))
+			&& IsReadableRange(dwChannel, sizeof(DWORD))
+			&& IsReadableRange(dwContainers, NUM_EVENT_CHANNELS * CONTAINER_SIZE);
+
+		if (bVerified)
+		{
+			g_dwChannelAddress = dwChannel;
+			g_dwContainersAddress = dwContainers;
+			CUSTOMLOG("Map layout batching: %s EXE, event stream found", kBuild.szName);
+			InterlockedExchange(&g_lEventStreamState, 1);
+		}
+		else
+		{
+			CUSTOMLOG("Map layout batching: %s EXE, its code does not match the known event stream; layout runs unbatched", kBuild.szName);
+			InterlockedExchange(&g_lEventStreamState, 2);
+		}
+
+		return;
+	}
+
+	CUSTOMLOG("Map layout batching: unknown EXE (time stamp %08X); layout runs unbatched", (unsigned int)dwTimeDateStamp);
+	InterlockedExchange(&g_lEventStreamState, 2);
+}
+#endif
+
+bool ReadSwapCounter(DWORD& dwSwapCounter)
+{
+#if defined(_WIN64)
+	(void)dwSwapCounter;
+	return false;
+#else
+	if (!MOD_BIN_HOOKS)
+	{
+		return false;
+	}
+
+	if (g_lEventStreamState == 0)
+	{
+		ResolveEventStream();
+	}
+
+	if (g_lEventStreamState != 1)
+	{
+		return false;
+	}
+
+	DWORD dwChannel = 0;
+
+	if (!ReadExeDword(g_dwChannelAddress, dwChannel) || dwChannel >= NUM_EVENT_CHANNELS)
+	{
+		return false;
+	}
+
+	return ReadExeDword(g_dwContainersAddress + dwChannel * CONTAINER_SIZE + CONTAINER_SWAP_COUNTER, dwSwapCounter);
+#endif
+}
+
+// The engine lays out farm fields for any improvement drawn with the farm
+// art, whatever its type.
+bool HasFarm(const CvPlot& kPlot, TeamTypes eTeam, bool bDebug)
+{
+	const ImprovementTypes eImprovement = kPlot.getRevealedImprovementType(eTeam, bDebug);
+
+	if (eImprovement == NO_IMPROVEMENT)
+	{
+		return false;
+	}
+
+	const CvImprovementEntry* pInfo = GC.getImprovementInfo(eImprovement);
+	const char* szTag = pInfo ? pInfo->GetArtDefineTag() : NULL;
+
+	return szTag && strcmp(szTag, "ART_DEF_IMPROVEMENT_FARM") == 0;
+}
+
+// Event stream bytes one plot's layout publishes, measured by #13397 on DX11:
+// a farm ~4.5 KB in its batch's frame plus ~4 KB of stencils in the next one,
+// a route ~2 KB. Other improvements and resources are rough estimates.
+const DWORD FARM_LAYOUT_BYTES = 4608 + 4096;
+const DWORD ROUTE_LAYOUT_BYTES = 2048;
+const DWORD IMPROVEMENT_LAYOUT_BYTES = 256;
+const DWORD RESOURCE_LAYOUT_BYTES = 128;
+// Plots past it wait for later batches, so a whole-map layout cannot
+// overflow the stream. Without the stream's addresses, nothing is deferred.
+const DWORD LAYOUT_BATCH_BYTES = 256 * 1024;
+// The next batch waits for this many buffer swaps, so a stream buffer holds
+// at most one batch and the previous batch's stencils.
+const DWORD BATCH_GAP_SWAPS = 1;
+
+DWORD EstimateLayoutBytes(const CvPlot& kPlot, bool bDebug)
+{
+	const TeamTypes eTeam = GC.getGame().getActiveTeam();
+
+	if (eTeam == NO_TEAM)
+	{
+		return 0;
+	}
+
+	DWORD dwBytes = 0;
+
+	if (HasFarm(kPlot, eTeam, bDebug))
+	{
+		dwBytes += FARM_LAYOUT_BYTES;
+	}
+	else if (kPlot.getRevealedImprovementType(eTeam, bDebug) != NO_IMPROVEMENT)
+	{
+		dwBytes += IMPROVEMENT_LAYOUT_BYTES;
+	}
+
+	if (kPlot.getRevealedRouteType(eTeam, bDebug) != NO_ROUTE)
+	{
+		dwBytes += ROUTE_LAYOUT_BYTES;
+	}
+
+	if (!kPlot.isCity() && kPlot.getResourceType(eTeam) != NO_RESOURCE)
+	{
+		dwBytes += RESOURCE_LAYOUT_BYTES;
+	}
+
+	return dwBytes;
+}
+
+bool OverBudget(DWORD dwSpent, DWORD dwCost)
+{
+	return dwSpent > 0 && dwCost > 0 && dwSpent + dwCost > LAYOUT_BATCH_BYTES;
+}
+
+bool g_bLayoutDeferred = false;
+bool g_bBatchSwapCounterValid = false;
+DWORD g_dwBatchSwapCounter = 0;
+
+void NoteBatchPublished()
+{
+	g_bBatchSwapCounterValid = ReadSwapCounter(g_dwBatchSwapCounter);
+}
+
+bool LastBatchDispatched()
+{
+	DWORD dwSwapCounter = 0;
+
+	if (!g_bBatchSwapCounterValid || !ReadSwapCounter(dwSwapCounter))
+	{
+		return true;
+	}
+
+	return dwSwapCounter - g_dwBatchSwapCounter >= BATCH_GAP_SWAPS;
+}
+
+} // namespace
+
+// The EXE clears PlotData_DIRTY_BIT after it calls UpdateLayout, so while
+// plots are deferred it is set again here.
+void UpdateDeferredLayout()
+{
+	if (g_bLayoutDeferred)
+	{
+		DLLUI->setDirty(PlotData_DIRTY_BIT, true);
+	}
+}
+
+// Whether the EXE's map layout call waits until the last batch has been
+// dispatched.
+bool IsMapLayoutHeld(bool /*bDebug*/)
+{
+	if (g_bLayoutDeferred && !LastBatchDispatched())
+	{
+		return true;
+	}
+
+	return false;
+}
+
+// The EXE's per-plot layout pass on load.
+void UpdatePlotLayoutBatched(CvPlot& kPlot, bool bDebug)
+{
+	static DWORD s_dwSpent = 0;
+	static DWORD s_dwBatchSwapCounter = 0;
+
+	DWORD dwSwapCounter = 0;
+
+	if (!ReadSwapCounter(dwSwapCounter))
+	{
+		kPlot.updateLayout(bDebug);
+
+		return;
+	}
+
+	if (dwSwapCounter != s_dwBatchSwapCounter)
+	{
+		s_dwSpent = 0;
+		s_dwBatchSwapCounter = dwSwapCounter;
+	}
+
+	const DWORD dwCost = EstimateLayoutBytes(kPlot, bDebug);
+
+	if (OverBudget(s_dwSpent, dwCost))
+	{
+		kPlot.setLayoutDirty(true);
+		g_bLayoutDeferred = true;
+
+		return;
+	}
+
+	kPlot.updateLayout(bDebug);
+	s_dwSpent += dwCost;
+
+	if (dwCost > 0)
+	{
+		NoteBatchPublished();
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // CvLandmass
 //////////////////////////////////////////////////////////////////////////
 
@@ -1006,16 +1372,36 @@ void CvMap::updateVisibility()
 //	--------------------------------------------------------------------------------
 void CvMap::updateLayout(bool bDebug)
 {
+	DWORD dwSwapCounter = 0;
+	const bool bBatch = ReadSwapCounter(dwSwapCounter);
+	DWORD dwSpent = 0;
+	bool bLeft = false;
+
 	for(int iI = 0; iI < numPlots(); iI++)
 	{
 		CvPlot* pThisPlot = plotByIndexUnchecked(iI);
 		if(pThisPlot && pThisPlot->isLayoutDirty())
 		{
+			const DWORD dwCost = bBatch ? EstimateLayoutBytes(*pThisPlot, bDebug) : 0;
+
+			if (OverBudget(dwSpent, dwCost))
+			{
+				bLeft = true;
+				continue;
+			}
+
 			pThisPlot->updateLayout(bDebug);
 			pThisPlot->setLayoutDirty(false);
+			dwSpent += dwCost;
 		}
 	}
-	DLLUI->setDirty(PlotData_DIRTY_BIT,false);
+	DLLUI->setDirty(PlotData_DIRTY_BIT, bLeft);
+	g_bLayoutDeferred = bLeft;
+
+	if (dwSpent > 0)
+	{
+		NoteBatchPublished();
+	}
 }
 
 //	--------------------------------------------------------------------------------
