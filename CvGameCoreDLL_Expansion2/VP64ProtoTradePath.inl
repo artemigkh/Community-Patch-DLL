@@ -127,13 +127,18 @@ long long VP64PTTicks(const LARGE_INTEGER& t0)
 // callbacks can distinguish (see below), and no destination list (the search runs with no destination and keeps the
 // closed nodes that are cities; a city plot is "isCity" in the touched plot's hash, so a destination that matters is a
 // touched plot).
+// b3: "narrow1" = b2's narrow fingerprint; the default (level 2) narrows further: the war bit only where a callback reads
+// it (a city, or a plot where isCoastalCityOrPassableImprovement holds: the "from" plot tests), isOwned only on ice, cities
+// and such plots, owner == player only on cities and improved plots (the yield discounts), team == team only on forest
+// and jungle (the woodland trait), route and improvement pillage only through the predicates that read them; searches
+// with the canal shortcut flag are not handled at this level (the stock path runs).
 int VP64PTNarrow()
 {
 	static int s_iNarrow = -1;
 	if (s_iNarrow < 0)
 	{
 		const char* s = getenv("VP64_PROTO_TRADEPATH_FP");
-		s_iNarrow = (s && strcmp(s, "wide") == 0) ? 0 : 1;
+		s_iNarrow = (s && strcmp(s, "wide") == 0) ? 0 : (s && strcmp(s, "narrow1") == 0) ? 1 : 2;
 	}
 	return s_iNarrow;
 }
@@ -146,7 +151,9 @@ int VP64PTNarrow()
 // yields only on the player's own plots (the only place the callbacks read them).
 unsigned long long VP64PTPlotFp(const CvPlot* p, PlayerTypes ePlayer, TeamTypes eTeam, unsigned int* g = NULL)
 {
-	const bool bNarrow = VP64PTNarrow() != 0;
+	const int iLevel = VP64PTNarrow();
+	const bool bNarrow = iLevel >= 1;
+	const bool bN2 = iLevel >= 2;
 	const TeamTypes ePlotTeam = p->getTeam();
 	const PlayerTypes eOwner = p->getOwner();
 	const bool bOwn = (eOwner == ePlayer);
@@ -168,7 +175,8 @@ unsigned long long VP64PTPlotFp(const CvPlot* p, PlayerTypes ePlayer, TeamTypes 
 	if (bNarrow)
 	{
 		h0 = VP64PTMix(h0, (unsigned long long)((p->getRevealedImprovementType(eTeam) == (ImprovementTypes)GD_INT_GET(BARBARIAN_CAMP_IMPROVEMENT)) ? 1 : 0));
-		h0 = VP64PTMix(h0, (unsigned long long)(long long)(bOwn ? p->getResourceType(eTeam) : (ResourceTypes)-2));
+		if (!bN2) // level 2 does not handle the canal shortcut, the only reader of the resource
+			h0 = VP64PTMix(h0, (unsigned long long)(long long)(bOwn ? p->getResourceType(eTeam) : (ResourceTypes)-2));
 	}
 	else
 	{
@@ -176,17 +184,36 @@ unsigned long long VP64PTPlotFp(const CvPlot* p, PlayerTypes ePlayer, TeamTypes 
 		h0 = VP64PTMix(h0, (unsigned long long)(long long)p->getResourceType(eTeam));
 	}
 	// group 1: owner and war
-	h1 = VP64PTMix(h1, (unsigned long long)(p->isOwned() ? 1 : 0));
-	h1 = VP64PTMix(h1, (unsigned long long)((ePlotTeam != NO_TEAM && GET_TEAM(eTeam).isAtWar(ePlotTeam)) ? 1 : 0));
-	if (bNarrow)
+	const bool bCity = p->isCity();
+	const bool bCoastalPred = p->isCoastalCityOrPassableImprovement(ePlayer, false, false);
+	const bool bWar = (ePlotTeam != NO_TEAM && GET_TEAM(eTeam).isAtWar(ePlotTeam));
+	if (bN2)
 	{
-		h1 = VP64PTMix(h1, (unsigned long long)(bOwn ? 1 : 0));
-		h1 = VP64PTMix(h1, (unsigned long long)((ePlotTeam == eTeam) ? 1 : 0));
+		// each bit only where a callback reads it (see VP64PTNarrow); 2 = "not read here"
+		const bool bWarRead = bCity || bCoastalPred;
+		const bool bOwnedRead = p->isIce() || bCity || bCoastalPred;
+		const bool bOwnRead = bCity || p->getImprovementType() != NO_IMPROVEMENT;
+		const FeatureTypes eFeature = p->getFeatureType();
+		const bool bTeamRead = (eFeature == FEATURE_FOREST || eFeature == FEATURE_JUNGLE);
+		h1 = VP64PTMix(h1, bOwnedRead ? (unsigned long long)(p->isOwned() ? 1 : 0) : 2ULL);
+		h1 = VP64PTMix(h1, bWarRead ? (unsigned long long)(bWar ? 1 : 0) : 2ULL);
+		h1 = VP64PTMix(h1, bOwnRead ? (unsigned long long)(bOwn ? 1 : 0) : 2ULL);
+		h1 = VP64PTMix(h1, bTeamRead ? (unsigned long long)((ePlotTeam == eTeam) ? 1 : 0) : 2ULL);
 	}
 	else
 	{
-		h1 = VP64PTMix(h1, (unsigned long long)(long long)eOwner);
-		h1 = VP64PTMix(h1, (unsigned long long)(long long)ePlotTeam);
+		h1 = VP64PTMix(h1, (unsigned long long)(p->isOwned() ? 1 : 0));
+		h1 = VP64PTMix(h1, (unsigned long long)(bWar ? 1 : 0));
+		if (bNarrow)
+		{
+			h1 = VP64PTMix(h1, (unsigned long long)(bOwn ? 1 : 0));
+			h1 = VP64PTMix(h1, (unsigned long long)((ePlotTeam == eTeam) ? 1 : 0));
+		}
+		else
+		{
+			h1 = VP64PTMix(h1, (unsigned long long)(long long)eOwner);
+			h1 = VP64PTMix(h1, (unsigned long long)(long long)ePlotTeam);
+		}
 	}
 	// group 2: terrain, feature, route, improvement and the player predicates
 	unsigned long long bits = 0;
@@ -198,10 +225,13 @@ unsigned long long VP64PTPlotFp(const CvPlot* p, PlayerTypes ePlayer, TeamTypes 
 	bits |= (unsigned long long)(p->isRoute() ? 1 : 0) << 5;
 	bits |= (unsigned long long)(p->IsImprovementPassable() ? 1 : 0) << 6;
 	bits |= (unsigned long long)(p->isValidMovePlot(ePlayer, false) ? 1 : 0) << 7;
-	bits |= (unsigned long long)(p->isCoastalCityOrPassableImprovement(ePlayer, false, false) ? 1 : 0) << 8;
+	bits |= (unsigned long long)(bCoastalPred ? 1 : 0) << 8;
 	bits |= (unsigned long long)(p->isRiver() ? 1 : 0) << 9;
-	bits |= (unsigned long long)(p->IsRoutePillaged() ? 1 : 0) << 10;
-	bits |= (unsigned long long)(p->IsImprovementPillaged() ? 1 : 0) << 11;
+	if (!bN2) // level 2: pillage is read only through isValidMovePlot and isCoastalCityOrPassableImprovement (bits 7, 8)
+	{
+		bits |= (unsigned long long)(p->IsRoutePillaged() ? 1 : 0) << 10;
+		bits |= (unsigned long long)(p->IsImprovementPillaged() ? 1 : 0) << 11;
+	}
 	h2 = VP64PTMix(h2, bits);
 	h2 = VP64PTMix(h2, (unsigned long long)(long long)p->getFeatureType());
 	h2 = VP64PTMix(h2, (unsigned long long)(long long)p->getTerrainType());
@@ -410,6 +440,8 @@ static int VP64ProtoTradeLookup(const CvPlot* pStart, const vector<CvPlot*>& vDe
 {
 	if (!g_vp64pt.scope || !pStart || (d.ePath != PT_TRADE_WATER && d.ePath != PT_TRADE_LAND) || d.ePlayer != g_vp64pt.ePlayer)
 		return 0;
+	if (VP64PTNarrow() >= 2 && (d.iFlags & CvUnit::MOVEFLAG_PRETEND_CANALS))
+		return 0; // the canal shortcut reads the visible resource, which the level-2 fingerprint leaves out
 	LARGE_INTEGER t0;
 	QueryPerformanceCounter(&t0);
 	g_vp64pt.nSearch++;
