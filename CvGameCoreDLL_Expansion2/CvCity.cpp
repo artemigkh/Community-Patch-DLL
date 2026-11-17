@@ -2220,6 +2220,10 @@ void CvCity::kill()
 		}
 	}
 
+	// The dying city is inconsistent until it is deleted; Lua hooks would
+	// release the game core lock and let UI scripts read it (see
+	// LuaSupport::DeferredHookScope). They run after the deletion instead.
+	LuaSupport::DeferredHookScope kDeferHooks;
 	PreKill();
 
 	// Delete the city's information here!!!
@@ -2234,6 +2238,7 @@ void CvCity::kill()
 
 	GET_PLAYER(getOwner()).deleteCity(m_iID);
 	GET_PLAYER(eOwner).GetCityConnections()->SetDirty();
+	kDeferHooks.Flush();
 
 	// clean up
 	PostKill(bCapital, pPlot, iWorkPlotDistance, eOwner);
@@ -2255,10 +2260,11 @@ void CvCity::AcquireWaywardPlots()
 			continue;
 
 		// Check whether the plot is within working radius of its owning city. If yes, leave it be.
+		// (An owned plot can have no owning city, see CvPlot::setImprovementType.)
 		CvCity* pOwningCity = pLoopPlot->getOwningCity();
 		if (pOwningCity == this)
 			continue;
-		if (pOwningCity->IsWithinWorkRange(pLoopPlot))
+		if (pOwningCity && pOwningCity->IsWithinWorkRange(pLoopPlot))
 			continue;
 
 		// Is it within working range of this city? Acquire it.
