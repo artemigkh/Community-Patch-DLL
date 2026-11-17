@@ -159,6 +159,12 @@ BuildingTypes CvWonderProductionAI::ChooseWonder(int& iWonderWeight)
 			if (!pLoopCity->IsBestForWonder(pkBuildingInfo->GetBuildingClassType()))
 				continue;
 
+			// The best-city flag is not cleared when a wonder is completed: skip wonders that can no longer be built
+			// (a world wonder built by anyone, a team or national wonder at its limit for us)
+			const BuildingClassTypes eBuildingClass = pkBuildingInfo->GetBuildingClassType();
+			if (GC.getGame().isBuildingClassMaxedOut(eBuildingClass) || GET_TEAM(m_pPlayer->getTeam()).isBuildingClassMaxedOut(eBuildingClass) || m_pPlayer->isBuildingMaxedOut(eBuilding))
+				continue;
+
 			int iTurnsRequired = std::max(1, pkBuildingInfo->GetProductionCost() / iEstimatedProductionPerTurn);
 
 			// if we are forced to restart a wonder, give one that has been started already a huge bump
