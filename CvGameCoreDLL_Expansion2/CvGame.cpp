@@ -1621,6 +1621,8 @@ bool ExternalPause()
 //	---------------------------------------------------------------------------
 void CvGame::update()
 {
+	UpdateDeferredLayout();
+
 	m_iCacheStamp++; // bug 0116: see GetCacheStamp
 
 	if(IsWaitingForBlockingInput())
