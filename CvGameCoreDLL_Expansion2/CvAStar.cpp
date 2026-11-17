@@ -3336,6 +3336,9 @@ ReachablePlots CvPathFinder::GetPlotsInReach(int iXstart, int iYstart, const SPa
 	bool bHadLock = gDLL->HasGameCoreLock();
 	if(!bHadLock)
 		gDLL->GetGameCoreLock();
+#if defined(VP64_COUNT_REACH)
+	VP64Count::ReachScope vp64Reach(this, iXstart, iYstart, data);
+#endif
 
 	if (!Configure(data))
 	{
@@ -3376,6 +3379,9 @@ ReachablePlots CvPathFinder::GetPlotsInReach(int iXstart, int iYstart, const SPa
 		gDLL->ReleaseGameCoreLock();
 
 	plots.createIndex();
+#if defined(VP64_COUNT_REACH)
+	vp64Reach.Done(plots);
+#endif
 	return plots;
 }
 
