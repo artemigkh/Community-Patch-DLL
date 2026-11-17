@@ -7024,6 +7024,7 @@ const char* homelandMoveNames[] =
 	"H_MOVE_DIPLOMAT_EMBASSY",
 	"H_MOVE_MESSENGER",
 	"H_MOVE_SECONDARY_SETTLER",
+	"H_MOVE_OPPORTUNITY_ATTACK",
 };
 
 const char* directiveNames[] = 
