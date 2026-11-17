@@ -8529,6 +8529,9 @@ void CvGame::doTurn()
 	incrementGameTurn();
 	incrementElapsedGameTurns();
 	gDLL->PublishNewGameTurn(getGameTurn());
+#if defined(VP64_COUNT_ANY)
+	VP64Count::OnTurnStart(getGameTurn());
+#endif
 
 	// After disengagement ends, bump any units out of tiles where they shouldn't be
 	// Don't iterate through all tiles *and* all players, that's expensive - only check any teams where disengagement just ended
@@ -15054,3 +15057,8 @@ CvString CvGame::GetModFromIdAndVersion(const string& refcstrModsRootDirectory, 
 	pLog->Msg(CvString::format("Modinfo not found for %s (v %s). This folder will not copy!", modName.c_str(), version.c_str()));
 	return CvString();
 }
+
+#if defined(VP64_COUNT_ANY)
+// the counting builds of VP64Count.h (never in a product build)
+#include "VP64Count.inl"
+#endif

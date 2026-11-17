@@ -4357,6 +4357,10 @@ void CvTeam::setAtWar(TeamTypes eIndex, bool bNewValue, bool bAggressorPacifier)
 	ASSERT(eIndex != GetID() || bNewValue == false, "Team is setting war with itself!");
 	if (eIndex == GetID())
 		return;
+#if defined(VP64_COUNT_ANY)
+	if (isAtWar(eIndex) != bNewValue)
+		VP64Count::OnEvent(bNewValue ? VP64Count::EV_WAR : VP64Count::EV_PEACE);
+#endif
 
 	vector<PlayerTypes> vOurTeam = getPlayers();
 	vector<PlayerTypes> vTheirTeam = GET_TEAM(eIndex).getPlayers();

@@ -557,6 +557,9 @@ void CvUnit::initWithNameOffset(int iID, UnitTypes eUnit, int iNameOffset, UnitA
 
 	ASSERT(NO_UNIT != eUnit);
 
+#if defined(VP64_COUNT_ANY)
+	VP64Count::OnUnitEvent(VP64Count::EV_UNIT_CREATE, GC.getMap().plot(iX, iY), NULL);
+#endif
 	m_Promotions.Init();
 	m_Religion.Init();
 
@@ -2116,6 +2119,9 @@ void CvUnit::kill(bool bDelay, PlayerTypes ePlayer /*= NO_PLAYER*/)
 	if (bDelay && isDelayedDeath())
 		return;
 
+#if defined(VP64_COUNT_ANY)
+	VP64Count::OnUnitEvent(VP64Count::EV_UNIT_DEATH, plot(), NULL);
+#endif
 	VALIDATE_OBJECT();
 	CvUnit* pTransportUnit = NULL;
 	CvUnit* pLoopUnit = NULL;
@@ -20273,6 +20279,9 @@ void CvUnit::setXY(int iX, int iY, bool bGroup, bool bUpdate, bool bShow, bool b
 	//avoid recursion with jump to valid plot
 	if (at(iX, iY))
 		return;
+#if defined(VP64_COUNT_ANY)
+	VP64Count::OnUnitEvent(VP64Count::EV_UNIT_MOVE, plot(), GC.getMap().plot(iX, iY));
+#endif
 
 	ASSERT(!isFighting());
 	ASSERT((iX == INVALID_PLOT_COORD) || (GC.getMap().plot(iX, iY)->getX() == iX));

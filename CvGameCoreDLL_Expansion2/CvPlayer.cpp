@@ -2911,6 +2911,9 @@ CvPlot* CvPlayer::addFreeUnit(UnitTypes eUnit, bool bGameStart, UnitAITypes eUni
 
 CvCity* CvPlayer::initCity(int iX, int iY, bool bBumpUnits, bool bInitialFounding, ReligionTypes eInitialReligion, const char* szName, CvUnit* pkSettler)
 {
+#if defined(VP64_COUNT_ANY)
+	VP64Count::OnEvent(VP64Count::EV_CITY_FOUND);
+#endif
 	CvCity* pNewCity = addCity();
 	ASSERT(pNewCity != NULL, "City is not assigned a valid value");
 	if(pNewCity != NULL)
@@ -2941,6 +2944,9 @@ CvCity* CvPlayer::acquireCity(CvCity* pCity, bool bConquest, bool bGift, bool bO
 {
 	if (!pCity)
 		return NULL;
+#if defined(VP64_COUNT_ANY)
+	VP64Count::OnEvent(VP64Count::EV_CITY_ACQUIRE);
+#endif
 
 	CvPlot* pCityPlot = pCity->plot();
 	if (!pCityPlot)

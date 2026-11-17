@@ -2165,6 +2165,9 @@ void CvCity::PostKill(bool bCapital, CvPlot* pPlot, int iWorkPlotDistance, Playe
 void CvCity::kill()
 {
 	VALIDATE_OBJECT();
+#if defined(VP64_COUNT_ANY)
+	VP64Count::OnEvent(VP64Count::EV_CITY_KILL);
+#endif
 	CvPlot* pPlot = plot();
 	PlayerTypes eOwner = getOwner();
 	bool bCapital = isCapital();

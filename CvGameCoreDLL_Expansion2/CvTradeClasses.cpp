@@ -356,6 +356,9 @@ void CvGameTrade::InvalidateTradePathTeamCache(TeamTypes eTeam)
 
 void CvGameTrade::InvalidateTradePathCache(PlayerTypes ePlayer)
 {
+#if defined(VP64_COUNT_TRADEPATH)
+	VP64Count::TradeInvalidate(ePlayer);
+#endif
 	m_lastTradePathUpdate[ePlayer] = -1;
 	m_lastTradePathUpdateUi[ePlayer] = -1;
 }
@@ -370,6 +373,9 @@ void CvGameTrade::UpdateTradePathCache(PlayerTypes ePlayer1)
 	int lastUpdate = GetTradePathsCacheUpdateCounter(ePlayer1);
 	if (lastUpdate == GC.getGame().getGameTurn())
 		return;
+#if defined(VP64_COUNT_TRADEPATH) || defined(VP64_COUNT_PARALLEL)
+	VP64Count::TradeRebuildBegin(ePlayer1, lastUpdate);
+#endif
 
 	TeamTypes eMyTeam = kPlayer1.getTeam();
 	CvTeam& kMyTeam = GET_TEAM(eMyTeam);
@@ -489,6 +495,9 @@ void CvGameTrade::UpdateTradePathCache(PlayerTypes ePlayer1)
 	int iOriginCityLoop = 0;
 	for (CvCity* pOriginCity = kPlayer1.firstCity(&iOriginCityLoop); pOriginCity != NULL; pOriginCity = kPlayer1.nextCity(&iOriginCityLoop))
 	{
+#if defined(VP64_COUNT_TRADEPATH)
+		VP64Count::u64 iVp64CityT0 = VP64Count::Now();
+#endif
 		CvPlot* pCityPlot = pOriginCity->plot();
 		int iCityPlotIndex = pCityPlot->GetPlotIndex();
 		TradePathLookup& m_aLandPaths = GetTradePathsCache(false);
@@ -537,6 +546,9 @@ void CvGameTrade::UpdateTradePathCache(PlayerTypes ePlayer1)
 			CvCity* pDestCity = plot->getPlotCity();
 			AddTradePathToCache(m_aLandPaths, iCityPlotIndex, pDestCity->plot()->GetPlotIndex(), it->second, kPlayer1, eMyTeam, bInvulnerability, aiTeamDanger);
 		}
+#if defined(VP64_COUNT_TRADEPATH)
+		VP64Count::TradeCity(ePlayer1, iCityPlotIndex, iVp64CityT0, waterpaths, landpaths, m_aWaterPaths[iCityPlotIndex], m_aLandPaths[iCityPlotIndex]);
+#endif
 	}
 
 	SetTradePathsCacheUpdateCounter(ePlayer1, GC.getGame().getGameTurn());
@@ -549,6 +561,9 @@ void CvGameTrade::UpdateTradePathCache(PlayerTypes ePlayer1)
 		kPlayer1.GetTrade()->UpdateFurthestPossibleTradeRoute(DOMAIN_LAND, pOriginCity, iDistanceLand);
 		kPlayer1.GetTrade()->UpdateFurthestPossibleTradeRoute(DOMAIN_SEA, pOriginCity, iDistanceSea);
 	}
+#if defined(VP64_COUNT_TRADEPATH) || defined(VP64_COUNT_PARALLEL)
+	VP64Count::TradeRebuildEnd(ePlayer1);
+#endif
 }
 
 //	--------------------------------------------------------------------------------

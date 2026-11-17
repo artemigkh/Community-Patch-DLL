@@ -6613,6 +6613,9 @@ void CvPlot::setOwner(PlayerTypes eNewValue, int iAcquiringCityID, bool bCheckUn
 	// Remove effects for old owner before changing the member
 	if(getOwner() != eNewValue)
 	{
+#if defined(VP64_COUNT_ANY)
+		VP64Count::OnEvent(VP64Count::EV_OWNER);
+#endif
 		PlayerTypes eOldOwner = getOwner();
 		TeamTypes eOldTeam = getTeam();
 		PlayerTypes eBuilder = GetPlayerThatBuiltImprovement();
@@ -7556,6 +7559,9 @@ void CvPlot::setFeatureType(FeatureTypes eNewValue)
 
 	if (eOldFeature != eNewValue)
 	{
+#if defined(VP64_COUNT_ANY)
+		VP64Count::OnEvent(VP64Count::EV_FEATURE);
+#endif
 		// Force flood plains on river desert if it becomes featureless
 		if (eNewValue == NO_FEATURE && getTerrainType() == TERRAIN_DESERT && isRiver())
 		{
@@ -8162,6 +8168,10 @@ void CvPlot::setImprovementType(ImprovementTypes eNewValue, PlayerTypes eBuilder
 	if (eNewValue > NO_IMPROVEMENT && GC.getImprovementInfo(eNewValue) == NULL)
 		return;
 
+#if defined(VP64_COUNT_ANY)
+	if (eOldImprovement != eNewValue)
+		VP64Count::OnEvent(VP64Count::EV_IMPROVEMENT);
+#endif
 	// Clear the pillage state if the improvement was replaced by any means
 	bool bPillageStateChanged = IsImprovementPillaged();
 	if (bPillageStateChanged)
@@ -9114,6 +9124,9 @@ void CvPlot::SetImprovementPillaged(bool bPillaged, bool bEvents)
 
 	if (bPillaged != bWasPillaged)
 	{
+#if defined(VP64_COUNT_ANY)
+		VP64Count::OnEvent(VP64Count::EV_IMPROVEMENT_PILLAGE);
+#endif
 		m_bImprovementPillaged = bPillaged;
 
 		calculateAdditionalUnitsFromImprovement();
@@ -9347,6 +9360,9 @@ void CvPlot::setRouteType(RouteTypes eNewValue, PlayerTypes eBuilder)
 
 	if(eOldRoute != eNewValue || IsRoutePillaged())
 	{
+#if defined(VP64_COUNT_ANY)
+		VP64Count::OnEvent(VP64Count::EV_ROUTE);
+#endif
 		// Remove old effects
 		if(eOldRoute != NO_ROUTE && !isCity())
 		{
@@ -9409,6 +9425,9 @@ void CvPlot::SetRoutePillaged(bool bPillaged, bool bEvents)
 {
 	if (m_bRoutePillaged != bPillaged)
 	{
+#if defined(VP64_COUNT_ANY)
+		VP64Count::OnEvent(VP64Count::EV_ROUTE_PILLAGE);
+#endif
 		for(int iI = 0; iI < MAX_TEAMS; ++iI)
 		{
 			if ( GET_TEAM((TeamTypes)iI).isObserver() || ((GET_TEAM((TeamTypes)iI).isAlive()) && GC.getGame().getActiveTeam() == (TeamTypes)iI) )
@@ -11524,6 +11543,9 @@ void CvPlot::flipVisibility(TeamTypes eTeam)
 	//flip visibility
 	if (m_aiVisibilityCountThisTurnMax[eTeam] != m_aiVisibilityCount[eTeam])
 	{
+#if defined(VP64_COUNT_ANY)
+		VP64Count::OnEvent(VP64Count::EV_VISIBILITY, eTeam);
+#endif
 		m_aiVisibilityCountThisTurnMax[eTeam] = m_aiVisibilityCount[eTeam];
 		if (m_aiVisibilityCount[eTeam] == 0) //in case it's now invisible
 			updateFog();
@@ -11543,6 +11565,9 @@ PlotVisibilityChangeResult CvPlot::changeVisibilityCount(TeamTypes eTeam, int iC
 	PlotVisibilityChangeResult eResult = VISIBILTY_CHANGE_NONE;
 	if (iChange == 0)
 		return eResult;
+#if defined(VP64_COUNT_ANY)
+	VP64Count::OnEvent(VP64Count::EV_VISIBILITY, eTeam);
+#endif
 
 	bool bOldVisibility = (m_aiVisibilityCount[eTeam] > 0);
 	bool bOldMaxVisibility = MOD_CORE_DELAYED_VISIBILITY ? (m_aiVisibilityCountThisTurnMax[eTeam] > 0) : bOldVisibility;
@@ -12037,6 +12062,9 @@ bool CvPlot::setRevealed(TeamTypes eTeam, bool bNewValue, CvUnit* pUnit, bool bT
 
 	if (bRevealed)
 	{
+#if defined(VP64_COUNT_ANY)
+		VP64Count::OnEvent(VP64Count::EV_REVEALED, eTeam);
+#endif
 		bVisibilityUpdated = true;
 		m_bfRevealed.ToggleBit(eTeam);
 		bool bEligibleForAchievement = MOD_ENABLE_ACHIEVEMENTS ? GET_PLAYER(GC.getGame().getActivePlayer()).isHuman(ISHUMAN_ACHIEVEMENTS) && !GC.getGame().isGameMultiPlayer() : false;
@@ -12542,6 +12570,9 @@ bool CvPlot::setRevealedImprovementType(TeamTypes eTeam, ImprovementTypes eNewVa
 	ImprovementTypes eOldImprovementType = getRevealedImprovementType(eTeam);
 	if(eOldImprovementType != eNewValue)
 	{
+#if defined(VP64_COUNT_ANY)
+		VP64Count::OnEvent(VP64Count::EV_REVEALED_IMPROVEMENT, eTeam);
+#endif
 		m_aeRevealedImprovementType[eTeam] = eNewValue;
 		if(eTeam == GC.getGame().getActiveTeam())
 		{
@@ -12599,6 +12630,9 @@ bool CvPlot::setRevealedRouteType(TeamTypes eTeam, RouteTypes eNewValue)
 
 	if(getRevealedRouteType(eTeam, false) != eNewValue)
 	{
+#if defined(VP64_COUNT_ANY)
+		VP64Count::OnEvent(VP64Count::EV_REVEALED_ROUTE, eTeam);
+#endif
 		if(eTeam == GC.getGame().getActiveTeam())
 		{
 			setLayoutDirty(true);
