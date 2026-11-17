@@ -467,6 +467,10 @@ bool CvCombatInfo::getVisualizeCombat() const
 void CvCombatInfo::setVisualizeCombat(bool bVisualize)
 {
 	m_bVisualize = bVisualize;
+#if defined(VP64_PROTO_HIDDEN_EMBARK)
+	if (bVisualize)
+		VP64HiddenEmbark::OnCombatVisualized(this);
+#endif
 }
 
 bool CvCombatInfo::getAttackerAdvancedVisualization() const
