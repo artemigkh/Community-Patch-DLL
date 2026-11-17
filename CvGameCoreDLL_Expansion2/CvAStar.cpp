@@ -26,6 +26,12 @@
 #include "CvUnitMovement.h"
 #include <numeric>
 #include "LintFree.h"
+#if defined(VP64_PROTO_TRADEPATH)
+// prototype (a) of the x64 turn-time study, evidence only; see VP64ProtoTradePath.inl (included at the end of this file)
+static void VP64ProtoTouch(const CvPlot* pPlot);
+static int VP64ProtoTradeLookup(const CvPlot* pStart, const vector<CvPlot*>& vDest, const SPathFinderUserData& d, map<int, SPath>& out);
+static void VP64ProtoTradeStore(int iState, const map<int, SPath>& result);
+#endif
 
 #define PATH_BASE_COST											(120)	//base cost per movement point expended
 #define PATH_ATTACK_WEIGHT										(200)	//per percent penalty on attack
@@ -3389,6 +3395,12 @@ ReachablePlots CvPathFinder::GetPlotsInReach(const CvPlot * pStartPlot, const SP
 
 map<int,SPath> CvPathFinder::GetMultiplePaths(const CvPlot* pStartPlot, vector<CvPlot*> vDestPlots, const SPathFinderUserData& data)
 {
+#if defined(VP64_PROTO_TRADEPATH)
+	map<int,SPath> vp64ProtoReuse;
+	const int iVP64ProtoState = VP64ProtoTradeLookup(pStartPlot, vDestPlots, data, vp64ProtoReuse);
+	if (iVP64ProtoState == 1)
+		return vp64ProtoReuse;
+#endif
 	//make sure we don't call this from dll and lua at the same time
 	bool bHadLock = gDLL->HasGameCoreLock();
 	if(!bHadLock)
@@ -3460,6 +3472,9 @@ map<int,SPath> CvPathFinder::GetMultiplePaths(const CvPlot* pStartPlot, vector<C
 		}
 	}
 
+#if defined(VP64_PROTO_TRADEPATH)
+	VP64ProtoTradeStore(iVP64ProtoState, result);
+#endif
 	if(!bHadLock)
 		gDLL->ReleaseGameCoreLock();
 	return result;
@@ -3705,6 +3720,10 @@ int TradePathLandCost(const CvAStarNode* parent, const CvAStarNode* node, const 
 	CvMap& kMap = GC.getMap();
 	CvPlot* pFromPlot = kMap.plotUnchecked(parent->m_iX, parent->m_iY);
 	CvPlot* pToPlot = kMap.plotUnchecked(node->m_iX, node->m_iY);
+#if defined(VP64_PROTO_TRADEPATH)
+	VP64ProtoTouch(pFromPlot);
+	VP64ProtoTouch(pToPlot);
+#endif
 
 	const TradePathCacheData* pCacheData = reinterpret_cast<const TradePathCacheData*>(finder->GetScratchBuffer());
 	FeatureTypes eFeature = pToPlot->getFeatureType();
@@ -3790,6 +3809,10 @@ int TradePathLandValid(const CvAStarNode* parent, const CvAStarNode* node, const
 
 	const TradePathCacheData* pCacheData = reinterpret_cast<const TradePathCacheData*>(finder->GetScratchBuffer());
 	CvPlot* pToPlot = GC.getMap().plotUnchecked(node->m_iX, node->m_iY);
+#if defined(VP64_PROTO_TRADEPATH)
+	VP64ProtoTouch(GC.getMap().plotUnchecked(parent->m_iX, parent->m_iY));
+	VP64ProtoTouch(pToPlot);
+#endif
 
 	if (!pToPlot->isRevealed(pCacheData->GetTeam()))
 	{
@@ -3834,6 +3857,9 @@ int TradePathWaterCost(const CvAStarNode*, const CvAStarNode* node, const SPathF
 	CvMap& kMap = GC.getMap();
 	const TradePathCacheData* pCacheData = reinterpret_cast<const TradePathCacheData*>(finder->GetScratchBuffer());
 	CvPlot* pToPlot = kMap.plotUnchecked( node->m_iX,  node->m_iY);
+#if defined(VP64_PROTO_TRADEPATH)
+	VP64ProtoTouch(pToPlot);
+#endif
 
 	int iCost = PATH_BASE_COST;
 
@@ -3864,6 +3890,10 @@ int TradePathWaterValid(const CvAStarNode* parent, const CvAStarNode* node, cons
 
 	CvMap& kMap = GC.getMap();
 	CvPlot* pNewPlot = kMap.plotUnchecked(node->m_iX, node->m_iY);
+#if defined(VP64_PROTO_TRADEPATH)
+	VP64ProtoTouch(kMap.plotUnchecked(parent->m_iX, parent->m_iY));
+	VP64ProtoTouch(pNewPlot);
+#endif
 
 	if (!pNewPlot->isRevealed(pCacheData->GetTeam()))
 		return FALSE;
@@ -4359,3 +4389,7 @@ FDataStream & operator << (FDataStream & kStream, const CvPathNode & node)
 	kStream << node.m_iY;
 	return kStream;
 }
+#if defined(VP64_PROTO_TRADEPATH)
+// prototype (a) of the x64 turn-time study (never in a product build)
+#include "VP64ProtoTradePath.inl"
+#endif

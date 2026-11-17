@@ -486,6 +486,12 @@ void CvGameTrade::UpdateTradePathCache(PlayerTypes ePlayer1)
 		}
 	}
 
+#if defined(VP64_PROTO_TRADEPATH)
+	// prototype (a) of the x64 turn-time study (never in a product build): GetMultiplePaths reuses a city's last
+	// search when nothing that search read has changed; see VP64ProtoTradePath.inl (included by CvAStar.cpp)
+	extern void VP64ProtoTradeBegin(PlayerTypes ePlayer);
+	VP64ProtoTradeBegin(ePlayer1);
+#endif
 	int iOriginCityLoop = 0;
 	for (CvCity* pOriginCity = kPlayer1.firstCity(&iOriginCityLoop); pOriginCity != NULL; pOriginCity = kPlayer1.nextCity(&iOriginCityLoop))
 	{
@@ -538,6 +544,10 @@ void CvGameTrade::UpdateTradePathCache(PlayerTypes ePlayer1)
 			AddTradePathToCache(m_aLandPaths, iCityPlotIndex, pDestCity->plot()->GetPlotIndex(), it->second, kPlayer1, eMyTeam, bInvulnerability, aiTeamDanger);
 		}
 	}
+#if defined(VP64_PROTO_TRADEPATH)
+	extern void VP64ProtoTradeEnd();
+	VP64ProtoTradeEnd();
+#endif
 
 	SetTradePathsCacheUpdateCounter(ePlayer1, GC.getGame().getGameTurn());
 
