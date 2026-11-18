@@ -821,6 +821,9 @@ void GameReset()
 
 ReachablePlots Reach(const CvUnit* pUnit, int iFlags, const PlotIndexContainer& zoc)
 {
+#if defined(VP64_TRACE_FINDER)
+	VP64Trace::ReachScope traceReach;
+#endif
 	State* p = Get();
 	if (!pUnit || !pUnit->plot())
 		return TacticalAIHelpers::GetAllPlotsInReachThisTurn(pUnit, pUnit ? pUnit->plot() : NULL, iFlags, 0, pUnit ? pUnit->maxMoves() : -1, zoc);
@@ -896,7 +899,13 @@ ReachablePlots Reach(const CvUnit* pUnit, int iFlags, const PlotIndexContainer& 
 #if defined(VP64_SPEED_DANGER_VERIFY)
 			const Entry kept = it->second;   // a copy: no entry is held across the search
 			t_iDepth++;
+#if defined(VP64_TRACE_FINDER)
+			VP64Trace::g_iSkip++;
+#endif
 			ReachablePlots fresh = Search(pUnit, iFlags, zoc);
+#if defined(VP64_TRACE_FINDER)
+			VP64Trace::g_iSkip--;
+#endif
 			t_iDepth--;
 			VP64_DANGER_STAT(p->st.verified++);
 			Compare(p, pUnit, kept, fresh);
