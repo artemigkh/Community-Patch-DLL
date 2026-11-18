@@ -16,6 +16,10 @@
 // %VP64_SPEED_DIR%\VP64DangerStats.csv; implied by VERIFY and by the spoil defines); VP64_SPEED_DANGER_SPOIL=<n> and
 // VP64_SPEED_DANGER_SPOIL_EVERY=<n> (the negative controls: the kept result of the n-th, or every n-th, hit made wrong
 // in the cache before it is used).
+// DG7 (inside VP64_SPEED_DANGER): VP64_SPEED_DANGER_DG7 keeps the tiles UpdateDangerSingleUnit derives from the reach in
+// the reach entry (VP64Danger::Tiles); VP64_SPEED_DANGER_DG7_VERIFY derives again at every hit, compares (package
+// DANGER_DG7) and plays the fresh lists; VP64_SPEED_DANGER_DG7_SPOIL=<n> / _DG7_SPOIL_EVERY=<n> spoil the kept lists at
+// the n-th (every n-th) hit.
 #pragma once
 #if defined(VP64_SPEED_DANGER)
 
@@ -49,6 +53,15 @@ namespace VP64Danger
 	void GameReset();
 	// the cached replacement of GetAllPlotsInReachThisTurn(pUnit, pUnit->plot(), iFlags, 0, pUnit->maxMoves(), zoc)
 	ReachablePlots Reach(const CvUnit* pUnit, int iFlags, const PlotIndexContainer& plotsToIgnoreForZOC);
+#if defined(VP64_SPEED_DANGER_DG7)
+	// DG7: the tiles UpdateDangerSingleUnit derives from a unit's reach (ranged: the ranged attack tiles and the native
+	// reach plots for capture; melee: the native reach plots, and those not an enemy city for capture), kept in the reach
+	// entry the last Reach call hit or stored for this unit. False (lists untouched) when there is no such entry or off
+	// the game-core thread: the caller derives as stock.
+	bool Tiles(const CvUnit* pUnit, ReachablePlots& reach, std::vector<int>& attack, std::vector<int>& capture);
+	// every landmass id may have changed (CvMap::recalculateLandmasses)
+	void LandmassEvent();
+#endif
 
 	// scope guards for setters that do more than their member write: the event at the start and again at every exit
 	class PlotScope

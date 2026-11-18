@@ -10053,6 +10053,11 @@ int CvPlot::getReconCount() const
 void CvPlot::changeReconCount(int iChange)
 {
 	m_iReconCount = (m_iReconCount + iChange);
+#if defined(VP64_SPEED_DANGER_DG7)
+	// seeFromLevel reads the recon count: the kept DG7 tiles' line of sight
+	VP64Danger::PlotEvent(this);
+#endif
+#line 9988
 	ASSERT(getReconCount() >= 0);
 }
 
