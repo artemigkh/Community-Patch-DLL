@@ -4266,6 +4266,10 @@ void CvPlayerPolicies::SetPolicy(PolicyTypes eIndex, bool bNewValue, bool bFree)
 	if (HasPolicy(eIndex) != bNewValue)
 	{
 		m_pabHasPolicy[eIndex] = bNewValue;
+#if defined(VP64_SPEED_DANGER)
+		VP64Danger::PlayerScope kVP64DangerScope(GetPlayer()->GetID());
+#endif
+#line 4269
 		m_pabFreePolicy[eIndex] = bFree;
 		int iChange = bNewValue ? 1 : -1;
 		if (bFree) 
