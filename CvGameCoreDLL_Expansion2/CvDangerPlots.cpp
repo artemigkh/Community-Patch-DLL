@@ -78,6 +78,21 @@ bool CvDangerPlots::UpdateDangerSingleUnit(const CvUnit* pLoopUnit, bool bIgnore
 #endif
 #line 74
 
+#if defined(VP64_SPEED_DANGER_DG7)
+	// DG7: the attack and capture tiles of this unit, kept beside its kept reach (false: derive as stock below)
+	{
+		std::vector<int> vAttack, vCapture;
+		if (VP64Danger::Tiles(pLoopUnit, reachablePlots, vAttack, vCapture))
+		{
+			for (std::vector<int>::const_iterator it = vAttack.begin(); it != vAttack.end(); ++it)
+				AssignUnitDangerValue(pLoopUnit, GC.getMap().plotByIndexUnchecked(*it));
+			for (std::vector<int>::const_iterator it = vCapture.begin(); it != vCapture.end(); ++it)
+				m_DangerPlots[*it].m_apCaptureUnits.push_back(make_pair(pLoopUnit->getOwner(), pLoopUnit->GetID()));
+			return true;
+		}
+	}
+#endif
+#line 75
 	if (pLoopUnit->IsCanAttackRanged())
 	{
 		//for ranged every tile we can enter with movement left is a base for attack
