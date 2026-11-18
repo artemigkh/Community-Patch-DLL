@@ -199,6 +199,11 @@ public:
 	virtual bool AddStopNodeIfRequired(const CvAStarNode* current, const CvAStarNode* next) = 0;
 	virtual bool DestinationReached(int iToX, int iToY) const = 0;
 	virtual void NodeAddedToPath(CvAStarNode* parent, CvAStarNode* node, int iKnownCost, CvAStarNodeAddOp operation) = 0;
+#if defined(VP64_SPEED_DANGER)
+	// the danger package (ticket 4807): the nodes the last search closed, read for an entry's region
+	const std::vector<CvAStarNode*>& VP64ClosedNodes() const { return m_closedNodes; }
+#endif
+#line 202
 
 	//--------------------------------------- PROTECTED FUNCTIONS -------------------------------------------
 protected:
