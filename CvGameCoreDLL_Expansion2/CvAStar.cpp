@@ -564,6 +564,13 @@ void LogNodeAction(CvAStarNode* node, int iRound, NodeState state)
 		g_svPathLog.push_back(SLogNode(state, iRound, node->m_iX, node->m_iY, node->m_iKnownCost, node->m_iHeuristicCost, node->m_iTurns, node->m_iMoves));
 }
 
+#if defined(VP64_TRACE_FIX_EXTRA)
+// ticket 4807 (scratch only): refresh a unit path's extra child (airlift target, port change) before PathValid and
+// PathCost read its cache data; defined after UnitPathCacheData below
+int UnitPathGetExtraChildren(const CvAStarNode* node, const CvAStar* finder, vector<pair<int, int>>& out);
+void VP64RefreshExtraChild(CvAStarNode* check, const CvAStar* finder);
+#endif
+
 //	--------------------------------------------------------------------------------
 /// Creates children for the node
 void CvAStar::CreateChildren(CvAStarNode* node)
@@ -629,6 +636,12 @@ void CvAStar::CreateChildren(CvAStarNode* node)
 				if (check == node->m_pParent)
 					continue;
 
+#if defined(VP64_TRACE_FIX_EXTRA)
+				// NodeAddedToPath refreshed this node's extra children only if they were found when it was added; the set
+				// found now can differ (moves, the airlift-checked flags), so fill the child's cache for this unit first
+				if (udGetExtraChildrenFunc == static_cast<CvAGetExtraChildren>(UnitPathGetExtraChildren))
+					VP64RefreshExtraChild(check, this);
+#endif
 				if (udFunc(udValid, node, check, m_sData))
 				{
 					NodeState result = LinkChild(node, check);
@@ -958,8 +971,16 @@ void UnitPathUninitialize(const SPathFinderUserData&, CvAStar*)
 
 }
 
+#if defined(VP64_TRACE_FIX_EXTRA)
+void UpdateNodeCacheData(CvAStarNode* node, const CvUnit* pUnit, const CvAStar* finder);
+void VP64RefreshExtraChild(CvAStarNode* check, const CvAStar* finder)
+{
+	UpdateNodeCacheData(check, reinterpret_cast<const UnitPathCacheData*>(finder->GetScratchBuffer())->pUnit, finder);
+}
+#endif
+
 //-------------------------------------------------------------------------------------
-// get all information which depends on a particular node. 
+// get all information which depends on a particular node.
 // this is versioned, so we don't need to recalculate during the same pathfinding operation
 void UpdateNodeCacheData(CvAStarNode* node, const CvUnit* pUnit, const CvAStar* finder)
 {
