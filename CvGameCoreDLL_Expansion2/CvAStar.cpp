@@ -540,6 +540,8 @@ void LogNodeAction(CvAStarNode* node, int iRound, NodeState state)
 		g_svPathLog.push_back(SLogNode(state, iRound, node->m_iX, node->m_iY, node->m_iKnownCost, node->m_iHeuristicCost, node->m_iTurns, node->m_iMoves));
 }
 
+void UpdateNodeCacheData(CvAStarNode* node, const CvUnit* pUnit, const CvAStar* finder);
+
 //	--------------------------------------------------------------------------------
 /// Creates children for the node
 void CvAStar::CreateChildren(CvAStarNode* node)
@@ -593,6 +595,14 @@ void CvAStar::CreateChildren(CvAStarNode* node)
 			else if (node->m_kCostCacheData.bCanChangePortFromPlot)
 				SetChangePortCitiesChecked(true);
 		}
+
+		//NodeAddedToPath updated the cache only for the extra children found when this node was added. the set can be
+		//different now (eg airlifts need full or zero moves), so update the cache of a unit path's extra children here,
+		//otherwise PathValid and PathCost may read data left over from an earlier search (possibly for another unit)
+		const CvUnit* pUnit = NULL;
+		if (!extraChildren.empty() && udGetExtraChildrenFunc == UnitPathGetExtraChildren)
+			pUnit = GET_PLAYER(m_sData.ePlayer).getUnit(m_sData.iUnitID);
+
 		for(size_t i = 0; i < extraChildren.size(); i++)
 		{
 			int x = extraChildren[i].first;
@@ -604,6 +614,8 @@ void CvAStar::CreateChildren(CvAStarNode* node)
 				ASSERT(check != NULL, "GetNodeMutable returned null after isValid check");
 				if (check == node->m_pParent)
 					continue;
+
+				UpdateNodeCacheData(check, pUnit, this); //does nothing if pUnit is null or the data is current
 
 				if (udFunc(udValid, node, check, m_sData))
 				{
@@ -2987,8 +2999,14 @@ bool CvTwoLayerPathFinder::CommonNeighborIsPassable(const CvAStarNode * a, const
 	{
 		CvAStarNode* check = a->m_apNeighbors[i];
 		if (check && plotDistance(check->m_iX, check->m_iY, b->m_iX, b->m_iY) == 1)
+		{
+			//the common neighbor can be two steps away from the node being expanded (PathCost checks the destination
+			//before NodeAddedToPath updates the neighbors of the new node), so its cache data may be left over from an
+			//earlier search. update it first (does nothing if it is current)
+			UpdateNodeCacheData(check, reinterpret_cast<const UnitPathCacheData*>(GetScratchBuffer())->pUnit, this);
 			if (check->m_kCostCacheData.bCanEnterTerrainIntermediate && check->m_kCostCacheData.bCanEnterTerritoryIntermediate)
 				return true;
+		}
 	}
 
 	return false;
