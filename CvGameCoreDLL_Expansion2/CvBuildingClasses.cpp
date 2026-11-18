@@ -5987,7 +5987,7 @@ void CvCityBuildings::SetNumRealBuildingTimed(BuildingTypes eIndex, int iNewValu
 	VP64Danger::PlayerScope kVP64DangerPlayer(m_pCity->getOwner());
 	VP64Danger::PlotScope kVP64DangerPlot(m_pCity->plot());
 #endif
-#line 5970
+#line 5986
 
 	CvBuildingEntry* buildingEntry = GC.getBuildingInfo(eIndex);
 	if (!buildingEntry)
@@ -6277,7 +6277,7 @@ void CvCityBuildings::SetNumFreeBuilding(BuildingTypes eIndex, int iNewValue)
 		VP64Danger::PlayerScope kVP64DangerPlayer(m_pCity->getOwner());
 		VP64Danger::PlotScope kVP64DangerPlot(m_pCity->plot());
 #endif
-#line 6255
+#line 6271
 		if (iNewValue>0)
 		{
 			if (std::find(m_buildingsThatExistAtLeastOnce.begin(), m_buildingsThatExistAtLeastOnce.end(), eIndex) == m_buildingsThatExistAtLeastOnce.end())
