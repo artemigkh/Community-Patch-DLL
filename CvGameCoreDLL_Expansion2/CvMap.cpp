@@ -800,6 +800,10 @@ CvPlot** CvMap::getNeighborsShuffled(const CvPlot* pPlot)
 //	--------------------------------------------------------------------------------
 void CvMap::uninit()
 {
+#if defined(VP64_SPEED_DANGER)
+	VP64Danger::GameReset();
+#endif
+#line 803
 	m_paiNumResource.uninit();
 	m_paiNumResourceOnLand.uninit();
 

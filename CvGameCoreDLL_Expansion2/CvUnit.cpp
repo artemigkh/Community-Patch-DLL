@@ -2115,6 +2115,11 @@ void CvUnit::kill(bool bDelay, PlayerTypes ePlayer /*= NO_PLAYER*/)
 	//nothing to do
 	if (bDelay && isDelayedDeath())
 		return;
+#if defined(VP64_SPEED_DANGER)
+	// the unit's plot at the start and at every exit (the guard keeps the plot index, never this: kill can delete it)
+	VP64Danger::PlotScope kVP64DangerScope(plot());
+#endif
+#line 2118
 
 	VALIDATE_OBJECT();
 	CvUnit* pTransportUnit = NULL;
@@ -7144,6 +7149,10 @@ void CvUnit::setEmbarked(bool bValue)
 {
 	VALIDATE_OBJECT();
 	m_bEmbarked = bValue;
+#if defined(VP64_SPEED_DANGER)
+	VP64Danger::UnitEvent(this);
+#endif
+#line 7147
 }
 
 //	--------------------------------------------------------------------------------
@@ -20514,6 +20523,10 @@ void CvUnit::setXY(int iX, int iY, bool bGroup, bool bUpdate, bool bShow, bool b
 	}
 
 	ASSERT(plot() == pNewPlot, "plot is expected to equal pNewPlot");
+#if defined(VP64_SPEED_DANGER)
+	VP64Danger::UnitMove(pOldPlot, pNewPlot);
+#endif
+#line 20517
 
 	if(pNewPlot != NULL)
 	{
@@ -25995,6 +26008,10 @@ void CvUnit::setTransportUnit(CvUnit* pTransportUnit)
 
 	if(pOldTransportUnit != pTransportUnit)
 	{
+#if defined(VP64_SPEED_DANGER)
+		VP64Danger::PlotScope kVP64DangerScope(plot());
+#endif
+#line 25998
 		if(pOldTransportUnit != NULL)
 		{
 			pOldTransportUnit->changeCargo(-1);
@@ -27848,6 +27865,10 @@ void CvUnit::setHasPromotion(PromotionTypes eIndex, bool bNewValue)
 	CvPromotionEntry& thisPromotion = *GC.getPromotionInfo(eIndex);
 	if (isHasPromotion(eIndex) != bNewValue)
 	{
+#if defined(VP64_SPEED_DANGER)
+		VP64Danger::PlotScope kVP64DangerScope(plot());
+#endif
+#line 27851
 		if (bNewValue && getUnitInfo().CannotEmbark())
 		{
 			if (thisPromotion.IsAllowsEmbarkation() || thisPromotion.IsEmbarkedAllWater())
