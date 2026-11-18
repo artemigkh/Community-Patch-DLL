@@ -679,12 +679,28 @@ ReachablePlots Reach(const CvUnit* pUnit, int iFlags, const PlotIndexContainer& 
 
 	int eReason = MR_COLD;
 	{
-		std::map<u64, Entry>::const_iterator it = p->cache.find(key);
+		std::map<u64, Entry>::iterator it = p->cache.find(key);
 		if (it != p->cache.end())
 			eReason = Check(p, it->second, snap);
 		if (eReason == MR_COUNT)
 		{
 			VP64_DANGER_STAT(p->st.hits++);
+			// the negative controls spoil a kept result when it is used (the n-th hit, or every n-th): a store-time spoil
+			// is caught only if that entry is hit later, which the 1000th store on M was not (2026-11-17)
+#if defined(VP64_SPEED_DANGER_SPOIL)
+			if (VP64_SPEED_SPOIL_NOW("DANGER", VP64_SPEED_DANGER_SPOIL))
+			{
+				SpoilResult(pUnit, it->second.result);
+				VP64_DANGER_STAT(p->st.spoiled++);
+			}
+#endif
+#if defined(VP64_SPEED_DANGER_SPOIL_EVERY)
+			if (VP64_SPEED_SPOIL_EVERY("DANGER", VP64_SPEED_DANGER_SPOIL_EVERY))
+			{
+				SpoilResult(pUnit, it->second.result);
+				VP64_DANGER_STAT(p->st.spoiled++);
+			}
+#endif
 #if defined(VP64_SPEED_DANGER_VERIFY)
 			const ReachablePlots kept = it->second.result;
 			t_iDepth++;
@@ -745,20 +761,6 @@ ReachablePlots Reach(const CvUnit* pUnit, int iFlags, const PlotIndexContainer& 
 		else
 		{
 			e.result = result;
-#if defined(VP64_SPEED_DANGER_SPOIL)
-			if (VP64_SPEED_SPOIL_NOW("DANGER", VP64_SPEED_DANGER_SPOIL))
-			{
-				SpoilResult(pUnit, e.result);
-				VP64_DANGER_STAT(p->st.spoiled++);
-			}
-#endif
-#if defined(VP64_SPEED_DANGER_SPOIL_EVERY)
-			if (VP64_SPEED_SPOIL_EVERY("DANGER", VP64_SPEED_DANGER_SPOIL_EVERY))
-			{
-				SpoilResult(pUnit, e.result);
-				VP64_DANGER_STAT(p->st.spoiled++);
-			}
-#endif
 			e.uBytes = EntryBytes(e);
 			p->bytes += e.uBytes;
 			VP64_DANGER_STAT(p->st.stores++);

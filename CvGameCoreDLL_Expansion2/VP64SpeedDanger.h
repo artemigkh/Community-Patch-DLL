@@ -14,7 +14,8 @@
 // Defines: VP64_SPEED_DANGER (the cache); VP64_SPEED_DANGER_VERIFY (every hit searches again, compares, logs every
 // difference through VP64SpeedVerify.h and plays the fresh result); VP64_SPEED_DANGER_STATS (per-turn counters in
 // %VP64_SPEED_DIR%\VP64DangerStats.csv; implied by VERIFY and by the spoil defines); VP64_SPEED_DANGER_SPOIL=<n> and
-// VP64_SPEED_DANGER_SPOIL_EVERY=<n> (the negative controls: the n-th, or every n-th, stored result made wrong).
+// VP64_SPEED_DANGER_SPOIL_EVERY=<n> (the negative controls: the kept result of the n-th, or every n-th, hit made wrong
+// in the cache before it is used).
 #pragma once
 #if defined(VP64_SPEED_DANGER)
 
