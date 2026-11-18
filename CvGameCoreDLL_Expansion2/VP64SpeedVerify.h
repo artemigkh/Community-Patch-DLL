@@ -197,6 +197,18 @@ namespace vp64speed
 #if defined(VP64_SPEED_DANGER_SPOIL_EVERY)
 			fprintf(f, "define VP64_SPEED_DANGER_SPOIL_EVERY=%d\n", (int)(VP64_SPEED_DANGER_SPOIL_EVERY));
 #endif
+#if defined(VP64_SPEED_DANGER_DG7)
+			fprintf(f, "define VP64_SPEED_DANGER_DG7\n");
+#endif
+#if defined(VP64_SPEED_DANGER_DG7_VERIFY)
+			fprintf(f, "define VP64_SPEED_DANGER_DG7_VERIFY\n");
+#endif
+#if defined(VP64_SPEED_DANGER_DG7_SPOIL)
+			fprintf(f, "define VP64_SPEED_DANGER_DG7_SPOIL=%d\n", (int)(VP64_SPEED_DANGER_DG7_SPOIL));
+#endif
+#if defined(VP64_SPEED_DANGER_DG7_SPOIL_EVERY)
+			fprintf(f, "define VP64_SPEED_DANGER_DG7_SPOIL_EVERY=%d\n", (int)(VP64_SPEED_DANGER_DG7_SPOIL_EVERY));
+#endif
 			// A package adds its own three lines here, in its own #if blocks.
 			fclose(f);
 		}

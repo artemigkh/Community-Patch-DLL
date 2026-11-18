@@ -14,7 +14,8 @@
 #include <cstring>
 #include <cstdio>
 
-#if defined(VP64_SPEED_DANGER_STATS) || defined(VP64_SPEED_DANGER_VERIFY) || defined(VP64_SPEED_DANGER_SPOIL) || defined(VP64_SPEED_DANGER_SPOIL_EVERY)
+#if defined(VP64_SPEED_DANGER_STATS) || defined(VP64_SPEED_DANGER_VERIFY) || defined(VP64_SPEED_DANGER_SPOIL) || defined(VP64_SPEED_DANGER_SPOIL_EVERY) || \
+	defined(VP64_SPEED_DANGER_DG7_VERIFY) || defined(VP64_SPEED_DANGER_DG7_SPOIL) || defined(VP64_SPEED_DANGER_DG7_SPOIL_EVERY)
 #define VP64_DANGER_STATS_ON 1
 #define VP64_DANGER_STAT(x) (x)
 #else
@@ -50,6 +51,36 @@ namespace
 		}
 	};
 
+#if defined(VP64_SPEED_DANGER_DG7)
+	// DG7: unit state the derivation of the tiles reads that the reach's Snap does not hold (compared by value)
+	struct DSnap
+	{
+		int iRange, iVisRange, eFacing, iSeeThrough;
+		bool bRanged, bIgnoreLOS, bNoAttackOcean, bEmbarkDeep, bAllTerrain, bConvert, bAlwaysHostile;
+
+		bool Same(const DSnap& r) const
+		{
+			return iRange == r.iRange && iVisRange == r.iVisRange && eFacing == r.eFacing && iSeeThrough == r.iSeeThrough &&
+				bRanged == r.bRanged && bIgnoreLOS == r.bIgnoreLOS && bNoAttackOcean == r.bNoAttackOcean &&
+				bEmbarkDeep == r.bEmbarkDeep && bAllTerrain == r.bAllTerrain && bConvert == r.bConvert &&
+				bAlwaysHostile == r.bAlwaysHostile;
+		}
+	};
+
+	// the kept tiles of one reach entry; they go with it
+	struct Dg7
+	{
+		bool bKept;
+		DSnap snap;
+		u32 uCreated;               // the event counter before the derivation
+		u32 uLandEpoch;
+		std::vector<int> region;    // ranged: the plots within GetRange() + 1 of a reach plot (melee: none beyond the reach's)
+		std::vector<int> attack;
+		std::vector<int> capture;
+		Dg7() : bKept(false), uCreated(0), uLandEpoch(0) {}
+	};
+#endif
+
 	struct Entry
 	{
 		Snap snap;
@@ -64,6 +95,9 @@ namespace
 		u32 aTeamEpochs[MAX_TEAMS];      // every team's and player's epoch at the search: the detail log names the ones
 		u32 aPlayerEpochs[MAX_PLAYERS];  // that moved before a difference (inputs of other teams are not checked)
 		std::vector<int> parents;        // per closed node of the search: plot, parent plot (-1), turns, moves
+#endif
+#if defined(VP64_SPEED_DANGER_DG7)
+		Dg7 dg7;
 #endif
 		u64 uBytes;
 	};
@@ -84,7 +118,14 @@ namespace
 		u64 lookups, hits, miss[MR_COUNT], unc[UR_COUNT], stores, notStored[NS_COUNT], verified, spoiled;
 		u64 entriesPeak, bytesPeak, regionPlots;
 		u64 ev[EV_COUNT];
+#if defined(VP64_SPEED_DANGER_DG7)
+		u64 dLookups, dHits, dMiss[5], dNoEntry, dStores, dVerified, dSpoiled, dRegionPlots;
+#endif
 	};
+#if defined(VP64_SPEED_DANGER_DG7)
+	enum DMiss { DM_NONE, DM_SNAP, DM_LAND, DM_REGION, DM_REGION_TEAM, DM_COUNT };
+	const char* const kDMissNames[DM_COUNT] = { "none", "snap", "land", "region", "region_team" };
+#endif
 #endif
 
 	struct State
@@ -101,6 +142,11 @@ namespace
 		std::map<u64, Entry> cache;    // core thread only
 		u64 bytes;
 		int iTurn;
+#if defined(VP64_SPEED_DANGER_DG7)
+		u64 uDg7Key;                   // the entry the last Reach hit or stored (core thread only)
+		bool bDg7Valid;
+		volatile LONG landEpoch;       // CvMap::recalculateLandmasses (any thread, interlocked)
+#endif
 #if VP64_DANGER_STATS_ON
 		Stats st;
 		FILE* fStats;
@@ -216,6 +262,12 @@ namespace
 			fprintf(p->fStats, ",verified,spoiled,entries_peak,bytes_peak,region_plots,stamp_bytes");
 			for (int i = 0; i < EV_COUNT; i++)
 				fprintf(p->fStats, ",ev_%s", kEventNames[i]);
+#if defined(VP64_SPEED_DANGER_DG7)
+			fprintf(p->fStats, ",dg7_lookups,dg7_hits");
+			for (int i = 0; i < DM_COUNT; i++)
+				fprintf(p->fStats, ",dg7_miss_%s", kDMissNames[i]);
+			fprintf(p->fStats, ",dg7_noentry,dg7_stores,dg7_verified,dg7_spoiled,dg7_region_plots");
+#endif
 			fprintf(p->fStats, "\n");
 		}
 		const Stats& s = p->st;
@@ -232,6 +284,12 @@ namespace
 			uStampBytes);
 		for (int i = 0; i < EV_COUNT; i++)
 			fprintf(p->fStats, ",%llu", s.ev[i]);
+#if defined(VP64_SPEED_DANGER_DG7)
+		fprintf(p->fStats, ",%llu,%llu", s.dLookups, s.dHits);
+		for (int i = 0; i < DM_COUNT; i++)
+			fprintf(p->fStats, ",%llu", s.dMiss[i]);
+		fprintf(p->fStats, ",%llu,%llu,%llu,%llu,%llu", s.dNoEntry, s.dStores, s.dVerified, s.dSpoiled, s.dRegionPlots);
+#endif
 		fprintf(p->fStats, "\n");
 		fflush(p->fStats);
 	}
@@ -774,6 +832,11 @@ void TurnStart(int iTurn)
 		p->bPartial = true;
 		p->bytes = 0;
 		p->iTurn = -1;
+#if defined(VP64_SPEED_DANGER_DG7)
+		p->uDg7Key = 0;
+		p->bDg7Valid = false;
+		p->landEpoch = 0;
+#endif
 #if VP64_DANGER_STATS_ON
 		memset(&p->st, 0, sizeof(p->st));
 		p->fStats = NULL;
@@ -788,6 +851,9 @@ void TurnStart(int iTurn)
 	p->cache.clear();
 	p->bytes = 0;
 	p->iTurn = iTurn;
+#if defined(VP64_SPEED_DANGER_DG7)
+	p->bDg7Valid = false;
+#endif
 	if (!EnsureArrays(p))
 	{
 		p->bPartial = true;
@@ -816,6 +882,9 @@ void GameReset()
 	p->cache.clear();
 	p->bytes = 0;
 	p->iTurn = -1;
+#if defined(VP64_SPEED_DANGER_DG7)
+	p->bDg7Valid = false;
+#endif
 	FreeArrays(p);
 }
 
@@ -832,6 +901,9 @@ ReachablePlots Reach(const CvUnit* pUnit, int iFlags, const PlotIndexContainer& 
 	if (!bHadLock)
 		gDLL->GetGameCoreLock();
 	VP64_DANGER_STAT(p->st.lookups++);
+#if defined(VP64_SPEED_DANGER_DG7)
+	p->bDg7Valid = false;
+#endif
 
 	int eUnc = UR_COUNT;
 	if (t_iDepth > 0)
@@ -900,11 +972,19 @@ ReachablePlots Reach(const CvUnit* pUnit, int iFlags, const PlotIndexContainer& 
 			t_iDepth--;
 			VP64_DANGER_STAT(p->st.verified++);
 			Compare(p, pUnit, kept, fresh);
+#if defined(VP64_SPEED_DANGER_DG7)
+			p->uDg7Key = key;
+			p->bDg7Valid = true;
+#endif
 			if (!bHadLock)
 				gDLL->ReleaseGameCoreLock();
 			return fresh;
 #else
 			ReachablePlots r = it->second.result;
+#if defined(VP64_SPEED_DANGER_DG7)
+			p->uDg7Key = key;
+			p->bDg7Valid = true;
+#endif
 			if (!bHadLock)
 				gDLL->ReleaseGameCoreLock();
 			return r;
@@ -1002,6 +1082,10 @@ ReachablePlots Reach(const CvUnit* pUnit, int iFlags, const PlotIndexContainer& 
 			VP64_DANGER_STAT(p->st.stores++);
 			VP64_DANGER_STAT(p->st.regionPlots += e.region.size());
 			p->cache.insert(std::make_pair(key, e));
+#if defined(VP64_SPEED_DANGER_DG7)
+			p->uDg7Key = key;
+			p->bDg7Valid = true;
+#endif
 #if VP64_DANGER_STATS_ON
 			if (p->bytes > p->st.bytesPeak)
 				p->st.bytesPeak = p->bytes;
@@ -1014,5 +1098,267 @@ ReachablePlots Reach(const CvUnit* pUnit, int iFlags, const PlotIndexContainer& 
 		gDLL->ReleaseGameCoreLock();
 	return result;
 }
+
+#if defined(VP64_SPEED_DANGER_DG7)
+namespace
+{
+	void DSnapshot(const CvUnit* pUnit, DSnap& s)
+	{
+		s.bRanged = pUnit->IsCanAttackRanged();
+		s.iRange = pUnit->GetRange();
+		s.iVisRange = pUnit->visibilityRange();
+		s.eFacing = (int)pUnit->getFacingDirection(true);
+		s.iSeeThrough = pUnit->GetSeeThrough();
+		s.bIgnoreLOS = pUnit->IsRangeAttackIgnoreLOS();
+		s.bNoAttackOcean = pUnit->isNoAttackInOcean();
+		s.bEmbarkDeep = pUnit->IsEmbarkDeepWater();
+		s.bAllTerrain = pUnit->canMoveAllTerrain();
+		s.bConvert = pUnit->isConvertUnit();
+		s.bAlwaysHostile = pUnit->getAlwaysHostileCount() > 0;
+	}
+
+	// what CvDangerPlots::UpdateDangerSingleUnit derives from the reach (stock's code, into two lists)
+	void Derive(const CvUnit* pUnit, ReachablePlots& reach, bool bRanged, std::vector<int>& attack, std::vector<int>& capture)
+	{
+		attack.clear();
+		capture.clear();
+		CvMap& kMap = GC.getMap();
+		if (bRanged)
+		{
+			attack = TacticalAIHelpers::GetPlotsUnderRangedAttackFrom(pUnit, reach, false, false);
+			for (ReachablePlots::iterator it = reach.begin(); it != reach.end(); ++it)
+				if (pUnit->isNativeDomain(kMap.plotByIndexUnchecked(it->iPlotIndex)))
+					capture.push_back(it->iPlotIndex);
+		}
+		else
+		{
+			for (ReachablePlots::iterator it = reach.begin(); it != reach.end(); ++it)
+			{
+				const CvPlot* pMoveTile = kMap.plotByIndexUnchecked(it->iPlotIndex);
+				if (pUnit->isNativeDomain(pMoveTile))
+				{
+					attack.push_back(it->iPlotIndex);
+					if (!pMoveTile->isEnemyCity(*pUnit))
+						capture.push_back(it->iPlotIndex);
+				}
+			}
+		}
+	}
+
+	// the reach plots and every plot within iRings hex steps of one (breadth first through plotDirection: the map's wrap)
+	void BuildDRegion(State* p, const ReachablePlots& reach, int iRings, std::vector<int>& region)
+	{
+		if (++p->uMark == 0)
+		{
+			memset(p->mark, 0, sizeof(u32) * (size_t)p->iNumPlots);
+			p->uMark = 1;
+		}
+		CvMap& kMap = GC.getMap();
+		region.clear();
+		for (ReachablePlots::const_iterator it = reach.begin(); it != reach.end(); ++it)
+			Mark(p, it->iPlotIndex, region);
+		size_t begin = 0;
+		for (int r = 0; r < iRings; r++)
+		{
+			const size_t end = region.size();
+			for (size_t k = begin; k < end; k++)
+			{
+				const CvPlot* pPlot = kMap.plotByIndexUnchecked(region[k]);
+				for (int d = 0; d < NUM_DIRECTION_TYPES; d++)
+				{
+					const CvPlot* pAdj = plotDirection(pPlot->getX(), pPlot->getY(), (DirectionTypes)d);
+					if (pAdj)
+						Mark(p, pAdj->GetPlotIndex(), region);
+				}
+			}
+			begin = end;
+		}
+	}
+
+	// DM_COUNT when the kept tiles still hold (the reach entry itself was just hit or stored)
+	int DCheck(State* p, const Dg7& d, const DSnap& s, int eTeam)
+	{
+		if (!d.bKept)
+			return DM_NONE;
+		if (!d.snap.Same(s))
+			return DM_SNAP;
+		if ((u32)p->landEpoch != d.uLandEpoch)
+			return DM_LAND;
+		const u32 created = d.uCreated;
+		const u32* stamps = p->plotStamp;
+		const u32* team = p->teamPlotStamp;
+		const size_t t = (size_t)eTeam;
+		for (std::vector<int>::const_iterator it = d.region.begin(); it != d.region.end(); ++it)
+		{
+			if (stamps[*it] > created)
+				return DM_REGION;
+			if (team[(size_t)(*it) * MAX_TEAMS + t] > created)
+				return DM_REGION_TEAM;
+		}
+		return DM_COUNT;
+	}
+
+	u64 DgBytes(const Dg7& d)
+	{
+		return (d.region.capacity() + d.attack.capacity() + d.capture.capacity()) * sizeof(int);
+	}
+
+#if defined(VP64_SPEED_DANGER_DG7_SPOIL) || defined(VP64_SPEED_DANGER_DG7_SPOIL_EVERY)
+	// a wrong kept list the danger maps feel: the last attack tile dropped (else the last capture tile; else one added)
+	void SpoilTiles(const CvUnit* pUnit, Dg7& d)
+	{
+		if (!d.attack.empty())
+			d.attack.pop_back();
+		else if (!d.capture.empty())
+			d.capture.pop_back();
+		else
+			d.attack.push_back(pUnit->plot()->GetPlotIndex());
+	}
+#endif
+
+#if defined(VP64_SPEED_DANGER_DG7_VERIFY)
+	u64 HashList(const std::vector<int>& v)
+	{
+		u64 h = 1469598103934665603ULL;
+		for (size_t i = 0; i < v.size(); i++)
+		{
+			h ^= (u64)(u32)v[i];
+			h *= 1099511628211ULL;
+		}
+		return h ^ (u64)v.size();
+	}
+
+	// the kept and the fresh list, element by element in order
+	void DCompare(const CvUnit* pUnit, const char* szSite, const std::vector<int>& kept, const std::vector<int>& fresh)
+	{
+		int iFirst = -1;
+		const size_t n = kept.size() < fresh.size() ? kept.size() : fresh.size();
+		for (size_t i = 0; i < n; i++)
+			if (kept[i] != fresh[i])
+			{
+				iFirst = (int)i;
+				break;
+			}
+		if (iFirst < 0 && kept.size() != fresh.size())
+			iFirst = (int)n;
+		if (iFirst < 0)
+		{
+			VP64_SPEED_CHECK_K("DANGER_DG7", szSite, (long long)kept.size(), (long long)fresh.size(), pUnit->getOwner(), pUnit->GetID(), 0, 0);
+			return;
+		}
+		u64 hk = HashList(kept), hf = HashList(fresh);
+		if (hk == hf)
+			hk ^= 1;
+		VP64_SPEED_CHECK_K("DANGER_DG7", szSite, (long long)hk, (long long)hf, pUnit->getOwner(), pUnit->GetID(), iFirst,
+			(long long)kept.size() * 100000 + (long long)fresh.size());
+	}
+#endif
+}
+
+void LandmassEvent()
+{
+	State* p = Get();
+	if (!p)
+		return;
+	InterlockedIncrement(&p->landEpoch);
+}
+
+bool Tiles(const CvUnit* pUnit, ReachablePlots& reach, std::vector<int>& attack, std::vector<int>& capture)
+{
+	State* p = Get();
+	// core thread only, as the reach entries (two-thread rule); elsewhere the caller derives as stock
+	if (!p || !pUnit || !pUnit->plot() || !gDLL->IsGameCoreThread())
+		return false;
+	const bool bHadLock = gDLL->HasGameCoreLock();
+	if (!bHadLock)
+		gDLL->GetGameCoreLock();
+	VP64_DANGER_STAT(p->st.dLookups++);
+	const u64 key = UnitKey((int)pUnit->getOwner(), pUnit->GetID());
+	std::map<u64, Entry>::iterator it = p->cache.end();
+	// only the entry the last Reach call hit or stored for this unit: its kept reach is the one being played
+	if (p->bDg7Valid && p->uDg7Key == key && !p->bPartial && p->iNumPlots > 0)
+		it = p->cache.find(key);
+	if (it == p->cache.end())
+	{
+		VP64_DANGER_STAT(p->st.dNoEntry++);
+		if (!bHadLock)
+			gDLL->ReleaseGameCoreLock();
+		return false;
+	}
+	DSnap ds;
+	DSnapshot(pUnit, ds);
+	const int eReason = DCheck(p, it->second.dg7, ds, it->second.eTeam);
+	if (eReason == DM_COUNT)
+	{
+		VP64_DANGER_STAT(p->st.dHits++);
+#if defined(VP64_SPEED_DANGER_DG7_SPOIL)
+		if (VP64_SPEED_SPOIL_NOW("DANGER_DG7", VP64_SPEED_DANGER_DG7_SPOIL))
+		{
+			SpoilTiles(pUnit, it->second.dg7);
+			VP64_DANGER_STAT(p->st.dSpoiled++);
+		}
+#endif
+#if defined(VP64_SPEED_DANGER_DG7_SPOIL_EVERY)
+		if (VP64_SPEED_SPOIL_EVERY("DANGER_DG7", VP64_SPEED_DANGER_DG7_SPOIL_EVERY))
+		{
+			SpoilTiles(pUnit, it->second.dg7);
+			VP64_DANGER_STAT(p->st.dSpoiled++);
+		}
+#endif
+#if defined(VP64_SPEED_DANGER_DG7_VERIFY)
+		// derive again from the reach this call plays, compare, play the fresh lists
+		const std::vector<int> keptA = it->second.dg7.attack;
+		const std::vector<int> keptC = it->second.dg7.capture;
+		Derive(pUnit, reach, ds.bRanged, attack, capture);
+		VP64_DANGER_STAT(p->st.dVerified++);
+		DCompare(pUnit, "attack", keptA, attack);
+		DCompare(pUnit, "capture", keptC, capture);
+#else
+		attack = it->second.dg7.attack;
+		capture = it->second.dg7.capture;
+#endif
+		if (!bHadLock)
+			gDLL->ReleaseGameCoreLock();
+		return true;
+	}
+
+	// a miss: derive (no entry is held across it), then keep the lists under the state read before it
+	VP64_DANGER_STAT(p->st.dMiss[eReason]++);
+	const u32 uCreated = (u32)p->uEvent;
+	const u32 uLand = (u32)p->landEpoch;
+	Derive(pUnit, reach, ds.bRanged, attack, capture);
+	it = p->cache.find(key);
+	if (it != p->cache.end() && p->bDg7Valid && p->uDg7Key == key)
+	{
+		Entry& e = it->second;
+		Dg7& d = e.dg7;
+		p->bytes -= e.uBytes;
+		d.bKept = false;
+		d.snap = ds;
+		d.uCreated = uCreated;
+		d.uLandEpoch = uLand;
+		d.region.clear();
+		if (ds.bRanged)
+		{
+			const int iRange = ds.iRange < 1 ? 1 : ds.iRange > 5 ? 5 : ds.iRange;
+			BuildDRegion(p, reach, iRange + 1, d.region);
+		}
+		d.attack = attack;
+		d.capture = capture;
+		d.bKept = true;
+		e.uBytes = EntryBytes(e) + DgBytes(d);
+		p->bytes += e.uBytes;
+		VP64_DANGER_STAT(p->st.dStores++);
+		VP64_DANGER_STAT(p->st.dRegionPlots += d.region.size());
+#if VP64_DANGER_STATS_ON
+		if (p->bytes > p->st.bytesPeak)
+			p->st.bytesPeak = p->bytes;
+#endif
+	}
+	if (!bHadLock)
+		gDLL->ReleaseGameCoreLock();
+	return true;
+}
+#endif
 
 } // namespace VP64Danger
