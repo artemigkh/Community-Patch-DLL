@@ -369,10 +369,10 @@ namespace
 		return TacticalAIHelpers::GetAllPlotsInReachThisTurn(pUnit, pUnit->plot(), iFlags, 0, pUnit->maxMoves(), zoc);
 	}
 
-	inline unsigned short NextGeneration(unsigned short id)
+	inline unsigned int NextGeneration(unsigned int id)
 	{
-		unsigned short n = (unsigned short)(id + 1);
-		return n == 0xFFFF ? (unsigned short)1 : n;
+		unsigned int n = id + 1; // A10 (32-bit generation id): the finder sets 0 back to 1
+		return n == 0 ? 1u : n;
 	}
 
 #if defined(VP64_SPEED_DANGER_VERIFY)
@@ -918,7 +918,7 @@ ReachablePlots Reach(const CvUnit* pUnit, int iFlags, const PlotIndexContainer& 
 	const int eTeam = (int)pUnit->getTeam();
 	const u32 uTeamEpoch = (u32)p->teamEpoch[eTeam];
 	const u32 uPlayerEpoch = (u32)p->playerEpoch[eOwner];
-	const unsigned short uGenBefore = GC.GetPathFinder().GetCurrentGenerationID();
+	const unsigned int uGenBefore = GC.GetPathFinder().GetCurrentGenerationID();
 	t_bNested = false;
 	t_iDepth++;
 	ReachablePlots result = Search(pUnit, iFlags, zoc);
