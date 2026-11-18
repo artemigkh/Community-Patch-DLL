@@ -106,6 +106,9 @@ namespace
 	enum UncReason { UR_THREAD, UR_PARTIAL, UR_NOPLOT, UR_ZOC, UR_UNIT, UR_LUA, UR_NESTED, UR_COUNT };
 	enum NotStored { NS_JUMP, NS_NESTED, NS_GEN, NS_COUNT };
 	enum EventKind { EV_PLOT, EV_TEAM_PLOT, EV_UNIT, EV_TEAM, EV_PLAYER, EV_PLOTS, EV_COUNT };
+#if defined(VP64_SPEED_DANGER_DG7)
+	enum DMiss { DM_NONE, DM_SNAP, DM_LAND, DM_REGION, DM_REGION_TEAM, DM_COUNT };
+#endif
 
 #if VP64_DANGER_STATS_ON
 	const char* const kMissNames[MR_COUNT] = { "cold", "key", "unit", "team", "player", "region", "region_team" };
@@ -123,8 +126,7 @@ namespace
 #endif
 	};
 #if defined(VP64_SPEED_DANGER_DG7)
-	enum DMiss { DM_NONE, DM_SNAP, DM_LAND, DM_REGION, DM_REGION_TEAM, DM_COUNT };
-	const char* const kDMissNames[DM_COUNT] = { "none", "snap", "land", "region", "region_team" };
+	const char* const kDMissNames[5] = { "none", "snap", "land", "region", "region_team" };
 #endif
 #endif
 
