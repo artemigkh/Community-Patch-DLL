@@ -63,6 +63,7 @@ namespace
 #if defined(VP64_SPEED_DANGER_VERIFY)
 		u32 aTeamEpochs[MAX_TEAMS];      // every team's and player's epoch at the search: the detail log names the ones
 		u32 aPlayerEpochs[MAX_PLAYERS];  // that moved before a difference (inputs of other teams are not checked)
+		std::vector<int> parents;        // per closed node of the search: plot, parent plot (-1), turns, moves
 #endif
 		u64 uBytes;
 	};
@@ -499,9 +500,42 @@ namespace
 			}
 			else
 				fprintf(s_fMismatch, ",,,,,,,,,,,,,,,,,,,,");
-			// the teams and players whose epoch moved since the search (only the unit's own are checked)
+			// the teams and players whose epoch moved since the search (only the unit's own are checked); then the kept
+			// search's parent of the plot (the closed nodes at the search), its state now and the fresh node for it
 			if (strcmp(szKind, "hit") == 0)
 			{
+				int iKP = -2, iKT = -1, iKM = -1;
+				for (size_t k = 0; k + 3 < e.parents.size(); k += 4)
+					if (e.parents[k] == iPlot)
+					{
+						iKP = e.parents[k + 1];
+						iKT = e.parents[k + 2];
+						iKM = e.parents[k + 3];
+						break;
+					}
+				fprintf(s_fMismatch, ",kp=%d", iKP);
+				if (iKP >= 0)
+				{
+					const CvPlot* pP = GC.getMap().plotByIndexUnchecked(iKP);
+					int iPT = -1, iPM = -1;
+					for (size_t k = 0; k + 3 < e.parents.size(); k += 4)
+						if (e.parents[k] == iKP)
+						{
+							iPT = e.parents[k + 2];
+							iPM = e.parents[k + 3];
+							break;
+						}
+					const CvAStarNode* pPN = kFinder.GetNode(pP->getX(), pP->getY());
+					fprintf(s_fMismatch, " (%d;%d) d=%d node_t/m=%d/%d parent_kept_t/m=%d/%d stamp=%u team_stamp=%u owner=%d city=%d water=%d "
+						"route=%d units=%d visible=%d fresh_t/m=%d/%d fresh_gen=%d fresh_open=%d airlift_city=%d nonnative=%d",
+						pP->getX(), pP->getY(), plotDistance(pP->getX(), pP->getY(), pD->getX(), pD->getY()), iKT, iKM, iPT, iPM,
+						p->plotStamp[iKP], p->teamPlotStamp[(size_t)iKP * MAX_TEAMS + e.eTeam], (int)pP->getOwner(),
+						(int)pP->isCity(), (int)pP->isWater(), (int)pP->getRouteType(), pP->getNumUnits(), (int)pP->isVisible(eTeam),
+						pPN ? (int)pPN->m_iTurns : -1, pPN ? (int)pPN->m_iMoves : -1,
+						pPN ? (int)(pPN->m_kCostCacheData.iGenerationID == kFinder.GetCurrentGenerationID()) : -1,
+						pPN ? (int)pPN->m_bIsOpen : -1, pPN ? (int)pPN->m_kCostCacheData.bCanAirliftFromPlotCity : -1,
+						pPN ? (int)pPN->m_kCostCacheData.bIsNonNativeDomain : -1);
+				}
 				fprintf(s_fMismatch, ",");
 				for (int i = 0; i < MAX_TEAMS; i++)
 					if ((u32)p->teamEpoch[i] != e.aTeamEpochs[i])
@@ -926,6 +960,20 @@ ReachablePlots Reach(const CvUnit* pUnit, int iFlags, const PlotIndexContainer& 
 			e.aTeamEpochs[i] = (u32)p->teamEpoch[i];
 		for (int i = 0; i < MAX_PLAYERS; i++)
 			e.aPlayerEpochs[i] = (u32)p->playerEpoch[i];
+#endif
+#if defined(VP64_SPEED_DANGER_VERIFY)
+		{
+			const std::vector<CvAStarNode*>& closed = GC.GetPathFinder().VP64ClosedNodes();
+			e.parents.reserve(closed.size() * 4);
+			for (std::vector<CvAStarNode*>::const_iterator ci = closed.begin(); ci != closed.end(); ++ci)
+			{
+				const CvAStarNode* n = *ci;
+				e.parents.push_back(GC.getMap().plotNum(n->m_iX, n->m_iY));
+				e.parents.push_back(n->m_pParent ? GC.getMap().plotNum(n->m_pParent->m_iX, n->m_pParent->m_iY) : -1);
+				e.parents.push_back((int)n->m_iTurns);
+				e.parents.push_back((int)n->m_iMoves);
+			}
+		}
 #endif
 		if (!BuildRegion(p, pUnit, snap.bCanEverEmbark ? 2 : 1, e.region))
 		{
