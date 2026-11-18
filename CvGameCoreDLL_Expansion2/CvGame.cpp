@@ -87,13 +87,14 @@ int GetJonRand(int iRange) { return GC.getGame().getJonRandNum(iRange,"generic")
 struct stringHash
 {
 	//taken from std::tr1::hash<string> but modified to look at all characters
-	size_t operator()(const std::string& key) const
+	// 32-bit on every build: the values are saved
+	uint operator()(const std::string& key) const
 	{
-		size_t _Val = 2166136261U;
+		uint _Val = 2166136261U;
 		size_t _First = 0;
 		size_t _Last = key.size();
 		for(; _First < _Last; _First++)
-			_Val = 16777619U * _Val ^ (size_t)key[_First];
+			_Val = 16777619U * _Val ^ (uint)key[_First];
 		return (_Val);
 	}
 };
@@ -5087,7 +5088,7 @@ void CvGame::SetStaticTutorialActive(bool bStaticTutorialActive)
 bool CvGame::HasAdvisorMessageBeenSeen(const char* szAdvisorMessageName)
 {
 	stringHash hasher;
-	std::tr1::unordered_set<size_t>::iterator it = m_AdvisorMessagesViewed.find( hasher(szAdvisorMessageName) );
+	std::tr1::unordered_set<uint>::iterator it = m_AdvisorMessagesViewed.find( hasher(szAdvisorMessageName) );
 	return it != m_AdvisorMessagesViewed.end();
 }
 
@@ -8390,7 +8391,7 @@ void CvGame::setName(const char* szName)
 bool CvGame::isDestroyedCityName(const CvString& szName) const
 {
 	stringHash hasher;
-	std::vector<size_t>::const_iterator it = std::find(m_aszDestroyedCities.begin(), m_aszDestroyedCities.end(), hasher(szName.c_str()));
+	std::vector<uint>::const_iterator it = std::find(m_aszDestroyedCities.begin(), m_aszDestroyedCities.end(), hasher(szName.c_str()));
 	return it != m_aszDestroyedCities.end();
 }
 
@@ -8405,7 +8406,7 @@ void CvGame::addDestroyedCityName(const CvString& szName)
 bool CvGame::isGreatPersonBorn(CvString& szName) const
 {
 	stringHash hasher;
-	std::vector<size_t>::const_iterator it = std::find(m_aszGreatPeopleBorn.begin(), m_aszGreatPeopleBorn.end(), hasher(szName.c_str()));
+	std::vector<uint>::const_iterator it = std::find(m_aszGreatPeopleBorn.begin(), m_aszGreatPeopleBorn.end(), hasher(szName.c_str()));
 	return it != m_aszGreatPeopleBorn.end();
 }
 

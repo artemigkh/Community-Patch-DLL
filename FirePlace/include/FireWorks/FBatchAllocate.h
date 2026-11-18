@@ -67,7 +67,7 @@ struct FAllocArrayType : protected BASE
 		void* pRet = BASE::Alloc( nBytes + nLocalBytes, pData+1 );
 		unsigned char* pLocMemStart = static_cast< unsigned char* > ( pRet ) - nLocalBytes;
 
-		unsigned int iAlignmentFix = sizeof(TYPE) - reinterpret_cast< unsigned int >(pLocMemStart) % sizeof(TYPE);
+		unsigned int iAlignmentFix = sizeof(TYPE) - reinterpret_cast< size_t >(pLocMemStart) % sizeof(TYPE);
 		(*static_cast< TYPE** >(pData->pOut)) = (TYPE*)( pLocMemStart + iAlignmentFix );
 
 		return static_cast< void* >( pLocMemStart );
@@ -96,10 +96,10 @@ struct FAllocArray2DType : protected BASE
 		void* pRet = BASE::Alloc( nBytes + nDataBytes + nArrayBytes, pData+1 );
 		unsigned char* pLocMemStart = static_cast< unsigned char* > ( pRet );
 
-		unsigned int iDataAlignmentFix = sizeof(TYPE) - reinterpret_cast< unsigned int >(pLocMemStart -= nDataBytes) % sizeof(TYPE);
+		unsigned int iDataAlignmentFix = sizeof(TYPE) - reinterpret_cast< size_t >(pLocMemStart -= nDataBytes) % sizeof(TYPE);
 		TYPE* pFirstElement = reinterpret_cast<TYPE*>( pLocMemStart + iDataAlignmentFix );
 
-		unsigned int iArrayAlignmentFix = sizeof(TYPE*) - reinterpret_cast< unsigned int >(pLocMemStart -= nArrayBytes) % sizeof(TYPE*);
+		unsigned int iArrayAlignmentFix = sizeof(TYPE*) - reinterpret_cast< size_t >(pLocMemStart -= nArrayBytes) % sizeof(TYPE*);
 		TYPE** ppArray = (*static_cast< TYPE*** >(pData->pOut)) = reinterpret_cast<TYPE**>( pLocMemStart + iArrayAlignmentFix );
 
 		for( unsigned int i = 0; i < pData->nX; ++i )

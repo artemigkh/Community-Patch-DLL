@@ -1,8 +1,10 @@
 #include "CvGameCoreDLLPCH.h"
 #include "CvExe.h"
+#if !defined(VP_OUT_OF_PROCESS)
 #include "CvExeApi.h"
 #include "CvExeBuild.h"
 #include "CvExeSymbols.h"
+#endif
 #include "CvGameCoreUtils.h"
 
 #include <string.h>
@@ -25,6 +27,18 @@ const char* const REASON_NAMES[Exe::NUM_REASONS] =
 	"busy",
 };
 
+Exe::Reason Refuse(const char* szWhat, Exe::Reason eReason)
+{
+	CUSTOMLOG("Exe: %s refused: %s (%s EXE)",
+		szWhat,
+		Exe::GetReasonName(eReason),
+		Exe::GetBuildName()
+	);
+
+	return eReason;
+}
+
+#if !defined(VP_OUT_OF_PROCESS)
 // The symbols each feature uses
 const ExeSymbol RESYNC_SYMBOLS[] =
 {
@@ -77,17 +91,6 @@ bool HasSymbols(const ExeSymbol* aSymbols, unsigned int uiCount)
 	}
 
 	return true;
-}
-
-Exe::Reason Refuse(const char* szWhat, Exe::Reason eReason)
-{
-	CUSTOMLOG("Exe: %s refused: %s (%s EXE)",
-		szWhat,
-		Exe::GetReasonName(eReason),
-		Exe::GetBuildName()
-	);
-
-	return eReason;
 }
 
 //! True if [p, p + uiSize) is committed, readable memory in one region.
@@ -165,6 +168,7 @@ void* FindInterfaceBuddy()
 
 	return reinterpret_cast<void*>(dwBuddy);
 }
+#endif // !VP_OUT_OF_PROCESS
 } // namespace
 
 //------------------------------------------------------------------------------
@@ -178,6 +182,46 @@ const char* Exe::GetReasonName(Reason eReason)
 	return REASON_NAMES[eReason];
 }
 
+#if defined(VP_OUT_OF_PROCESS)
+//------------------------------------------------------------------------------
+// Out of process no Civ V EXE hosts the DLL. Every feature answers as for an
+// unknown EXE, and nothing reads or writes another module's memory.
+const char* Exe::GetBuildName()
+{
+	return "Unknown";
+}
+
+Exe::Reason Exe::CanScheduleResync()
+{
+	return MOD_BIN_HOOKS ? REASON_UNSUPPORTED_EXE : REASON_BIN_HOOKS_OFF;
+}
+
+Exe::Reason Exe::TryScheduleResync()
+{
+	return Refuse("TryScheduleResync", CanScheduleResync());
+}
+
+Exe::Reason Exe::CanDisableEngineYieldIconManager()
+{
+	return MOD_BIN_HOOKS ? REASON_UNSUPPORTED_EXE : REASON_BIN_HOOKS_OFF;
+}
+
+Exe::Reason Exe::TryDisableEngineYieldIconManager()
+{
+	return Refuse("TryDisableEngineYieldIconManager", CanDisableEngineYieldIconManager());
+}
+
+Exe::Reason Exe::CanRepairCityArt()
+{
+	return MOD_BIN_HOOKS ? REASON_UNSUPPORTED_EXE : REASON_BIN_HOOKS_OFF;
+}
+
+Exe::Reason Exe::TryRepairCityArt(const CvCity& kCity)
+{
+	(void)kCity;
+	return Refuse("TryRepairCityArt", CanRepairCityArt());
+}
+#else
 const char* Exe::GetBuildName()
 {
 	return ExeBuild::GetName(ExeBuild::GetType());
@@ -415,3 +459,4 @@ Exe::Reason Exe::TryRepairCityArt(const CvCity& kCity)
 
 	return REASON_OK;
 }
+#endif // VP_OUT_OF_PROCESS
