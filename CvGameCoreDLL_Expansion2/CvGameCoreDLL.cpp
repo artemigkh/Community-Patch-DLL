@@ -54,3 +54,14 @@ BOOL APIENTRY DllMain(HANDLE hModule,
 
 	return TRUE;	// success
 }
+
+#if defined(VP_OUT_OF_PROCESS)
+// The 64-bit host reads this number after it loads the DLL and refuses a DLL with another one
+// (CvOutOfProcessInterface.h says when it is raised). Exported here rather than in CvGameCoreDLL.def,
+// which the 32-bit build shares.
+#include "CvOutOfProcessInterface.h"
+extern "C" __declspec(dllexport) unsigned int DllGetOutOfProcessInterfaceVersion()
+{
+	return VP_OUT_OF_PROCESS_INTERFACE_VERSION;
+}
+#endif // VP_OUT_OF_PROCESS
