@@ -3027,6 +3027,11 @@ bool CvTwoLayerPathFinder::CommonNeighborIsPassable(const CvAStarNode * a, const
 		CvAStarNode* check = a->m_apNeighbors[i];
 		if (check && plotDistance(check->m_iX, check->m_iY, b->m_iX, b->m_iY) == 1)
 		{
+#if defined(VP64_TRACE_FIX_CNIP)
+			// the proposal of ticket 4807 (scratch only): the common neighbour is two steps from the expanded node, so this
+			// search may not have filled its cache yet; fill it for this unit before reading (a no-op when it is current)
+			UpdateNodeCacheData(check, reinterpret_cast<const UnitPathCacheData*>(GetScratchBuffer())->pUnit, this);
+#endif
 			VP64_TRACE_READ(S_CNIP, check, this);
 			if (check->m_kCostCacheData.bCanEnterTerrainIntermediate && check->m_kCostCacheData.bCanEnterTerritoryIntermediate)
 				return true;
