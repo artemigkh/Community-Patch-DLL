@@ -18,6 +18,7 @@
 #pragma		once
 
 #include "CvAStarNode.h"
+#include "VP64Trace.h"
 #include <queue>
 
 class CvAStar;

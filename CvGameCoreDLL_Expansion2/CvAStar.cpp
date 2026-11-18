@@ -245,9 +245,19 @@ void CvAStar::Reset()
 
 	//reset previously used nodes
 	for (std::vector<CvAStarNode*>::iterator it=m_openNodes.begin(); it!=m_openNodes.end(); ++it)
+	{
+#if defined(VP64_TRACE_FINDER)
+		VP64Trace::Cleared(*it, this);
+#endif
 		(*it)->clear();
+	}
 	for (std::vector<CvAStarNode*>::iterator it=m_closedNodes.begin(); it!=m_closedNodes.end(); ++it)
+	{
+#if defined(VP64_TRACE_FINDER)
+		VP64Trace::Cleared(*it, this);
+#endif
 		(*it)->clear();
+	}
 	m_openNodes.clear();
 	m_closedNodes.clear();
 	m_childNodes.clear();
@@ -362,10 +372,18 @@ bool CvAStar::FindPathWithCurrentConfiguration(int iXstart, int iYstart, int iXd
 	m_iYstart = iYstart;
 
 	SanitizeFlags();
+#if defined(VP64_TRACE_FINDER)
+	VP64Trace::Begin(this);
+#endif
 	Reset();
 
 	if(!isValid(iXstart, iYstart))
+	{
+#if defined(VP64_TRACE_FINDER)
+		VP64Trace::End(this, false, 1, NULL);
+#endif
 		return false;
+	}
 
 	if(udInitializeFunc)
 		udInitializeFunc(m_sData, this);
@@ -374,6 +392,9 @@ bool CvAStar::FindPathWithCurrentConfiguration(int iXstart, int iYstart, int iXd
 	{
 		if (udUninitializeFunc)
 			udUninitializeFunc(m_sData, this);
+#if defined(VP64_TRACE_FINDER)
+		VP64Trace::End(this, false, 2, NULL);
+#endif
 		return false;
 	}
 
@@ -482,6 +503,9 @@ bool CvAStar::FindPathWithCurrentConfiguration(int iXstart, int iYstart, int iXd
 	if (udUninitializeFunc)
 		udUninitializeFunc(m_sData, this);
 
+#if defined(VP64_TRACE_FINDER)
+	VP64Trace::End(this, bSuccess, 0, m_pBest);
+#endif
 	return bSuccess;
 }
 
@@ -1067,6 +1091,9 @@ void UpdateNodeCacheData(CvAStarNode* node, const CvUnit* pUnit, const CvAStar* 
 
 	//done!
 	kToNodeCacheData.iGenerationID = finder->GetCurrentGenerationID();
+#if defined(VP64_TRACE_FINDER)
+	VP64Trace::Stamp(node, finder);
+#endif
 }
 
 //	--------------------------------------------------------------------------------
@@ -1080,8 +1107,11 @@ bool CvPathFinder::DestinationReached(int iToX, int iToY) const
 	if ( HaveFlag(CvUnit::MOVEFLAG_APPROX_TARGET_RING2) )
 	{
 		if (HaveFlag(CvUnit::MOVEFLAG_APPROX_TARGET_NATIVE_DOMAIN))
+		{
+			VP64_TRACE_READ(S_DR_NATIVE, GetNode(iToX,iToY), this);
 			if (GetNode(iToX,iToY)->m_kCostCacheData.bIsNonNativeDomain)
 				return false;
+		}
 
 		if (!CanEndTurnAtNode(GetNode(iToX, iToY)))
 			return false;
@@ -1096,8 +1126,11 @@ bool CvPathFinder::DestinationReached(int iToX, int iToY) const
 	else if ( HaveFlag(CvUnit::MOVEFLAG_APPROX_TARGET_RING1) )
 	{
 		if (HaveFlag(CvUnit::MOVEFLAG_APPROX_TARGET_NATIVE_DOMAIN))
+		{
+			VP64_TRACE_READ(S_DR_NATIVE, GetNode(iToX,iToY), this);
 			if (GetNode(iToX,iToY)->m_kCostCacheData.bIsNonNativeDomain)
 				return false;
+		}
 
 		if (!CanEndTurnAtNode(GetNode(iToX, iToY)))
 			return false;
@@ -1406,6 +1439,8 @@ int PathCost(const CvAStarNode* parent, const CvAStarNode* node, const SPathFind
 {
 	int iStartMoves = parent->m_iMoves;
 	int iTurns = parent->m_iTurns;
+	VP64_TRACE_READ(S_PC_NODE, node, finder);
+	VP64_TRACE_READ(S_PC_PARENT, parent, finder);
 
 	const CvPathNodeCacheData& kToNodeCacheData = node->m_kCostCacheData;
 	const CvPathNodeCacheData& kFromNodeCacheData = parent->m_kCostCacheData;
@@ -1574,6 +1609,8 @@ int PathValid(const CvAStarNode* parent, const CvAStarNode* node, const SPathFin
 	// If this is the first node in the path, it is always valid (starting location)
 	if (parent == NULL)
 		return TRUE;
+	VP64_TRACE_READ(S_PV_NODE, node, finder);
+	VP64_TRACE_READ(S_PV_PARENT, parent, finder);
 
 	// Cached values for this node that we will use
 	const CvPathNodeCacheData& kToNodeCacheData = node->m_kCostCacheData;
@@ -2264,6 +2301,7 @@ int UnitPathGetExtraChildren(const CvAStarNode* node, const CvAStar* finder, vec
 	if (!pUnit)
 		return 0;
 
+	VP64_TRACE_READ(S_EXTRA, node, finder);
 	// land units can move from city to city using airports
 	if (node->m_kCostCacheData.bCanAirliftFromPlotCity || node->m_kCostCacheData.bCanAirliftFromPlotImprovement)
 	{
@@ -2973,6 +3011,7 @@ bool CvTwoLayerPathFinder::CanEndTurnAtNode(const CvAStarNode* temp) const
 {
 	if (!temp)
 		return false;
+	VP64_TRACE_READ(S_CETAN, temp, this);
 
 	if (temp->m_kCostCacheData.bIsRevealedToTeam)
 		if (!temp->m_kCostCacheData.bCanEnterTerrainPermanent || !temp->m_kCostCacheData.bCanEnterTerritoryPermanent || temp->m_kCostCacheData.bIsNonEnemyCity)
@@ -3004,6 +3043,7 @@ bool CvTwoLayerPathFinder::CommonNeighborIsPassable(const CvAStarNode * a, const
 			//before NodeAddedToPath updates the neighbors of the new node), so its cache data may be left over from an
 			//earlier search. update it first (does nothing if it is current)
 			UpdateNodeCacheData(check, reinterpret_cast<const UnitPathCacheData*>(GetScratchBuffer())->pUnit, this);
+			VP64_TRACE_READ(S_CNIP, check, this);
 			if (check->m_kCostCacheData.bCanEnterTerrainIntermediate && check->m_kCostCacheData.bCanEnterTerritoryIntermediate)
 				return true;
 		}
@@ -3031,6 +3071,7 @@ bool CvTwoLayerPathFinder::AddStopNodeIfRequired(const CvAStarNode* current, con
 		return false;
 
 	const UnitPathCacheData* pUnitDataCache = reinterpret_cast<const UnitPathCacheData*>(GetScratchBuffer());
+	VP64_TRACE_READ(S_STOP_NEXT, next, this);
 
 	//there are two conditions where we might want to end the turn before proceeding
 	// - next nodes is temporarily blocked because of stacking
@@ -3089,6 +3130,9 @@ bool CvTwoLayerPathFinder::AddStopNodeIfRequired(const CvAStarNode* current, con
 		pStopNode->m_pParent = current->m_pParent;
 		//this also copies the end turn danger, which is fine because it's the same plot
 		pStopNode->m_kCostCacheData = current->m_kCostCacheData;
+#if defined(VP64_TRACE_FINDER)
+		VP64Trace::Stamp(pStopNode, this);
+#endif
 		pStopNode->m_bIsStopNode = true;
 		
 		AddToOpen(pStopNode);
@@ -4377,3 +4421,7 @@ FDataStream & operator << (FDataStream & kStream, const CvPathNode & node)
 	kStream << node.m_iY;
 	return kStream;
 }
+#if defined(VP64_TRACE_FINDER)
+// the finder trace of ticket 4807 (scratch): VP64Trace.h
+#include "VP64Trace.inl"
+#endif
