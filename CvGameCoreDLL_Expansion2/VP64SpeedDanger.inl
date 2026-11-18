@@ -394,6 +394,17 @@ namespace
 	// the cached and the fresh result, element by element in order (plot, turns, moves left, normalised distance)
 	FILE* s_fMismatch = NULL;   // verify builds: one detail line per difference (core thread only)
 
+	// a node's cached plot flags as one number (the detail log compares the kept search's with the fresh one's)
+	int NodeFlags(const CvPathNodeCacheData& c)
+	{
+		return (c.bIsRevealedToTeam ? 1 : 0) | (c.bPlotVisibleToTeam ? 2 : 0) | (c.bCanEnterTerrainPermanent ? 4 : 0) |
+			(c.bCanEnterTerritoryPermanent ? 8 : 0) | (c.bCanEnterTerrainIntermediate ? 16 : 0) |
+			(c.bCanEnterTerritoryIntermediate ? 32 : 0) | (c.bIsNonEnemyCity ? 64 : 0) | (c.bIsEnemyCity ? 128 : 0) |
+			(c.bIsVisibleEnemyCombatUnit ? 256 : 0) | (c.bUnitStackingLimitReached ? 512 : 0) | (c.bIsValidRoute ? 1024 : 0) |
+			(c.bIsNonNativeDomain ? 2048 : 0) | (c.bIsVisibleEnemyUnit ? 4096 : 0) | (c.bIsVisibleNeutralCombatUnit ? 8192 : 0) |
+			(c.bCanAirliftFromPlotCity ? 16384 : 0);
+	}
+
 	void PlotList(char* sz, size_t n, const std::vector<int>& v)
 	{
 		sz[0] = 0;
@@ -504,28 +515,31 @@ namespace
 			// search's parent of the plot (the closed nodes at the search), its state now and the fresh node for it
 			if (strcmp(szKind, "hit") == 0)
 			{
-				int iKP = -2, iKT = -1, iKM = -1;
-				for (size_t k = 0; k + 3 < e.parents.size(); k += 4)
+				int iKP = -2, iKT = -1, iKM = -1, iKF = -1;
+				for (size_t k = 0; k + 4 < e.parents.size(); k += 5)
 					if (e.parents[k] == iPlot)
 					{
 						iKP = e.parents[k + 1];
 						iKT = e.parents[k + 2];
 						iKM = e.parents[k + 3];
+						iKF = e.parents[k + 4];
 						break;
 					}
-				fprintf(s_fMismatch, ",kp=%d", iKP);
+				fprintf(s_fMismatch, ",kp=%d node_flags kept=%d fresh=%d", iKP, iKF, pN ? NodeFlags(pN->m_kCostCacheData) : -1);
 				if (iKP >= 0)
 				{
 					const CvPlot* pP = GC.getMap().plotByIndexUnchecked(iKP);
-					int iPT = -1, iPM = -1;
-					for (size_t k = 0; k + 3 < e.parents.size(); k += 4)
+					int iPT = -1, iPM = -1, iPF = -1;
+					for (size_t k = 0; k + 4 < e.parents.size(); k += 5)
 						if (e.parents[k] == iKP)
 						{
 							iPT = e.parents[k + 2];
 							iPM = e.parents[k + 3];
+							iPF = e.parents[k + 4];
 							break;
 						}
 					const CvAStarNode* pPN = kFinder.GetNode(pP->getX(), pP->getY());
+					fprintf(s_fMismatch, " parent_flags kept=%d fresh=%d", iPF, pPN ? NodeFlags(pPN->m_kCostCacheData) : -1);
 					fprintf(s_fMismatch, " (%d;%d) d=%d node_t/m=%d/%d parent_kept_t/m=%d/%d stamp=%u team_stamp=%u owner=%d city=%d water=%d "
 						"route=%d units=%d visible=%d fresh_t/m=%d/%d fresh_gen=%d fresh_open=%d airlift_city=%d nonnative=%d",
 						pP->getX(), pP->getY(), plotDistance(pP->getX(), pP->getY(), pD->getX(), pD->getY()), iKT, iKM, iPT, iPM,
@@ -964,7 +978,7 @@ ReachablePlots Reach(const CvUnit* pUnit, int iFlags, const PlotIndexContainer& 
 #if defined(VP64_SPEED_DANGER_VERIFY)
 		{
 			const std::vector<CvAStarNode*>& closed = GC.GetPathFinder().VP64ClosedNodes();
-			e.parents.reserve(closed.size() * 4);
+			e.parents.reserve(closed.size() * 5);
 			for (std::vector<CvAStarNode*>::const_iterator ci = closed.begin(); ci != closed.end(); ++ci)
 			{
 				const CvAStarNode* n = *ci;
@@ -972,6 +986,7 @@ ReachablePlots Reach(const CvUnit* pUnit, int iFlags, const PlotIndexContainer& 
 				e.parents.push_back(n->m_pParent ? GC.getMap().plotNum(n->m_pParent->m_iX, n->m_pParent->m_iY) : -1);
 				e.parents.push_back((int)n->m_iTurns);
 				e.parents.push_back((int)n->m_iMoves);
+				e.parents.push_back(NodeFlags(n->m_kCostCacheData));
 			}
 		}
 #endif
