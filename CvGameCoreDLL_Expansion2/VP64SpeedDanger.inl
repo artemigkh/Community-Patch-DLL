@@ -387,8 +387,90 @@ namespace
 	}
 
 	// the cached and the fresh result, element by element in order (plot, turns, moves left, normalised distance)
-	void Compare(const CvUnit* pUnit, const ReachablePlots& kept, const ReachablePlots& fresh)
+	FILE* s_fMismatch = NULL;   // verify builds: one detail line per difference (core thread only)
+
+	void PlotList(char* sz, size_t n, const std::vector<int>& v)
 	{
+		sz[0] = 0;
+		size_t len = 0;
+		for (size_t i = 0; i < v.size() && i < 6; i++)
+			len += _snprintf_s(sz + len, n - len, _TRUNCATE, "%s%d", i ? ";" : "", v[i]);
+	}
+
+	// a difference in detail: which plots differ, whether they lie in the entry's region, their stamps against the
+	// entry's creation, and what the plot holds now (VP64DangerMismatch.csv beside the kit's files)
+	void LogMismatch(State* p, const CvUnit* pUnit, const Entry& e, const ReachablePlots& fresh, const char* szKind)
+	{
+		if (s_fMismatch == NULL)
+		{
+			char szPath[1024];
+			const char* szDir = getenv("VP64_SPEED_DIR");
+			if (szDir && *szDir)
+				_snprintf_s(szPath, sizeof(szPath), _TRUNCATE, "%s\\VP64DangerMismatch.csv", szDir);
+			else
+				_snprintf_s(szPath, sizeof(szPath), _TRUNCATE, "VP64DangerMismatch.csv");
+			if (fopen_s(&s_fMismatch, szPath, "w") != 0)
+				s_fMismatch = NULL;
+			if (s_fMismatch == NULL)
+				return;
+			fprintf(s_fMismatch, "kind,turn,owner,unit,unit_type,ai_type,x,y,human,embarked,kept,fresh,only_kept,only_fresh,"
+				"field_diff,created,event_now,team_epoch_kept,team_epoch_now,player_epoch_kept,player_epoch_now,"
+				"plot,plot_x,plot_y,in_region,plot_stamp,team_stamp,owner_now,team_now,city,units,revealed,visible,"
+				"revealed_owner,route,route_pillaged,feature,improvement,impr_pillaged,plot_type,terrain\n");
+		}
+		std::map<int, const SMovePlot*> a, b;
+		for (ReachablePlots::const_iterator it = e.result.begin(); it != e.result.end(); ++it)
+			a[it->iPlotIndex] = &*it;
+		for (ReachablePlots::const_iterator it = fresh.begin(); it != fresh.end(); ++it)
+			b[it->iPlotIndex] = &*it;
+		std::vector<int> onlyA, onlyB, fields;
+		for (std::map<int, const SMovePlot*>::const_iterator it = a.begin(); it != a.end(); ++it)
+		{
+			std::map<int, const SMovePlot*>::const_iterator jt = b.find(it->first);
+			if (jt == b.end())
+				onlyA.push_back(it->first);
+			else if (it->second->iPathLength != jt->second->iPathLength || it->second->iMovesLeft != jt->second->iMovesLeft ||
+				it->second->iNormalizedDistanceRaw != jt->second->iNormalizedDistanceRaw)
+				fields.push_back(it->first);
+		}
+		for (std::map<int, const SMovePlot*>::const_iterator it = b.begin(); it != b.end(); ++it)
+			if (a.find(it->first) == a.end())
+				onlyB.push_back(it->first);
+		const int iPlot = !onlyA.empty() ? onlyA[0] : !onlyB.empty() ? onlyB[0] : !fields.empty() ? fields[0] : -1;
+		char szA[128], szB[128], szF[128];
+		PlotList(szA, sizeof(szA), onlyA);
+		PlotList(szB, sizeof(szB), onlyB);
+		PlotList(szF, sizeof(szF), fields);
+		const TeamTypes eTeam = (TeamTypes)e.eTeam;
+		fprintf(s_fMismatch, "%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s,%s,%s,%u,%u,%u,%u,%u,%u", szKind, p->iTurn,
+			(int)pUnit->getOwner(), pUnit->GetID(), (int)pUnit->getUnitType(), (int)pUnit->AI_getUnitAIType(), pUnit->getX(),
+			pUnit->getY(), (int)pUnit->isHuman(ISHUMAN_AI_UNITS), (int)pUnit->isEmbarked(), (int)e.result.size(),
+			(int)fresh.size(), szA, szB, szF, e.uCreated, (u32)p->uEvent, e.uTeamEpoch, (u32)p->teamEpoch[e.eTeam],
+			e.uPlayerEpoch, (u32)p->playerEpoch[e.eOwner]);
+		const CvPlot* pD = iPlot >= 0 ? GC.getMap().plotByIndexUnchecked(iPlot) : NULL;
+		if (pD)
+		{
+			bool bIn = false;
+			for (size_t k = 0; k < e.region.size(); k++)
+				if (e.region[k] == iPlot)
+				{
+					bIn = true;
+					break;
+				}
+			fprintf(s_fMismatch, ",%d,%d,%d,%d,%u,%u,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n", iPlot, pD->getX(), pD->getY(),
+				(int)bIn, p->plotStamp[iPlot], p->teamPlotStamp[(size_t)iPlot * MAX_TEAMS + e.eTeam], (int)pD->getOwner(),
+				(int)pD->getTeam(), (int)pD->isCity(), pD->getNumUnits(), (int)pD->isRevealed(eTeam), (int)pD->isVisible(eTeam),
+				(int)pD->getRevealedOwner(eTeam), (int)pD->getRouteType(), (int)pD->IsRoutePillaged(), (int)pD->getFeatureType(),
+				(int)pD->getImprovementType(), (int)pD->IsImprovementPillaged(), (int)pD->getPlotType(), (int)pD->getTerrainType());
+		}
+		else
+			fprintf(s_fMismatch, ",-1\n");
+		fflush(s_fMismatch);
+	}
+
+	void Compare(State* p, const CvUnit* pUnit, const Entry& e, const ReachablePlots& fresh)
+	{
+		const ReachablePlots& kept = e.result;
 		int iFirst = -2;
 		ReachablePlots::const_iterator a = kept.begin(), b = fresh.begin();
 		for (; a != kept.end() && b != fresh.end(); ++a, ++b)
@@ -407,6 +489,7 @@ namespace
 			VP64_SPEED_CHECK_K("DANGER", "reach", (long long)kept.size(), (long long)fresh.size(), pUnit->getOwner(), pUnit->GetID(), 0, 0);
 			return;
 		}
+		LogMismatch(p, pUnit, e, fresh, "hit");
 		u64 hk = HashResult(kept), hf = HashResult(fresh);
 		if (hk == hf)
 			hk ^= 1;
@@ -714,12 +797,12 @@ ReachablePlots Reach(const CvUnit* pUnit, int iFlags, const PlotIndexContainer& 
 			}
 #endif
 #if defined(VP64_SPEED_DANGER_VERIFY)
-			const ReachablePlots kept = it->second.result;
+			const Entry kept = it->second;   // a copy: no entry is held across the search
 			t_iDepth++;
 			ReachablePlots fresh = Search(pUnit, iFlags, zoc);
 			t_iDepth--;
 			VP64_DANGER_STAT(p->st.verified++);
-			Compare(pUnit, kept, fresh);
+			Compare(p, pUnit, kept, fresh);
 			if (!bHadLock)
 				gDLL->ReleaseGameCoreLock();
 			return fresh;
@@ -746,6 +829,29 @@ ReachablePlots Reach(const CvUnit* pUnit, int iFlags, const PlotIndexContainer& 
 	const bool bNested = t_bNested;
 	t_bNested = false;
 	const bool bGenOk = GC.GetPathFinder().GetCurrentGenerationID() == NextGeneration(uGenBefore);
+#if defined(VP64_SPEED_DANGER_DIAG) && defined(VP64_SPEED_DANGER_VERIFY)
+	// diagnosis only (changes the finder's history, so the game is not the pin's): the same question asked again at
+	// once; a different answer means the search depends on what the finder's earlier searches left in its nodes
+	if (bGenOk && !bNested)
+	{
+		t_iDepth++;
+		ReachablePlots again = Search(pUnit, iFlags, zoc);
+		t_iDepth--;
+		if (HashResult(again) != HashResult(result) || again.size() != result.size())
+		{
+			Entry d;
+			d.snap = snap;
+			d.eTeam = eTeam;
+			d.eOwner = eOwner;
+			d.uCreated = uCreated;
+			d.uTeamEpoch = uTeamEpoch;
+			d.uPlayerEpoch = uPlayerEpoch;
+			d.result = result;
+			d.uBytes = 0;
+			LogMismatch(p, pUnit, d, again, "store_again");
+		}
+	}
+#endif
 
 	std::map<u64, Entry>::iterator it = p->cache.find(key);
 	if (it != p->cache.end())
