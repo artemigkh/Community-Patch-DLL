@@ -550,6 +550,10 @@ int plotDistanceKept(int iX1, int iY1, int iX2, int iY2)
 		if (VP64_SPEED_SPOIL_NOW("KITDEMO", VP64_SPEED_KITDEMO_SPOIL))
 			iDist += 1; // the negative control: one kept value made wrong on purpose
 #endif
+#if defined(VP64_SPEED_KITDEMO_SPOIL_EVERY)
+		if (VP64_SPEED_SPOIL_EVERY("KITDEMO", VP64_SPEED_KITDEMO_SPOIL_EVERY))
+			iDist += 1; // the identity job's negative control: every n-th kept value wrong
+#endif
 		e.iUsed = 1; e.iX1 = iX1; e.iY1 = iY1; e.iX2 = iX2; e.iY2 = iY2; e.iW = iW; e.iH = iH; e.iWrap = iWrap;
 		e.iDist = iDist;
 	}

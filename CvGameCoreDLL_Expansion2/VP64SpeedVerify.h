@@ -12,7 +12,9 @@
 //
 // The negative control, VP64_SPEED_P_SPOIL=<n> (n >= 1): the package spoils the n-th kept value it stores
 // (`if (VP64_SPEED_SPOIL_NOW("P", VP64_SPEED_P_SPOIL)) value += 1;` or another wrong value). With VERIFY on, the run
-// must report differences; with VERIFY off, the run's game must differ from the pin's (the identity job's negative test).
+// must report differences. One wrong value may never reach a decision, so the identity job's negative test (a DLL that
+// changes the game must be caught) uses VP64_SPEED_P_SPOIL_EVERY=<n>: every n-th stored kept value wrong, VERIFY off
+// (`if (VP64_SPEED_SPOIL_EVERY("P", VP64_SPEED_P_SPOIL_EVERY)) value += 1;`).
 //
 //   #if defined(VP64_SPEED_P)
 //   #include "VP64SpeedVerify.h"
@@ -177,6 +179,9 @@ namespace vp64speed
 #if defined(VP64_SPEED_KITDEMO_SPOIL)
 			fprintf(f, "define VP64_SPEED_KITDEMO_SPOIL=%d\n", (int)(VP64_SPEED_KITDEMO_SPOIL));
 #endif
+#if defined(VP64_SPEED_KITDEMO_SPOIL_EVERY)
+			fprintf(f, "define VP64_SPEED_KITDEMO_SPOIL_EVERY=%d\n", (int)(VP64_SPEED_KITDEMO_SPOIL_EVERY));
+#endif
 			// A package adds its own three lines here, in its own #if blocks.
 			fclose(f);
 		}
@@ -243,13 +248,17 @@ namespace vp64speed
 		CheckText(szPackage, szSite, iTurn, bEqual, bEqual ? "" : szFast, bEqual ? "" : szOrig, k1, k2, k3, k4);
 	}
 
-	// Counts one stored kept value of the package; true exactly at its n-th store (the negative control's spoil).
-	inline bool SpoilNow(const char* szPackage, long long n)
+	// Counts one stored kept value of the package; true exactly at its n-th store (the verify mode's negative control:
+	// one wrong kept value, which a verify run must catch). With bEvery, true at every n-th store (the identity job's
+	// negative control: enough wrong values that the game must change).
+	inline bool Spoil(const char* szPackage, int iTurn, long long n, bool bEvery)
 	{
 		Guard g;
-		PackageStats& p = Log::Get().Package(szPackage);
+		Log& kLog = Log::Get();
+		kLog.Turn(iTurn);
+		PackageStats& p = kLog.Package(szPackage);
 		++p.iStores;
-		if (p.iStores != n)
+		if (n <= 0 || (bEvery ? (p.iStores % n) != 0 : p.iStores != n))
 			return false;
 		++p.iSpoils;
 		return true;
@@ -269,6 +278,7 @@ namespace vp64speed
 #define VP64_SPEED_CHECK_D(pkg, site, fast, orig, k1, k2, k3, k4) \
 	::vp64speed::CheckD(pkg, site, ::vp64speed::Turn(), (double)(fast), (double)(orig), (long long)(k1), \
 	                    (long long)(k2), (long long)(k3), (long long)(k4))
-#define VP64_SPEED_SPOIL_NOW(pkg, n) ::vp64speed::SpoilNow(pkg, (long long)(n))
+#define VP64_SPEED_SPOIL_NOW(pkg, n) ::vp64speed::Spoil(pkg, ::vp64speed::Turn(), (long long)(n), false)
+#define VP64_SPEED_SPOIL_EVERY(pkg, n) ::vp64speed::Spoil(pkg, ::vp64speed::Turn(), (long long)(n), true)
 
 #endif // VP64_SPEED_VERIFY_H
