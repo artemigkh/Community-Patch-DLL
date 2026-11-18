@@ -542,6 +542,63 @@ void LogNodeAction(CvAStarNode* node, int iRound, NodeState state)
 
 void UpdateNodeCacheData(CvAStarNode* node, const CvUnit* pUnit, const CvAStar* finder);
 
+#if defined(VP64_COUNT_CNIP_REFRESH)
+// c5-64bit-patch ticket 4813 (scratch only, never a product build): count the refreshes the fix adds, per game turn,
+// all finders and threads together (a diagnostic count; a race between threads can only lose a count). Written to
+// %VP64_COUNT_DIR%/VP64CountCnip.csv: turn, CNIP refresh calls, those that did work (the node was not current), the
+// same for the extra children.
+#include <cstdio>
+#include <cstdlib>
+namespace VP64CountCnip
+{
+	enum { CNIP_CALL, CNIP_WORK, EXTRA_CALL, EXTRA_WORK, NUM };
+	long long s_a[NUM];
+	int s_iTurn = -1;
+	FILE* s_f = NULL;
+	bool s_bInit = false;
+	void Flush()
+	{
+		if (s_f && s_iTurn >= 0)
+		{
+			fprintf(s_f, "%d,%lld,%lld,%lld,%lld\n", s_iTurn, s_a[0], s_a[1], s_a[2], s_a[3]);
+			fflush(s_f);
+		}
+		for (int i = 0; i < NUM; i++)
+			s_a[i] = 0;
+	}
+	struct AtExit { ~AtExit() { Flush(); } } s_atExit;
+	void Count(int eWhat, const CvAStarNode* node, const CvAStar* finder)
+	{
+		if (!s_bInit)
+		{
+			s_bInit = true;
+			const char* dir = getenv("VP64_COUNT_DIR");
+			if (dir && *dir)
+			{
+				char path[1024];
+				_snprintf(path, sizeof(path) - 1, "%s\\VP64CountCnip.csv", dir);
+				path[sizeof(path) - 1] = 0;
+				s_f = fopen(path, "w");
+				if (s_f)
+					fprintf(s_f, "turn,cnip_calls,cnip_work,extra_calls,extra_work\n");
+			}
+		}
+		int iTurn = GC.getGame().getGameTurn();
+		if (iTurn != s_iTurn)
+		{
+			Flush();
+			s_iTurn = iTurn;
+		}
+		s_a[eWhat]++;
+		if (node->m_kCostCacheData.iGenerationID != finder->GetCurrentGenerationID())
+			s_a[eWhat + 1]++;
+	}
+}
+#define VP64_COUNT_REFRESH(what, node, finder) VP64CountCnip::Count(VP64CountCnip::what, (node), (finder))
+#else
+#define VP64_COUNT_REFRESH(what, node, finder) ((void)0)
+#endif
+
 //	--------------------------------------------------------------------------------
 /// Creates children for the node
 void CvAStar::CreateChildren(CvAStarNode* node)
@@ -615,6 +672,8 @@ void CvAStar::CreateChildren(CvAStarNode* node)
 				if (check == node->m_pParent)
 					continue;
 
+				if (pUnit)
+					VP64_COUNT_REFRESH(EXTRA_CALL, check, this);
 				UpdateNodeCacheData(check, pUnit, this); //does nothing if pUnit is null or the data is current
 
 				if (udFunc(udValid, node, check, m_sData))
@@ -3003,6 +3062,7 @@ bool CvTwoLayerPathFinder::CommonNeighborIsPassable(const CvAStarNode * a, const
 			//the common neighbor can be two steps away from the node being expanded (PathCost checks the destination
 			//before NodeAddedToPath updates the neighbors of the new node), so its cache data may be left over from an
 			//earlier search. update it first (does nothing if it is current)
+			VP64_COUNT_REFRESH(CNIP_CALL, check, this);
 			UpdateNodeCacheData(check, reinterpret_cast<const UnitPathCacheData*>(GetScratchBuffer())->pUnit, this);
 			if (check->m_kCostCacheData.bCanEnterTerrainIntermediate && check->m_kCostCacheData.bCanEnterTerritoryIntermediate)
 				return true;
