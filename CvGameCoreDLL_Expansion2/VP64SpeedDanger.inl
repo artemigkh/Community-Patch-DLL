@@ -416,9 +416,21 @@ namespace
 #endif
 
 #if defined(VP64_SPEED_DANGER_SPOIL) || defined(VP64_SPEED_DANGER_SPOIL_EVERY)
+	// a wrong kept result the danger maps feel: the last reachable plot dropped (its danger from this unit is lost); a
+	// result of one plot or none gets a changed or an extra plot instead
 	void SpoilResult(const CvUnit* pUnit, ReachablePlots& r)
 	{
-		if (r.begin() != r.end())
+		if (r.size() > 1)
+		{
+			ReachablePlots s;
+			ReachablePlots::const_iterator last = r.end();
+			--last;
+			for (ReachablePlots::const_iterator it = r.begin(); it != last; ++it)
+				s.insertNoIndex(*it);
+			s.createIndex();
+			r = s;
+		}
+		else if (r.begin() != r.end())
 			r.begin()->iMovesLeft += 1;
 		else
 		{
