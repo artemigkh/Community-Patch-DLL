@@ -11597,7 +11597,17 @@ void CvPlot::flipVisibility(TeamTypes eTeam)
 	//flip visibility
 	if (m_aiVisibilityCountThisTurnMax[eTeam] != m_aiVisibilityCount[eTeam])
 	{
+#if defined(VP64_SPEED_DANGER)
+		// with MOD_CORE_DELAYED_VISIBILITY isVisible() reads this maximum: a plot seen earlier this turn goes dark here
+		const bool bVP64WasVisible = (m_aiVisibilityCountThisTurnMax[eTeam] > 0);
 		m_aiVisibilityCountThisTurnMax[eTeam] = m_aiVisibilityCount[eTeam];
+		if (bVP64WasVisible != (m_aiVisibilityCount[eTeam] > 0))
+			VP64Danger::TeamPlotEvent(this, eTeam);
+#else
+#line 11532
+		m_aiVisibilityCountThisTurnMax[eTeam] = m_aiVisibilityCount[eTeam];
+#endif
+#line 11533
 		if (m_aiVisibilityCount[eTeam] == 0) //in case it's now invisible
 			updateFog();
 	}
@@ -11622,14 +11632,15 @@ PlotVisibilityChangeResult CvPlot::changeVisibilityCount(TeamTypes eTeam, int iC
 
 	// Apparently it's legal to decrease sight below zero - so catch that
 	m_aiVisibilityCount[eTeam] = max(0, m_aiVisibilityCount[eTeam] + iChange);
-#if defined(VP64_SPEED_DANGER)
-	if (bOldVisibility != (m_aiVisibilityCount[eTeam] > 0))
-		VP64Danger::TeamPlotEvent(this, eTeam);
-#endif
-#line 11557
 
 	// Remember the maximum
 	m_aiVisibilityCountThisTurnMax[eTeam] = max(m_aiVisibilityCountThisTurnMax[eTeam], m_aiVisibilityCount[eTeam]);
+#if defined(VP64_SPEED_DANGER)
+	// isVisible() reads the turn's maximum when MOD_CORE_DELAYED_VISIBILITY is on (VP), the count otherwise: both
+	if (bOldVisibility != (m_aiVisibilityCount[eTeam] > 0) || bOldMaxVisibility != (getVisibilityCount(eTeam) > 0))
+		VP64Danger::TeamPlotEvent(this, eTeam);
+#endif
+#line 11560
 
 	if (eSeeInvisible != NO_INVISIBLE)
 	{
