@@ -60,6 +60,10 @@ namespace
 		u32 uPlayerEpoch;
 		std::vector<int> region;
 		ReachablePlots result;
+#if defined(VP64_SPEED_DANGER_VERIFY)
+		u32 aTeamEpochs[MAX_TEAMS];      // every team's and player's epoch at the search: the detail log names the ones
+		u32 aPlayerEpochs[MAX_PLAYERS];  // that moved before a difference (inputs of other teams are not checked)
+#endif
 		u64 uBytes;
 	};
 
@@ -416,7 +420,11 @@ namespace
 			fprintf(s_fMismatch, "kind,turn,owner,unit,unit_type,ai_type,x,y,human,embarked,kept,fresh,only_kept,only_fresh,"
 				"field_diff,created,event_now,team_epoch_kept,team_epoch_now,player_epoch_kept,player_epoch_now,"
 				"plot,plot_x,plot_y,in_region,plot_stamp,team_stamp,owner_now,team_now,city,units,revealed,visible,"
-				"revealed_owner,route,route_pillaged,feature,improvement,impr_pillaged,plot_type,terrain\n");
+				"revealed_owner,route,route_pillaged,feature,improvement,impr_pillaged,plot_type,terrain,"
+				"kept_turns,kept_moves,kept_dist,node_gen_fresh,node_open,node_turns,node_moves,node_cost,node_end_ok,"
+				"c_revealed,c_visible,c_terrain_perm,c_territory_perm,c_nonenemycity,c_enemycity,c_visenemycombat,"
+				"c_stacklimit,c_route,c_nonnative,parent_x,parent_y,parent_stamp,parent_team_stamp,parent_in_region,"
+				"epochs_moved\n");
 		}
 		std::map<int, const SMovePlot*> a, b;
 		for (ReachablePlots::const_iterator it = e.result.begin(); it != e.result.end(); ++it)
@@ -457,11 +465,52 @@ namespace
 					bIn = true;
 					break;
 				}
-			fprintf(s_fMismatch, ",%d,%d,%d,%d,%u,%u,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n", iPlot, pD->getX(), pD->getY(),
+			fprintf(s_fMismatch, ",%d,%d,%d,%d,%u,%u,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d", iPlot, pD->getX(), pD->getY(),
 				(int)bIn, p->plotStamp[iPlot], p->teamPlotStamp[(size_t)iPlot * MAX_TEAMS + e.eTeam], (int)pD->getOwner(),
 				(int)pD->getTeam(), (int)pD->isCity(), pD->getNumUnits(), (int)pD->isRevealed(eTeam), (int)pD->isVisible(eTeam),
 				(int)pD->getRevealedOwner(eTeam), (int)pD->getRouteType(), (int)pD->IsRoutePillaged(), (int)pD->getFeatureType(),
 				(int)pD->getImprovementType(), (int)pD->IsImprovementPillaged(), (int)pD->getPlotType(), (int)pD->getTerrainType());
+			// the kept answer for the plot, and the core finder's main-layer node for it after the fresh search
+			std::map<int, const SMovePlot*>::const_iterator ka = a.find(iPlot);
+			fprintf(s_fMismatch, ",%d,%d,%d", ka != a.end() ? ka->second->iPathLength : -1, ka != a.end() ? ka->second->iMovesLeft : -1,
+				ka != a.end() ? ka->second->iNormalizedDistanceRaw : -1);
+			const CvTwoLayerPathFinder& kFinder = GC.GetPathFinder();
+			const CvAStarNode* pN = kFinder.GetNode(pD->getX(), pD->getY());
+			if (pN)
+			{
+				const CvPathNodeCacheData& c = pN->m_kCostCacheData;
+				const CvAStarNode* pPar = pN->m_pParent;
+				const int iPar = pPar ? GC.getMap().plotNum(pPar->m_iX, pPar->m_iY) : -1;
+				bool bParIn = false;
+				for (size_t k = 0; iPar >= 0 && k < e.region.size(); k++)
+					if (e.region[k] == iPar)
+					{
+						bParIn = true;
+						break;
+					}
+				fprintf(s_fMismatch, ",%d,%d,%d,%d,%ld,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%u,%u,%d",
+					(int)(c.iGenerationID == kFinder.GetCurrentGenerationID()), (int)pN->m_bIsOpen, (int)pN->m_iTurns,
+					(int)pN->m_iMoves, pN->m_iKnownCost, (int)kFinder.CanEndTurnAtNode(pN), (int)c.bIsRevealedToTeam,
+					(int)c.bPlotVisibleToTeam, (int)c.bCanEnterTerrainPermanent, (int)c.bCanEnterTerritoryPermanent,
+					(int)c.bIsNonEnemyCity, (int)c.bIsEnemyCity, (int)c.bIsVisibleEnemyCombatUnit, (int)c.bUnitStackingLimitReached,
+					(int)c.bIsValidRoute, (int)c.bIsNonNativeDomain, pPar ? (int)pPar->m_iX : -1, pPar ? (int)pPar->m_iY : -1,
+					iPar >= 0 ? p->plotStamp[iPar] : 0u, iPar >= 0 ? p->teamPlotStamp[(size_t)iPar * MAX_TEAMS + e.eTeam] : 0u,
+					(int)bParIn);
+			}
+			else
+				fprintf(s_fMismatch, ",,,,,,,,,,,,,,,,,,,,");
+			// the teams and players whose epoch moved since the search (only the unit's own are checked)
+			if (strcmp(szKind, "hit") == 0)
+			{
+				fprintf(s_fMismatch, ",");
+				for (int i = 0; i < MAX_TEAMS; i++)
+					if ((u32)p->teamEpoch[i] != e.aTeamEpochs[i])
+						fprintf(s_fMismatch, "t%d;", i);
+				for (int i = 0; i < MAX_PLAYERS; i++)
+					if ((u32)p->playerEpoch[i] != e.aPlayerEpochs[i])
+						fprintf(s_fMismatch, "p%d;", i);
+			}
+			fprintf(s_fMismatch, "\n");
 		}
 		else
 			fprintf(s_fMismatch, ",-1\n");
@@ -872,6 +921,12 @@ ReachablePlots Reach(const CvUnit* pUnit, int iFlags, const PlotIndexContainer& 
 		e.uCreated = uCreated;
 		e.uTeamEpoch = uTeamEpoch;
 		e.uPlayerEpoch = uPlayerEpoch;
+#if defined(VP64_SPEED_DANGER_VERIFY)
+		for (int i = 0; i < MAX_TEAMS; i++)
+			e.aTeamEpochs[i] = (u32)p->teamEpoch[i];
+		for (int i = 0; i < MAX_PLAYERS; i++)
+			e.aPlayerEpochs[i] = (u32)p->playerEpoch[i];
+#endif
 		if (!BuildRegion(p, pUnit, snap.bCanEverEmbark ? 2 : 1, e.region))
 		{
 			VP64_DANGER_STAT(p->st.notStored[NS_JUMP]++);
