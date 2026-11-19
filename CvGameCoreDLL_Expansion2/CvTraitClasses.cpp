@@ -4407,7 +4407,6 @@ void CvPlayerTraits::InitPlayerTraits()
 	// hand-over 4.6 item 2: traits re-initialised outside a tech or policy change (setLeaderType, religion)
 	VP64Danger::PlayerScope kVP64DangerScope(m_pPlayer ? (int)m_pPlayer->GetID() : -1);
 #endif
-#line 4406
 	// Reset all values to prevent accumulation on multiple calls
 	Reset();
 

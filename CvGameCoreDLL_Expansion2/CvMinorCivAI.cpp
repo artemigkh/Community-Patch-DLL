@@ -10986,7 +10986,6 @@ bool CvMinorCivAI::SetAllyInternal(PlayerTypes eNewAlly)
 	if (bVP64AllyChange)
 		VP64Danger::PlayerPlotsEvent(m_pPlayer->GetID());
 #endif
-#line 10980
 	m_iTurnAllied = GC.getGame().getGameTurn();
 
 	// Seed the GP counter?
@@ -11300,10 +11299,8 @@ void CvMinorCivAI::SetFriends(PlayerTypes ePlayer, bool bValue)
 	if (bVP64Change)
 		VP64Danger::PlayerPlotsEvent(m_pPlayer->GetID());
 #else
-#line 11287
 	m_abFriends[ePlayer] = bValue;
 #endif
-#line 11288
 }
 
 
@@ -11712,11 +11709,9 @@ void CvMinorCivAI::DoUpdateNumThreateningBarbarians()
 		VP64Danger::PlayerPlotsEvent(m_pPlayer->GetID());
 	}
 #else
-#line 11689
 	if (m_iNumThreateningBarbarians > 0)
 		m_bAllowMajorsToIntrude = true;
 #endif
-#line 11691
 }
 
 /// Major Civs intruding in our lands?
@@ -11725,7 +11720,6 @@ void CvMinorCivAI::DoIntrusion()
 #if defined(VP64_SPEED_DANGER)
 	const bool bVP64IntrudeBefore = m_bAllowMajorsToIntrude;
 #endif
-#line 11696
 	int iNumThreateningBarbariansLastTurn = m_iNumThreateningBarbarians;
 	DoUpdateNumThreateningBarbarians();
 
@@ -11748,7 +11742,6 @@ void CvMinorCivAI::DoIntrusion()
 	if (m_bAllowMajorsToIntrude != bVP64IntrudeBefore)
 		VP64Danger::PlayerPlotsEvent(m_pPlayer->GetID());
 #endif
-#line 11714
 
 	vector<PlayerTypes> vIntruders;
 

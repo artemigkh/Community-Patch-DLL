@@ -203,7 +203,6 @@ public:
 	// the danger package (ticket 4807): the nodes the last search closed, read for an entry's region
 	const std::vector<CvAStarNode*>& VP64ClosedNodes() const { return m_closedNodes; }
 #endif
-#line 202
 
 	//--------------------------------------- PROTECTED FUNCTIONS -------------------------------------------
 protected:
