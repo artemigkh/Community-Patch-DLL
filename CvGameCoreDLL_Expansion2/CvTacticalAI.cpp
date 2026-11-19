@@ -4979,6 +4979,40 @@ bool CvTacticalAI::FindUnitsForHarassing(CvPlot* pTarget, int iNumTurnsAway, int
 			if (bVP64A5Skip)
 				VP64_SPEED_CHECK_K("P3_A5", "FindUnitsForHarassing A5 skip vs search", 0, iTurnsCalculated <= iNumTurnsAway ? 1 : 0,
 					pLoopUnit->GetID(), pTarget->GetPlotIndex(), iFlags, iTurnsCalculated);
+#  if defined(VP64_SPEED_P3_DIAG)
+			// diagnosis of a wrong skip: the path the finder found, plot by plot, with what the fill saw there
+			if (bVP64A5Skip && iTurnsCalculated <= iNumTurnsAway)
+			{
+				static FILE* s_pDiag = NULL;
+				if (!s_pDiag)
+				{
+					char szPath[1024];
+					const char* szDir = getenv("VP64_SPEED_DIR");
+					_snprintf_s(szPath, sizeof(szPath), _TRUNCATE, "%s%sVP64P3A5Diag.csv", szDir ? szDir : "", szDir ? "\\" : "");
+					if (fopen_s(&s_pDiag, szPath, "w") != 0)
+						s_pDiag = NULL;
+					if (s_pDiag)
+						fprintf(s_pDiag, "turn,unit,unit_type,unitai,camp,step,x,y,plot,in_fill,revealed,water,ice,walkwater,needs_embark_null,needs_embark_unit,native,city,turns\n");
+				}
+				SPathFinderUserData kData(pLoopUnit, iFlags, iNumTurnsAway);
+				SPath kPath = GC.GetPathFinder().GetPath(pLoopUnit->getX(), pLoopUnit->getY(), pTarget->getX(), pTarget->getY(), kData);
+				for (int iStep = 0; s_pDiag && iStep < kPath.length(); iStep++)
+				{
+					CvPlot* pStep = kPath.get(iStep);
+					if (!pStep)
+						continue;
+					fprintf(s_pDiag, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n", GC.getGame().getGameTurn(),
+						pLoopUnit->GetID(), (int)pLoopUnit->getUnitType(), (int)pLoopUnit->AI_getUnitAIType(), pTarget->GetPlotIndex(),
+						iStep, pStep->getX(), pStep->getY(), pStep->GetPlotIndex(), (int)vVP64A5Reach[pStep->GetPlotIndex()],
+						pStep->isRevealed(m_pPlayer->getTeam()) ? 1 : 0, pStep->isWater() ? 1 : 0, pStep->isIce() ? 1 : 0,
+						pStep->IsAllowsWalkWater() ? 1 : 0, pStep->needsEmbarkation(NULL) ? 1 : 0,
+						pStep->needsEmbarkation(pLoopUnit) ? 1 : 0, pLoopUnit->isNativeDomain(pStep) ? 1 : 0, pStep->isCity() ? 1 : 0,
+						iTurnsCalculated);
+				}
+				if (s_pDiag)
+					fflush(s_pDiag);
+			}
+#  endif
 #endif
 #line 4888
 			if (iTurnsCalculated <= iNumTurnsAway)
