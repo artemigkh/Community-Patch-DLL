@@ -13085,7 +13085,7 @@ bool TacticalAIHelpers::AddSupportMoves(CvTacticalPosition& positionAfterCombatM
 // Two threads: the decision flag and the row file are written only here, inside FindBestUnitAssignments (game core).
 #include "VP64SpeedVerify.h"
 #ifndef VP64_SPEED_P3_MB2_CAP_MB
-#define VP64_SPEED_P3_MB2_CAP_MB 32
+#define VP64_SPEED_P3_MB2_CAP_MB 16 // MiB (32 until 2026-11-19: 16 cost no measurable time on H and kept 5.6 MB less, note 6.5)
 #endif
 static bool s_bVP64P3Mb2Kept = false; // set by the tactical pool's hard reset, read by the two that follow it
 template<typename T> static size_t VP64P3Bytes(const vector<T>& v) { return v.capacity() * sizeof(T); }
