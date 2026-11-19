@@ -777,6 +777,11 @@ public:
 	CvCity* GetClosestCityByPlots(  const CvPlot* pPlot, bool bMajorOnly=false );
 	int GetClosestCityDistanceInPlots(  const CvPlot* pPlot, PlayerTypes ePlayer );
 	CvCity* GetClosestCityByPlots(  const CvPlot* pPlot, PlayerTypes ePlayer );
+#if defined(VP64_SPEED_P3)
+	// TA14's guard (c5-64bit-patch ticket 4809): is the closest-city map by plots waiting for its lazy rebuild?
+	bool VP64IsClosestCityPlotsMapDirty() const { return m_cityDistancePlots.IsDirty(); }
+#endif
+#line 780
 
 	PlayerTypes GetClosestCityOwnerByPlots(  const CvPlot* pPlot, bool bMajorsOnly=false );
 

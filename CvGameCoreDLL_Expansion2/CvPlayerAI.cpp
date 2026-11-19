@@ -3438,9 +3438,86 @@ const vector<CvPlot*>& CvPlayerAI::GetTopCitadelPlotsCached()
 	m_iCurrentCitadelTargetsTurn = GC.getGame().getGameTurn();
 	return m_vCurrentCitadelTargets;
 }
+#if defined(VP64_SPEED_P3)
+// TA14 (c5-64bit-patch ticket 4809, research/08-performance/speedup-p3-tactical.md section 1): the citadel scan's result
+// is never read; its one side effect on the game is the lazy rebuild of the closest-city map by plots, which its first
+// GetClosestCityByPlots makes when the map is dirty. This replays GetBestCultureBombPlots(eUnit, {}, false) up to that
+// call (the same builds, the same plots in the same order, the same tests before it) and returns its plot, or NULL when
+// the scan would never make the call.
+#include "VP64SpeedVerify.h"
+static CvPlot* VP64P3FirstCitadelCityRead(const CvPlayerAI& kPlayer, const UnitTypes eUnit)
+{
+	if (eUnit == NO_UNIT)
+		return NULL;
+	CvUnitEntry* pkUnitInfo = GC.getUnitInfo(eUnit);
+	for (int iI = 0; iI < GC.getNumBuildInfos(); iI++)
+	{
+		if (!pkUnitInfo->GetBuilds(iI))
+			continue;
+		BuildTypes eBuild = static_cast<BuildTypes>(iI);
+		CvBuildInfo* pkBuildInfo = GC.getBuildInfo(eBuild);
+		if (!pkBuildInfo)
+			continue;
+		ImprovementTypes eImprovement = static_cast<ImprovementTypes>(pkBuildInfo->getImprovement());
+		CvImprovementEntry* pkImprovementInfo = GC.getImprovementInfo(eImprovement);
+		if (!pkImprovementInfo)
+			continue;
+		if (pkImprovementInfo->GetCultureBombRadius() <= 0)
+			continue;
+		for (int iJ = 0; iJ < GC.getMap().numPlots(); iJ++)
+		{
+			CvPlot* pPlot = GC.getMap().plotByIndexUnchecked(iJ);
+			// the scan's plots to avoid are empty: no distance test
+			ImprovementTypes eExistingImprovement = pPlot->getImprovementType();
+			if (eExistingImprovement != NO_IMPROVEMENT)
+			{
+				CvImprovementEntry* pkImprovementInfo2 = GC.getImprovementInfo(eExistingImprovement);
+				if (pkImprovementInfo2->IsCreatedByGreatPerson())
+					continue;
+			}
+			if (!pPlot->canBuild(eBuild, kPlayer.GetID()))
+				continue;
+			CvCity* pCity = pPlot->getOwningCity();
+			if (pCity && pCity->IsRazing())
+				continue;
+			if (pPlot->GetDefenseBuildValue(kPlayer.GetID(), eBuild, eImprovement) / 10 <= 0)
+				continue;
+			return pPlot;
+		}
+		// the scan uses the first improvement that culture bombs and stops
+		break;
+	}
+	return NULL;
+}
+#endif
+#line 3441
 
 bool CvPlayerAI::IsNicePlotForCitadel(const CvPlot* pPlot)
 {
+#if defined(VP64_SPEED_P3)
+	// with EVENTS_PLOT on the scan raises PlotCanImprove: then it stays
+	if (!MOD_EVENTS_PLOT)
+	{
+		if (m_iCurrentCitadelTargetsTurn != GC.getGame().getGameTurn())
+		{
+			m_iCurrentCitadelTargetsTurn = GC.getGame().getGameTurn();
+			VP64_SPEED_CHECK("P3_TA14", "IsNicePlotForCitadel scan skipped", 0, 0);
+			if (isMajorCiv() && GC.getGame().VP64IsClosestCityPlotsMapDirty())
+			{
+				static const UnitClassTypes eGeneralClass = static_cast<UnitClassTypes>(GC.getInfoTypeForString("UNITCLASS_GREAT_GENERAL"));
+				CvPlot* pRead = VP64P3FirstCitadelCityRead(*this, GetSpecificUnitType(eGeneralClass));
+				VP64_SPEED_CHECK("P3_TA14G", "IsNicePlotForCitadel guard replay", 0, 0);
+				if (pRead)
+				{
+					GetClosestCityByPlots(pRead);
+					VP64_SPEED_CHECK("P3_TA14R", "IsNicePlotForCitadel guard refresh", 0, 0);
+				}
+			}
+		}
+		return false;
+	}
+#endif
+#line 3444
 	const vector<CvPlot*>& choices = GetTopCitadelPlotsCached();
 	return std::find(choices.begin(), choices.end(), pPlot) != choices.end();
 }

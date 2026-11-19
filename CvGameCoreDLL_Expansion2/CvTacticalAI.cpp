@@ -12918,12 +12918,83 @@ bool TacticalAIHelpers::AddSupportMoves(CvTacticalPosition& positionAfterCombatM
 	return true;
 }
 
+#if defined(VP64_SPEED_P3)
+// MB2 (c5-64bit-patch ticket 4809, research/08-performance/speedup-p3-tactical.md section 2): a hard reset (the
+// simulating player changed) keeps the pools' buffers as a soft reset does, unless the tactical pool's kept capacity
+// passes the cap; then it wipes as the pin does. Exact: every slot is re-initialised before it is read (initFromScratch
+// clears, initFromParent inherits, STacticalAssignment::init clears), so only capacity is kept, never contents read.
+// Two threads: the decision flag and the row file are written only here, inside FindBestUnitAssignments (game core).
+#include "VP64SpeedVerify.h"
+#ifndef VP64_SPEED_P3_MB2_CAP_MB
+#define VP64_SPEED_P3_MB2_CAP_MB 32
+#endif
+static bool s_bVP64P3Mb2Kept = false; // set by the tactical pool's hard reset, read by the two that follow it
+template<typename T> static size_t VP64P3Bytes(const vector<T>& v) { return v.capacity() * sizeof(T); }
+static size_t VP64P3Bytes(const map<int, short>& m) { return m.size() * 48; }
+static size_t VP64P3Bytes(const SUnitIDValueContainer& c) { return VP64P3Bytes(c.m_aExtraStorage); }
+static void VP64P3Mb2Row(int iPlayer, size_t nBytes, bool bKept)
+{
+	static FILE* s_pFile = NULL;
+	static bool s_bTried = false;
+	if (!s_bTried)
+	{
+		s_bTried = true;
+		char szPath[1024];
+		const char* szDir = getenv("VP64_SPEED_DIR");
+		if (szDir && szDir[0])
+			_snprintf_s(szPath, sizeof(szPath), _TRUNCATE, "%s\\VP64P3Mb2.csv", szDir);
+		else
+			_snprintf_s(szPath, sizeof(szPath), _TRUNCATE, "VP64P3Mb2.csv");
+		if (fopen_s(&s_pFile, szPath, "w") == 0 && s_pFile)
+			fprintf(s_pFile, "turn,prev_player,kept_bytes,action\n");
+		else
+			s_pFile = NULL;
+	}
+	if (s_pFile)
+	{
+		fprintf(s_pFile, "%d,%d,%llu,%s\n", ::vp64speed::Turn(), iPlayer, (unsigned long long)nBytes, bKept ? "kept" : "wiped");
+		fflush(s_pFile);
+	}
+}
+size_t CvTactPosStorage::vp64KeptBytes() const
+{
+	size_t n = 0;
+	for (int i = 0; i < iSize; i++)
+	{
+		const CvTacticalPosition& p = aPositions[i];
+		n += VP64P3Bytes(p.plotScores.localData) + VP64P3Bytes(p.assignedMoves.localData);
+		n += VP64P3Bytes(p.freedPlots.localData) + VP64P3Bytes(p.availableUnits.localData);
+		n += VP64P3Bytes(p.notQuiteFinishedUnits.localData) + VP64P3Bytes(p.finishedUnits.localData);
+		n += VP64P3Bytes(p.tactPlotLookup.localData) + VP64P3Bytes(p.tactPlots.localData);
+		n += VP64P3Bytes(p.enemyPlots.localData) + VP64P3Bytes(p.unitDamageDealt.localData);
+		n += VP64P3Bytes(p.childPositions);
+	}
+	for (size_t i = 0; i < spareTactPlots.size(); i++)
+		n += VP64P3Bytes(spareTactPlots[i]);
+	for (size_t i = 0; i < spareUnitLists.size(); i++)
+		n += VP64P3Bytes(spareUnitLists[i]);
+	return n;
+}
+#endif
+#line 12921
 void CvTactPosStorage::reset(bool bHard)
 { 
 	//this is normally enough
 	iCount = 0; 
 	attackCache.clear(); 
 	dangerCache.clear();
+#if defined(VP64_SPEED_P3)
+	if (bHard)
+	{
+		const size_t nKept = vp64KeptBytes();
+		s_bVP64P3Mb2Kept = nKept <= (size_t)(VP64_SPEED_P3_MB2_CAP_MB) * 1024u * 1024u;
+		VP64P3Mb2Row((int)eLastTactSimPlayer, nKept, s_bVP64P3Mb2Kept);
+		VP64_SPEED_CHECK(s_bVP64P3Mb2Kept ? "P3_MB2" : "P3_MB2W", "CvTactPosStorage::reset", 0, 0);
+		if (s_bVP64P3Mb2Kept)
+			bHard = false;
+	}
+#endif
+#line 12927
 
 	//in a hard reset we recreate all stl containers from scratch
 	//because their capacity tends to increase over time otherwise
@@ -12947,6 +13018,11 @@ void CvSupportPosStorage::reset(bool bHard)
 {
 	//this is normally enough
 	iCount = 0;
+#if defined(VP64_SPEED_P3)
+	if (bHard && s_bVP64P3Mb2Kept)
+		bHard = false;
+#endif
+#line 12950
 
 	//in a hard reset we recreate all stl containers from scratch
 	//because their capacity tends to increase over time otherwise
@@ -12966,6 +13042,12 @@ void CvTactAssignmentStorage::reset(bool bHard)
 {
 	//this is normally enough
 	iCount = 0;
+#if defined(VP64_SPEED_P3)
+	if (bHard && s_bVP64P3Mb2Kept)
+		bHard = false;
+	s_bVP64P3Mb2Kept = false;
+#endif
+#line 12969
 
 	//in a hard reset we recreate all stl containers from scratch
 	//because their capacity tends to increase over time otherwise

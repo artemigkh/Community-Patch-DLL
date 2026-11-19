@@ -1532,6 +1532,10 @@ public:
 	}
 	~CvTactPosStorage() { delete[] aPositions; }
 	void reset(bool bHard);
+#if defined(VP64_SPEED_P3)
+	size_t vp64KeptBytes() const; // MB2 (ticket 4809): the pool's kept buffer bytes, for the cap
+#endif
+#line 1535
 	int getSizeLimit() const { return iSize; }
 	int getSize() const { return iCount; }
 	CvTacticalPosition* first() { return aPositions; }
