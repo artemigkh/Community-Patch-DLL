@@ -4845,6 +4845,32 @@ static bool VP64P3A5Eligible(const CvUnit* pUnit, int iFlags)
 		return false;
 	return true;
 }
+// The unit finder also adds non-adjacent steps (UnitPathGetExtraChildren, CvAStar.cpp): airlift and sealift from a
+// city of the unit's team that CanAirlift()/CanSealift() (or a plot next to it), airlift from an improvement that
+// IsAllowsAirliftFrom, and whatever the lift GameEvents allow. Found on H turn 303 (2026-11-19, verify build): units
+// airlifted from an airport city to the camp's landmass. A5 skips nothing in a call where any of these is possible.
+static bool VP64P3A5LiftPossible(TeamTypes eTeam)
+{
+	if (MOD_EVENTS_AIRLIFT || MOD_EVENTS_SEALIFT || MOD_EVENTS_CITY_AIRLIFT || MOD_EVENTS_CITY_SEALIFT)
+		return true;
+	for (int iI = 0; iI < GC.getNumImprovementInfos(); iI++)
+	{
+		CvImprovementEntry* pkEntry = GC.getImprovementInfo((ImprovementTypes)iI);
+		if (pkEntry && pkEntry->IsAllowsAirliftFrom())
+			return true;
+	}
+	for (int iP = 0; iP < MAX_PLAYERS; iP++)
+	{
+		CvPlayer& kLoopPlayer = GET_PLAYER((PlayerTypes)iP);
+		if (!kLoopPlayer.isAlive() || kLoopPlayer.getTeam() != eTeam)
+			continue;
+		int iLoop = 0;
+		for (CvCity* pCity = kLoopPlayer.firstCity(&iLoop); pCity != NULL; pCity = kLoopPlayer.nextCity(&iLoop))
+			if (pCity->CanAirlift() || pCity->CanSealift())
+				return true;
+	}
+	return false;
+}
 static void VP64P3A5Fill(const CvPlot* pTarget, TeamTypes eTeam, std::vector<char>& vReach)
 {
 	CvMap& kMap = GC.getMap();
@@ -4886,6 +4912,7 @@ bool CvTacticalAI::FindUnitsForHarassing(CvPlot* pTarget, int iNumTurnsAway, int
 	m_CurrentMoveUnits.clear();
 #if defined(VP64_SPEED_P3)
 	std::vector<char> vVP64A5Reach; // A5: filled at the first eligible unit of this call
+	int iVP64A5Lift = -1; // A5: 1 when a lift move is possible for our team (then no skip), set at the first eligible unit
 #endif
 #line 4828
 	//need to convert turns to max path length here, zero turns away is also valid!
@@ -4949,7 +4976,9 @@ bool CvTacticalAI::FindUnitsForHarassing(CvPlot* pTarget, int iNumTurnsAway, int
 
 #if defined(VP64_SPEED_P3)
 			bool bVP64A5Skip = false;
-			if (VP64P3A5Eligible(pLoopUnit, iFlags))
+			if (iVP64A5Lift < 0 && VP64P3A5Eligible(pLoopUnit, iFlags))
+				iVP64A5Lift = VP64P3A5LiftPossible(m_pPlayer->getTeam()) ? 1 : 0;
+			if (iVP64A5Lift == 0 && VP64P3A5Eligible(pLoopUnit, iFlags))
 			{
 				if (vVP64A5Reach.empty())
 					VP64P3A5Fill(pTarget, m_pPlayer->getTeam(), vVP64A5Reach);
