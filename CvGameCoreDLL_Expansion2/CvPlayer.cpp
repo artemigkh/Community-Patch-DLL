@@ -34244,6 +34244,9 @@ void CvPlayer::setTurnActive(bool bNewValue, bool bDoTurn) // R: bDoTurn default
 
 	if (!bNewValue)
 	{
+#if defined(VP64_HIDDEN_EMBARK)
+		VP64HiddenEmbark::Sweep();
+#endif
 		// unfortunately the resource check doesn't work for CS because they can be gifted improvements from major civs which are connected even if the CS can't see/improve them yet...
 		if (isMajorCiv())
 		{
