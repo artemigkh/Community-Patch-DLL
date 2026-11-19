@@ -4820,11 +4820,74 @@ bool CvTacticalAI::FindParatroopersWithinStrikingDistance(CvPlot* pTarget, bool 
 
 	return m_CurrentMoveUnits.size()>0;
 }
+#if defined(VP64_SPEED_P3)
+// A5 (c5-64bit-patch ticket 4809, research/08-performance/speedup-p3-tactical.md section 4): a unit search with
+// MOVEFLAG_NO_EMBARK is skipped when the finder provably finds no path. For an eligible unit (below) the finder enters
+// only plots revealed to the unit's team (CvAStar.cpp PathValid: unrevealed plots are refused for AI non-explorers) on
+// which it needs no embarkation (canEnterTerrain with NO_EMBARK, or for a unit that can never embark, refuses those);
+// every other refusal only removes steps. So a path exists only if the unit's plot is connected to the camp or a plot
+// next to it through such plots. The fill below marks that set (a superset: seeds are the camp and its ring-1 plots,
+// whatever they are). Two threads: the set is a local of the call.
+#include "VP64SpeedVerify.h"
+static bool VP64P3A5Eligible(const CvUnit* pUnit, int iFlags)
+{
+	if (pUnit->getDomainType() != DOMAIN_LAND)
+		return false;
+	if (pUnit->canMoveAllTerrain() || pUnit->IsEmbarkDeepWater() || pUnit->isConvertUnit() || pUnit->isCargo())
+		return false;
+	if (pUnit->isHuman(ISHUMAN_AI_UNITS) || pUnit->AI_getUnitAIType() == UNITAI_EXPLORE)
+		return false;
+	if (iFlags & CvUnit::MOVEFLAG_PRETEND_ALL_REVEALED)
+		return false;
+	if (!(iFlags & CvUnit::MOVEFLAG_NO_EMBARK) && pUnit->CanEverEmbark())
+		return false;
+	if (pUnit->plot()->needsEmbarkation(NULL))
+		return false;
+	return true;
+}
+static void VP64P3A5Fill(const CvPlot* pTarget, TeamTypes eTeam, std::vector<char>& vReach)
+{
+	CvMap& kMap = GC.getMap();
+	vReach.assign(kMap.numPlots(), 0);
+	std::vector<int> vOpen;
+	vReach[pTarget->GetPlotIndex()] = 1;
+	vOpen.push_back(pTarget->GetPlotIndex());
+	for (int iDir = 0; iDir < NUM_DIRECTION_TYPES; iDir++)
+	{
+		CvPlot* pSeed = plotDirection(pTarget->getX(), pTarget->getY(), (DirectionTypes)iDir);
+		if (pSeed && !vReach[pSeed->GetPlotIndex()])
+		{
+			vReach[pSeed->GetPlotIndex()] = 1;
+			vOpen.push_back(pSeed->GetPlotIndex());
+		}
+	}
+	while (!vOpen.empty())
+	{
+		CvPlot* pPlot = kMap.plotByIndexUnchecked(vOpen.back());
+		vOpen.pop_back();
+		for (int iDir = 0; iDir < NUM_DIRECTION_TYPES; iDir++)
+		{
+			CvPlot* pNext = plotDirection(pPlot->getX(), pPlot->getY(), (DirectionTypes)iDir);
+			if (!pNext || vReach[pNext->GetPlotIndex()])
+				continue;
+			if (!pNext->isRevealed(eTeam) || pNext->needsEmbarkation(NULL))
+				continue;
+			vReach[pNext->GetPlotIndex()] = 1;
+			vOpen.push_back(pNext->GetPlotIndex());
+		}
+	}
+}
+#endif
+#line 4823
 
 //find units for pillaging, plundering, blockading, etc
 bool CvTacticalAI::FindUnitsForHarassing(CvPlot* pTarget, int iNumTurnsAway, int iMinHitpoints, int iMaxHitpoints, DomainTypes eDomain, bool bMustHaveMovesLeft, bool bAllowEmbarkation, int iMaxNumUnits, bool bPlunderTradeRoute)
 {
 	m_CurrentMoveUnits.clear();
+#if defined(VP64_SPEED_P3)
+	std::vector<char> vVP64A5Reach; // A5: filled at the first eligible unit of this call
+#endif
+#line 4828
 	//need to convert turns to max path length here, zero turns away is also valid!
 	SPathFinderUserData data(m_pPlayer->GetID(), PT_ARMY_MIXED, NO_PLAYER, (iNumTurnsAway+1)*(eDomain==DOMAIN_LAND ? 3 : 5));
 	ReachablePlots relevantPlots = GC.GetStepFinder().GetPlotsInReach(pTarget, data);
@@ -4884,7 +4947,40 @@ bool CvTacticalAI::FindUnitsForHarassing(CvPlot* pTarget, int iNumTurnsAway, int
 			if (bMustHaveMovesLeft)
 				iFlags |= CvUnit::MOVEFLAG_TURN_END_IS_NEXT_TURN;
 
+#if defined(VP64_SPEED_P3)
+			bool bVP64A5Skip = false;
+			if (VP64P3A5Eligible(pLoopUnit, iFlags))
+			{
+				if (vVP64A5Reach.empty())
+					VP64P3A5Fill(pTarget, m_pPlayer->getTeam(), vVP64A5Reach);
+				bVP64A5Skip = !vVP64A5Reach[pLoopUnit->plot()->GetPlotIndex()];
+				VP64_SPEED_CHECK("P3_A5T", "FindUnitsForHarassing A5 test", 0, 0);
+#  if defined(VP64_SPEED_P3_SPOIL)
+				if (!bVP64A5Skip && VP64_SPEED_SPOIL_NOW("P3_A5", VP64_SPEED_P3_SPOIL))
+					bVP64A5Skip = true;
+#  endif
+#  if defined(VP64_SPEED_P3_SPOIL_EVERY)
+				if (!bVP64A5Skip && VP64_SPEED_SPOIL_EVERY("P3_A5", VP64_SPEED_P3_SPOIL_EVERY))
+					bVP64A5Skip = true;
+#  endif
+			}
+#  if !defined(VP64_SPEED_P3_VERIFY)
+			if (bVP64A5Skip)
+			{
+				VP64_SPEED_CHECK("P3_A5", "FindUnitsForHarassing A5 skip", 0, 0);
+				continue;
+			}
+#  endif
+#endif
+#line 4887
 			int iTurnsCalculated = pLoopUnit->TurnsToReachTarget(pTarget, iFlags, iNumTurnsAway);
+#if defined(VP64_SPEED_P3_VERIFY)
+			// the verify build searches anyway and plays the search: a skip must never meet a path within reach
+			if (bVP64A5Skip)
+				VP64_SPEED_CHECK_K("P3_A5", "FindUnitsForHarassing A5 skip vs search", 0, iTurnsCalculated <= iNumTurnsAway ? 1 : 0,
+					pLoopUnit->GetID(), pTarget->GetPlotIndex(), iFlags, iTurnsCalculated);
+#endif
+#line 4888
 			if (iTurnsCalculated <= iNumTurnsAway)
 			{
 				CvTacticalUnit unit(pLoopUnit->GetID());

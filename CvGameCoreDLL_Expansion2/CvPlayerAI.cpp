@@ -3496,6 +3496,29 @@ bool CvPlayerAI::IsNicePlotForCitadel(const CvPlot* pPlot)
 {
 #if defined(VP64_SPEED_P3)
 	// with EVENTS_PLOT on the scan raises PlotCanImprove: then it stays
+#  if defined(VP64_SPEED_P3_TA14_FORCE_DIRTY)
+	// the guard's exercise: every n-th first scan of a major civ's turn finds the map dirty (rebuilding an up-to-date
+	// map gives the same map; the reference build rebuilds it at its next reader instead)
+	if (!MOD_EVENTS_PLOT && m_iCurrentCitadelTargetsTurn != GC.getGame().getGameTurn() && isMajorCiv() &&
+		VP64_SPEED_SPOIL_EVERY("P3_TA14F", VP64_SPEED_P3_TA14_FORCE_DIRTY))
+		GC.getGame().SetClosestCityMapDirty();
+#  endif
+#  if defined(VP64_SPEED_P3_VERIFY)
+	// the verify build runs the scan and checks that the guard makes the same map rebuild as the scan does
+	if (!MOD_EVENTS_PLOT && m_iCurrentCitadelTargetsTurn != GC.getGame().getGameTurn())
+	{
+		const bool bDirty = isMajorCiv() && GC.getGame().VP64IsClosestCityPlotsMapDirty();
+		static const UnitClassTypes eVerifyGeneralClass = static_cast<UnitClassTypes>(GC.getInfoTypeForString("UNITCLASS_GREAT_GENERAL"));
+		const bool bGuard = bDirty && VP64P3FirstCitadelCityRead(*this, GetSpecificUnitType(eVerifyGeneralClass)) != NULL;
+		const vector<CvPlot*>& vChoices = GetTopCitadelPlotsCached();
+		const bool bScan = bDirty && !GC.getGame().VP64IsClosestCityPlotsMapDirty();
+		VP64_SPEED_CHECK_K("P3_TA14V", "IsNicePlotForCitadel guard vs scan rebuild", bGuard ? 1 : 0, bScan ? 1 : 0, GetID(),
+			bDirty ? 1 : 0, 0, 0);
+		if (bDirty)
+			VP64_SPEED_CHECK("P3_TA14G", "IsNicePlotForCitadel guard replay", 0, 0);
+		return std::find(vChoices.begin(), vChoices.end(), pPlot) != vChoices.end();
+	}
+#  else
 	if (!MOD_EVENTS_PLOT)
 	{
 		if (m_iCurrentCitadelTargetsTurn != GC.getGame().getGameTurn())
@@ -3516,6 +3539,7 @@ bool CvPlayerAI::IsNicePlotForCitadel(const CvPlot* pPlot)
 		}
 		return false;
 	}
+#  endif
 #endif
 #line 3444
 	const vector<CvPlot*>& choices = GetTopCitadelPlotsCached();

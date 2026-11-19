@@ -218,6 +218,15 @@ namespace vp64speed
 #if defined(VP64_SPEED_P3_VERIFY)
 			fprintf(f, "define VP64_SPEED_P3_VERIFY\n");
 #endif
+#if defined(VP64_SPEED_P3_SPOIL)
+			fprintf(f, "define VP64_SPEED_P3_SPOIL=%d\n", (int)(VP64_SPEED_P3_SPOIL));
+#endif
+#if defined(VP64_SPEED_P3_SPOIL_EVERY)
+			fprintf(f, "define VP64_SPEED_P3_SPOIL_EVERY=%d\n", (int)(VP64_SPEED_P3_SPOIL_EVERY));
+#endif
+#if defined(VP64_SPEED_P3_TA14_FORCE_DIRTY)
+			fprintf(f, "define VP64_SPEED_P3_TA14_FORCE_DIRTY=%d\n", (int)(VP64_SPEED_P3_TA14_FORCE_DIRTY));
+#endif
 			// A package adds its own three lines here, in its own #if blocks.
 			fclose(f);
 		}
