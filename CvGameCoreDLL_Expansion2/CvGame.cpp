@@ -1099,6 +1099,9 @@ void CvGame::DoGameStarted()
 //	--------------------------------------------------------------------------------
 void CvGame::uninit()
 {
+#if defined(VP64_HIDDEN_EMBARK)
+	VP64HiddenEmbark::Clear();
+#endif
 	CvGoodyHuts::Uninit();
 	CvBarbarians::Uninit();
 
