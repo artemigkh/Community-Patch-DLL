@@ -2122,6 +2122,9 @@ void CvUnit::kill(bool bDelay, PlayerTypes ePlayer /*= NO_PLAYER*/)
 #line 2118
 
 	VALIDATE_OBJECT();
+#if defined(VP64_HIDDEN_EMBARK)
+	VP64HiddenEmbark::OnUnitGone(this);
+#endif
 	CvUnit* pTransportUnit = NULL;
 	CvUnit* pLoopUnit = NULL;
 	CvPlot* pPlot = NULL;
@@ -7122,7 +7125,11 @@ void CvUnit::embark(CvPlot* pPlot)
 		pPlot->changeAdjacentSight(getTeam(), visibilityRange(), true, getSeeInvisibleType(), getFacingDirection(true), this);
 
 	CvInterfacePtr<ICvUnit1> pDllUnit(new CvDllUnit(this));
+#if defined(VP64_HIDDEN_EMBARK)
+	VP64HiddenEmbark::Embark(this, pPlot, true, pDllUnit.get());
+#else
 	gDLL->GameplayUnitEmbark(pDllUnit.get(), true);
+#endif
 
 	if (MOD_ENABLE_ACHIEVEMENTS && isHuman(ISHUMAN_ACHIEVEMENTS) && !GC.getGame().isGameMultiPlayer() && GET_PLAYER(GC.getGame().getActivePlayer()).isLocalPlayer())
 		gDLL->UnlockAchievement(ACHIEVEMENT_UNIT_EMBARK);
@@ -7141,7 +7148,11 @@ void CvUnit::disembark(CvPlot* pPlot)
 		pPlot->changeAdjacentSight(getTeam(), visibilityRange(), true, getSeeInvisibleType(), getFacingDirection(true), this);
 
 	CvInterfacePtr<ICvUnit1> pDllUnit(new CvDllUnit(this));
+#if defined(VP64_HIDDEN_EMBARK)
+	VP64HiddenEmbark::Embark(this, pPlot, false, pDllUnit.get());
+#else
 	gDLL->GameplayUnitEmbark(pDllUnit.get(), false);
+#endif
 }
 
 //	--------------------------------------------------------------------------------
@@ -20997,6 +21008,9 @@ void CvUnit::setXY(int iX, int iY, bool bGroup, bool bUpdate, bool bShow, bool b
 
 		if(GC.IsGraphicsInitialized())
 		{
+#if defined(VP64_HIDDEN_EMBARK)
+			VP64HiddenEmbark::OnMove(this, pNewPlot);
+#endif
 			//override bShow if check plot visible
 			if(bCheckPlotVisible && (pNewPlot->isVisibleToWatchingHuman() || (pOldPlot && pOldPlot->isVisibleToWatchingHuman())))
 				bShow = true;
@@ -34423,3 +34437,6 @@ void CvUnit::DoGreatPersonSpawnBonus(CvCity* pSpawnCity)
 		}
 	}
 }
+#if defined(VP64_HIDDEN_EMBARK)
+#include "VP64HiddenEmbark.inl"
+#endif
