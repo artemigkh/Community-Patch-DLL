@@ -483,9 +483,10 @@ const DWORD LUAEXEC_ENABLE_RECHECK_MS = 2000;
 //! VP_LUAAPI's registration listeners. Tested outside the game against the game's own lua51_Win32.dll.
 const char* const LUAEXEC_RUNNER =
 "local REG, T = ...\n"
+"local _, _, compileC = ...\n"
 "local G = REG._LOADED._G\n"
 "local pairs, ipairs, type, tostring, select, pcall = G.pairs, G.ipairs, G.type, G.tostring, G.select, G.pcall\n"
-"local rawget, rawset, setfenv, loadstring, xpcall = G.rawget, G.rawset, G.setfenv, G.loadstring, G.xpcall\n"
+"local rawget, rawset, setfenv, xpcall = G.rawget, G.rawset, G.setfenv, G.xpcall\n"
 "local setmetatable = G.setmetatable\n"
 "local getmetatable = (G.debug and G.debug.getmetatable) or G.getmetatable\n"
 "local tconcat, tsort = G.table.concat, G.table.sort\n"
@@ -495,6 +496,16 @@ const char* const LUAEXEC_RUNNER =
 "-- Caps, so that returning _G or printing in a loop cannot freeze the game or exhaust its address space.\n"
 "local RESULT_LIMIT = 1048576\n"
 "local PRINT_LIMIT = 262144\n"
+"\n"
+"-- Civ V build 26577625 removes the global string compiler, so this text never names it: the chunk is compiled by\n"
+"-- the C function the caller passes (luaL_loadbuffer), or, without one, by load() with a reader, which that build keeps.\n"
+"local function compile(code, name)\n"
+"\tif type(compileC) == 'function' then return compileC(code, name) end\n"
+"\tlocal load = G.load\n"
+"\tif type(load) ~= 'function' then return nil, 'no compiler: no C compile function was passed and load is nil' end\n"
+"\tlocal src = code\n"
+"\treturn load(function() local s = src ; src = nil ; return s end, name)\n"
+"end\n"
 "\n"
 "local persist = rawget(REG, 'VP_LUAEXEC_PERSIST')\n"
 "if type(persist) ~= 'table' then persist = {} ; rawset(REG, 'VP_LUAEXEC_PERSIST', persist) end\n"
@@ -608,7 +619,7 @@ const char* const LUAEXEC_RUNNER =
 "\t\t\treturn 'ok=0\\tenv=none\\n--- error ---\\nno Lua state named ' .. stateName .. '\\nstates: ' .. tconcat(stateNames(), ', ') .. '\\n'\n"
 "\t\tend\n"
 "\tend\n"
-"\tlocal chunk, err = loadstring(code, '=luaexec')\n"
+"\tlocal chunk, err = compile(code, '=luaexec')\n"
 "\tif not chunk then return 'ok=0\\tenv=' .. envName .. '\\n--- error ---\\n' .. tostring(err) .. '\\n' end\n"
 "\n"
 "\tlocal printed, printedBytes, printTruncated = {}, 0, false\n"
@@ -668,6 +679,29 @@ struct ExternalLuaRequest
 	bool bRan;
 };
 
+//! The runner's compiler, compile(code [, chunkname]) -> function | nil, message, as Lua 5.1's loadstring
+//! answers. Civ V build 26577625 sets _G.loadstring to nil; luaL_loadbuffer is the C API, which that build
+//! left alone. The runner gives the new function its own environment with setfenv.
+int LuaExecCompile(lua_State* L)
+{
+	if (lua_type(L, 1) != LUA_TSTRING)
+	{
+		lua_pushnil(L);
+		lua_pushstring(L, "VP_LUAEXEC compile: the chunk is not a string");
+		return 2;
+	}
+	size_t uiBytes = 0;
+	const char* pCode = lua_tolstring(L, 1, &uiBytes);
+	const char* szName = (lua_type(L, 2) == LUA_TSTRING) ? lua_tolstring(L, 2, NULL) : "=luaexec";
+	if (luaL_loadbuffer(L, pCode, uiBytes, szName) != 0)
+	{
+		lua_pushnil(L);
+		lua_insert(L, -2);  // nil, message
+		return 2;
+	}
+	return 1;
+}
+
 //! Runs inside ICvEngineScriptSystem1::CallCFunction, which holds the engine's Lua lock: the UI runs Lua
 //! on the main thread while CvGame::update runs on the game core thread, so calling lua_pcall directly
 //! from update() would race it.
@@ -680,7 +714,8 @@ int RunExternalLua(lua_State* L)
 	{
 		lua_pushvalue(L, LUA_REGISTRYINDEX);
 		lua_pushvalue(L, LUA_GLOBALSINDEX);
-		if (lua_pcall(L, 2, 1, 0) == 0 && lua_isfunction(L, -1))
+		lua_pushcfunction(L, LuaExecCompile);  // the compiler, so the runner never needs _G.loadstring
+		if (lua_pcall(L, 3, 1, 0) == 0 && lua_isfunction(L, -1))
 		{
 			lua_pushlstring(L, pRequest->pCode, pRequest->uiCodeBytes);
 			lua_pushstring(L, pRequest->szState);
