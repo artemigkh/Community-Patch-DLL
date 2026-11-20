@@ -803,7 +803,6 @@ void CvMap::uninit()
 #if defined(VP64_SPEED_DANGER)
 	VP64Danger::GameReset();
 #endif
-#line 803
 	m_paiNumResource.uninit();
 	m_paiNumResourceOnLand.uninit();
 
@@ -2627,7 +2626,6 @@ void CvMap::recalculateLandmasses()
 	// every landmass id and water flag may have changed: the kept DG7 tiles read them
 	VP64Danger::LandmassEvent();
 #endif
-#line 2622
 }
 
 //	--------------------------------------------------------------------------------

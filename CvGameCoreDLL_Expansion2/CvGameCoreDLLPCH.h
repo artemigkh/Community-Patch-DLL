@@ -251,7 +251,6 @@ typedef wchar_t          wchar;
 #if defined(VP64_SPEED_DANGER)
 #include "VP64SpeedDanger.h"
 #endif
-#line 251
 
 using namespace fastdelegate;
 

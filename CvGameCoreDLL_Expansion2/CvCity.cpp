@@ -21860,10 +21860,8 @@ void CvCity::SetBorderObstacleCity(int iValue)
 	if (bVP64Change)
 		VP64Danger::PlayerPlotsEvent(getOwner());
 #else
-#line 21857
 	m_iBorderObstacleCity = iValue;
 #endif
-#line 21858
 }
 
 //	--------------------------------------------------------------------------------
@@ -21894,10 +21892,8 @@ void CvCity::SetBorderObstacleWater(int iValue)
 	if (bVP64Change)
 		VP64Danger::PlayerPlotsEvent(getOwner());
 #else
-#line 21882
 	m_iBorderObstacleWater = iValue;
 #endif
-#line 21883
 }
 
 //	--------------------------------------------------------------------------------
