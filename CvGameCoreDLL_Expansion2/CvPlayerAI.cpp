@@ -3524,16 +3524,16 @@ bool CvPlayerAI::IsNicePlotForCitadel(const CvPlot* pPlot)
 		if (m_iCurrentCitadelTargetsTurn != GC.getGame().getGameTurn())
 		{
 			m_iCurrentCitadelTargetsTurn = GC.getGame().getGameTurn();
-			VP64_SPEED_CHECK("P3_TA14", "IsNicePlotForCitadel scan skipped", 0, 0);
+			VP64_P3_COUNT("P3_TA14", "IsNicePlotForCitadel scan skipped");
 			if (isMajorCiv() && GC.getGame().VP64IsClosestCityPlotsMapDirty())
 			{
 				static const UnitClassTypes eGeneralClass = static_cast<UnitClassTypes>(GC.getInfoTypeForString("UNITCLASS_GREAT_GENERAL"));
 				CvPlot* pRead = VP64P3FirstCitadelCityRead(*this, GetSpecificUnitType(eGeneralClass));
-				VP64_SPEED_CHECK("P3_TA14G", "IsNicePlotForCitadel guard replay", 0, 0);
+				VP64_P3_COUNT("P3_TA14G", "IsNicePlotForCitadel guard replay");
 				if (pRead)
 				{
 					GetClosestCityByPlots(pRead);
-					VP64_SPEED_CHECK("P3_TA14R", "IsNicePlotForCitadel guard refresh", 0, 0);
+					VP64_P3_COUNT("P3_TA14R", "IsNicePlotForCitadel guard refresh");
 				}
 			}
 		}

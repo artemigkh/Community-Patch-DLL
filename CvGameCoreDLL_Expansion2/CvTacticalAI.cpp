@@ -4983,7 +4983,7 @@ bool CvTacticalAI::FindUnitsForHarassing(CvPlot* pTarget, int iNumTurnsAway, int
 				if (vVP64A5Reach.empty())
 					VP64P3A5Fill(pTarget, m_pPlayer->getTeam(), vVP64A5Reach);
 				bVP64A5Skip = !vVP64A5Reach[pLoopUnit->plot()->GetPlotIndex()];
-				VP64_SPEED_CHECK("P3_A5T", "FindUnitsForHarassing A5 test", 0, 0);
+				VP64_P3_COUNT("P3_A5T", "FindUnitsForHarassing A5 test");
 #  if defined(VP64_SPEED_P3_SPOIL)
 				if (!bVP64A5Skip && VP64_SPEED_SPOIL_NOW("P3_A5", VP64_SPEED_P3_SPOIL))
 					bVP64A5Skip = true;
@@ -4996,7 +4996,7 @@ bool CvTacticalAI::FindUnitsForHarassing(CvPlot* pTarget, int iNumTurnsAway, int
 #  if !defined(VP64_SPEED_P3_VERIFY)
 			if (bVP64A5Skip)
 			{
-				VP64_SPEED_CHECK("P3_A5", "FindUnitsForHarassing A5 skip", 0, 0);
+				VP64_P3_COUNT("P3_A5", "FindUnitsForHarassing A5 skip");
 				continue;
 			}
 #  endif
@@ -13083,14 +13083,14 @@ bool TacticalAIHelpers::AddSupportMoves(CvTacticalPosition& positionAfterCombatM
 // passes the cap; then it wipes as the pin does. Exact: every slot is re-initialised before it is read (initFromScratch
 // clears, initFromParent inherits, STacticalAssignment::init clears), so only capacity is kept, never contents read.
 // Two threads: the decision flag and the row file are written only here, inside FindBestUnitAssignments (game core).
+// The cap, VP64_SPEED_P3_MB2_CAP_MB (MiB, default 16), is defined in VP64SpeedVerify.h; the row file VP64P3Mb2.csv and
+// the counters only in a statistics build (VP64_SPEED_P3_STATS_ON there).
 #include "VP64SpeedVerify.h"
-#ifndef VP64_SPEED_P3_MB2_CAP_MB
-#define VP64_SPEED_P3_MB2_CAP_MB 16 // MiB (32 until 2026-11-19: 16 cost no measurable time on H and kept 5.6 MB less, note 6.5)
-#endif
 static bool s_bVP64P3Mb2Kept = false; // set by the tactical pool's hard reset, read by the two that follow it
 template<typename T> static size_t VP64P3Bytes(const vector<T>& v) { return v.capacity() * sizeof(T); }
 static size_t VP64P3Bytes(const map<int, short>& m) { return m.size() * 48; }
 static size_t VP64P3Bytes(const SUnitIDValueContainer& c) { return VP64P3Bytes(c.m_aExtraStorage); }
+#if VP64_SPEED_P3_STATS_ON
 static void VP64P3Mb2Row(int iPlayer, size_t nBytes, bool bKept)
 {
 	static FILE* s_pFile = NULL;
@@ -13115,6 +13115,7 @@ static void VP64P3Mb2Row(int iPlayer, size_t nBytes, bool bKept)
 		fflush(s_pFile);
 	}
 }
+#endif
 size_t CvTactPosStorage::vp64KeptBytes() const
 {
 	size_t n = 0;
@@ -13147,8 +13148,10 @@ void CvTactPosStorage::reset(bool bHard)
 	{
 		const size_t nKept = vp64KeptBytes();
 		s_bVP64P3Mb2Kept = nKept <= (size_t)(VP64_SPEED_P3_MB2_CAP_MB) * 1024u * 1024u;
+#  if VP64_SPEED_P3_STATS_ON
 		VP64P3Mb2Row((int)eLastTactSimPlayer, nKept, s_bVP64P3Mb2Kept);
-		VP64_SPEED_CHECK(s_bVP64P3Mb2Kept ? "P3_MB2" : "P3_MB2W", "CvTactPosStorage::reset", 0, 0);
+		VP64_P3_COUNT(s_bVP64P3Mb2Kept ? "P3_MB2" : "P3_MB2W", "CvTactPosStorage::reset");
+#  endif
 		if (s_bVP64P3Mb2Kept)
 			bHard = false;
 	}

@@ -52,6 +52,29 @@
 #include <cstring>
 #include <vector>
 
+#if defined(VP64_SPEED_P3)
+// P3 (ticket 4809). The package's counters (VP64SpeedTotals.csv through this logger) and MB2's row file
+// (VP64P3Mb2.csv) exist only in a statistics build: VP64_SPEED_P3_STATS, or any verify, spoil, diagnosis or exercise
+// define of the package. The product form (VP64_SPEED_P3 alone) writes no file and takes no lock.
+#  if defined(VP64_SPEED_P3_STATS) || defined(VP64_SPEED_P3_VERIFY) || defined(VP64_SPEED_P3_SPOIL) || \
+	defined(VP64_SPEED_P3_SPOIL_EVERY) || defined(VP64_SPEED_P3_DIAG) || defined(VP64_SPEED_P3_TA14_FORCE_DIRTY)
+#    define VP64_SPEED_P3_STATS_ON 1
+#    define VP64_P3_COUNT(pkg, site) VP64_SPEED_CHECK(pkg, site, 0, 0)
+#  else
+#    define VP64_SPEED_P3_STATS_ON 0
+#    define VP64_P3_COUNT(pkg, site) ((void)0)
+#  endif
+// MB2's cap on the tactical pool's kept buffers, MiB (32 until 2026-11-19: 16 cost no measurable time on H and kept
+// 5.6 MB less, research/08-performance/speedup-p3-tactical.md 6.5). Defined here, before the logger, so that every
+// translation unit sees the same value and VP64SpeedInfo.txt names it also when it is the source default.
+#  ifndef VP64_SPEED_P3_MB2_CAP_MB
+#    define VP64_SPEED_P3_MB2_CAP_MB 16
+#    define VP64_SPEED_P3_MB2_CAP_FROM "source default"
+#  else
+#    define VP64_SPEED_P3_MB2_CAP_FROM "-D"
+#  endif
+#endif
+
 namespace vp64speed
 {
 	static const long long kMaxLoggedPerPackage = 10000;
@@ -212,8 +235,14 @@ namespace vp64speed
 #if defined(VP64_SPEED_P3)
 			fprintf(f, "define VP64_SPEED_P3\n");
 #endif
-#if defined(VP64_SPEED_P3_MB2_CAP_MB)
-			fprintf(f, "define VP64_SPEED_P3_MB2_CAP_MB=%d\n", (int)(VP64_SPEED_P3_MB2_CAP_MB));
+#if defined(VP64_SPEED_P3) && defined(VP64_SPEED_P3_MB2_CAP_MB)
+			fprintf(f, "define VP64_SPEED_P3_MB2_CAP_MB=%d (%s)\n", (int)(VP64_SPEED_P3_MB2_CAP_MB), VP64_SPEED_P3_MB2_CAP_FROM);
+#endif
+#if defined(VP64_SPEED_P3_STATS)
+			fprintf(f, "define VP64_SPEED_P3_STATS\n");
+#endif
+#if defined(VP64_SPEED_P3_DIAG)
+			fprintf(f, "define VP64_SPEED_P3_DIAG\n");
 #endif
 #if defined(VP64_SPEED_P3_VERIFY)
 			fprintf(f, "define VP64_SPEED_P3_VERIFY\n");
