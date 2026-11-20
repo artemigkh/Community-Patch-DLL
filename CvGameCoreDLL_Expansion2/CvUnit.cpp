@@ -39,6 +39,9 @@
 #include "CvDllCity.h"
 #include "CvGameQueries.h"
 #include "CvBarbarians.h"
+#if defined(VP64_RENDER_EVENTS)
+#include "VP64RenderEvents.h"
+#endif
 
 #if !defined(FINAL_RELEASE) || defined(VPDEBUG)
 #include <sstream>
@@ -1801,6 +1804,18 @@ void CvUnit::setupGraphical()
 			pDLL->GameplayUnitGarrison(pDllUnit.get(), true);
 		}
 	}
+#if defined(VP64_RENDER_EVENTS)
+	// Render messages (VP64RenderEvents.h): the activity and the transport as they are at the unit's setup for
+	// display (a load or a creation), so a renderer starts from the state and not from the next change.
+	if (VP64_RENDER_EVENTS_ACTIVE())
+	{
+		const int iVp64Plot = (plot() != NULL) ? plot()->GetPlotIndex() : -1;
+		if (m_eActivityType != ACTIVITY_AWAKE)
+			VP64_RENDER_EVENT(VP64_RENDER_EVENT_UNIT_ACTIVITY, iVp64Plot, getOwner(), GetID(), m_eActivityType, m_eActivityType);
+		if (!m_transportUnit.isInvalid())
+			VP64_RENDER_EVENT(VP64_RENDER_EVENT_UNIT_CARRIER, iVp64Plot, getOwner(), GetID(), m_transportUnit.iID, m_transportUnit.eOwner);
+	}
+#endif
 }
 
 //	--------------------------------------------------------------------------------
@@ -14439,7 +14454,15 @@ CvUnit* CvUnit::DoUpgradeTo(UnitTypes eUnitType, bool bFree)
 		{
 			pNewUnit->m_iAttacksMade = m_iAttacksMade;
 			pNewUnit->m_iMadeInterceptionCount = m_iMadeInterceptionCount;
+#if defined(VP64_RENDER_EVENTS)
+			const ActivityTypes eVp64Before = pNewUnit->m_eActivityType;
+#endif
 			pNewUnit->m_eActivityType = m_eActivityType;
+#if defined(VP64_RENDER_EVENTS)
+			if (pNewUnit->m_eActivityType != eVp64Before)
+				VP64_RENDER_EVENT(VP64_RENDER_EVENT_UNIT_ACTIVITY, (pNewUnit->plot() != NULL) ? pNewUnit->plot()->GetPlotIndex() : -1,
+					pNewUnit->getOwner(), pNewUnit->GetID(), pNewUnit->m_eActivityType, eVp64Before);
+#endif
 			pNewUnit->m_bMovedThisTurn = m_bMovedThisTurn;
 			pNewUnit->m_bHasWithdrawnThisTurn = m_bHasWithdrawnThisTurn;
 			pNewUnit->m_bFortified = m_bFortified;
@@ -26024,6 +26047,10 @@ void CvUnit::setTransportUnit(CvUnit* pTransportUnit)
 
 			SetActivityType(ACTIVITY_AWAKE);
 		}
+#if defined(VP64_RENDER_EVENTS)
+		VP64_RENDER_EVENT(VP64_RENDER_EVENT_UNIT_CARRIER, (plot() != NULL) ? plot()->GetPlotIndex() : -1, getOwner(), GetID(),
+			m_transportUnit.iID, m_transportUnit.eOwner);
+#endif
 	}
 }
 
@@ -29904,6 +29931,10 @@ void CvUnit::SetActivityType(ActivityTypes eNewValue)
 		CvPlot* pPlot = plot();
 
 		m_eActivityType = eNewValue;
+#if defined(VP64_RENDER_EVENTS)
+		VP64_RENDER_EVENT(VP64_RENDER_EVENT_UNIT_ACTIVITY, (pPlot != NULL) ? pPlot->GetPlotIndex() : -1, getOwner(), GetID(),
+			eNewValue, eOldActivity);
+#endif
 
 		CvInterfacePtr<ICvPlot1> pDllSelectionPlot(DLLUI->getSelectionPlot());
 		int iSelectionPlotIndex = (pDllSelectionPlot.get() != NULL)? pDllSelectionPlot->GetPlotIndex() : -1;

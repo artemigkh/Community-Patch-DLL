@@ -65,3 +65,7 @@ extern "C" __declspec(dllexport) unsigned int DllGetOutOfProcessInterfaceVersion
 	return VP_OUT_OF_PROCESS_INTERFACE_VERSION;
 }
 #endif // VP_OUT_OF_PROCESS
+
+#if defined(VP64_RENDER_EVENTS)
+#include "VP64RenderEvents.inl"
+#endif
