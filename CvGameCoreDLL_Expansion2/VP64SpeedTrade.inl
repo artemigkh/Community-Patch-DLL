@@ -740,9 +740,6 @@ void Begin(PlayerTypes ePlayer)
 	g_s.bRecording = false;
 	g_s.ePlayer = ePlayer;
 	g_s.eTeam = GET_PLAYER(ePlayer).getTeam();
-#if defined(VP64_SPEED_TRADE_STATS)
-	g_stats.Reset();
-#endif
 }
 
 void End()
@@ -772,7 +769,9 @@ void End()
 		++it;
 	}
 #if defined(VP64_SPEED_TRADE_STATS)
+	// a row per scope; the counters of TR7 and TR8 (counted between scopes, after this End) go into the next row
 	WriteRow();
+	g_stats.Reset();
 #endif
 }
 
