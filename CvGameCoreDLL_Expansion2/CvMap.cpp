@@ -803,6 +803,10 @@ void CvMap::uninit()
 #if defined(VP64_SPEED_DANGER)
 	VP64Danger::GameReset();
 #endif
+#if defined(VP64_SPEED_TRADE)
+	VP64Trade::GameReset(); // the trade package (ticket 4808): every new game, load and exit empties the store
+#endif
+#line 806
 	m_paiNumResource.uninit();
 	m_paiNumResourceOnLand.uninit();
 

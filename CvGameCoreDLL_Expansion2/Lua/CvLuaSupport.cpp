@@ -496,6 +496,11 @@ bool LuaSupport::CallHook(ICvEngineScriptSystem1* pkScriptSystem, const char* sz
 
 	// Must release our lock so that if the main thread has the Lua lock and is waiting for the Game Core lock, we don't freeze
 	bool bHadLock = gDLL->HasGameCoreLock();
+#if defined(VP64_SPEED_TRADE)
+	if(bHadLock)
+		VP64Trade::LockYield(); // the trade package (ticket 4808): another thread may change game state while we wait
+#endif
+#line 499
 	if(bHadLock)
 		gDLL->ReleaseGameCoreLock();
 	bool bResult = pkScriptSystem->CallHook(szName, args, value);
@@ -512,6 +517,11 @@ bool LuaSupport::CallTestAll(ICvEngineScriptSystem1* pkScriptSystem, const char*
 
 	// Must release our lock so that if the main thread has the Lua lock and is waiting for the Game Core lock, we don't freeze
 	bool bHadLock = gDLL->HasGameCoreLock();
+#if defined(VP64_SPEED_TRADE)
+	if(bHadLock)
+		VP64Trade::LockYield(); // the trade package (ticket 4808): another thread may change game state while we wait
+#endif
+#line 515
 	if(bHadLock)
 		gDLL->ReleaseGameCoreLock();
 	bool bResult = pkScriptSystem->CallTestAll(szName, args, value);
@@ -528,6 +538,11 @@ bool LuaSupport::CallTestAny(ICvEngineScriptSystem1* pkScriptSystem, const char*
 
 	// Must release our lock so that if the main thread has the Lua lock and is waiting for the Game Core lock, we don't freeze
 	bool bHadLock = gDLL->HasGameCoreLock();
+#if defined(VP64_SPEED_TRADE)
+	if(bHadLock)
+		VP64Trade::LockYield(); // the trade package (ticket 4808): another thread may change game state while we wait
+#endif
+#line 531
 	if(bHadLock)
 		gDLL->ReleaseGameCoreLock();
 	bool bResult = pkScriptSystem->CallTestAny(szName, args, value);
@@ -544,6 +559,11 @@ bool LuaSupport::CallAccumulator(_In_ ICvEngineScriptSystem1* pkScriptSystem, _I
 
 	// Must release our lock so that if the main thread has the Lua lock and is waiting for the Game Core lock, we don't freeze
 	bool bHadLock = gDLL->HasGameCoreLock();
+#if defined(VP64_SPEED_TRADE)
+	if(bHadLock)
+		VP64Trade::LockYield(); // the trade package (ticket 4808): another thread may change game state while we wait
+#endif
+#line 547
 	if(bHadLock)
 		gDLL->ReleaseGameCoreLock();
 	bool bResult = pkScriptSystem->CallAccumulator(szName, args, value);
@@ -560,6 +580,11 @@ bool LuaSupport::CallAccumulator(_In_ ICvEngineScriptSystem1* pkScriptSystem, _I
 
 	// Must release our lock so that if the main thread has the Lua lock and is waiting for the Game Core lock, we don't freeze
 	bool bHadLock = gDLL->HasGameCoreLock();
+#if defined(VP64_SPEED_TRADE)
+	if(bHadLock)
+		VP64Trade::LockYield(); // the trade package (ticket 4808): another thread may change game state while we wait
+#endif
+#line 563
 	if(bHadLock)
 		gDLL->ReleaseGameCoreLock();
 	bool bResult = pkScriptSystem->CallAccumulator(szName, args, value);

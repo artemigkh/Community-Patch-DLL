@@ -26,6 +26,13 @@
 #include "CvUnitMovement.h"
 #include <numeric>
 #include "LintFree.h"
+#if defined(VP64_SPEED_TRADE)
+// the trade package (ticket 4808): see VP64SpeedTrade.inl, included at the end of this file
+static inline void VP64TradeTouch(const CvPlot* pPlot);
+static int VP64TradeLookup(const CvPlot* pStart, const SPathFinderUserData& d, const SPathFinderUserData& cur, map<int, SPath>& out);
+static void VP64TradeStore(int iState, const map<int, SPath>& result, const SPathFinderUserData& cur);
+#endif
+#line 29
 
 #define PATH_BASE_COST											(120)	//base cost per movement point expended
 #define PATH_ATTACK_WEIGHT										(200)	//per percent penalty on attack
@@ -3420,6 +3427,17 @@ map<int,SPath> CvPathFinder::GetMultiplePaths(const CvPlot* pStartPlot, vector<C
 			gDLL->ReleaseGameCoreLock();
 		return result;
 	}
+#if defined(VP64_SPEED_TRADE)
+	// the trade package (ticket 4808): under the lock, after Configure; 1 = the kept result of an unchanged search
+	const int iVP64TradeState = VP64TradeLookup(pStartPlot, data, GetData(), result);
+	if (iVP64TradeState == 1)
+	{
+		if(!bHadLock)
+			gDLL->ReleaseGameCoreLock();
+		return result;
+	}
+#endif
+#line 3423
 
 	//sort for fast search
 	std::stable_sort( vDestPlots.begin(), vDestPlots.end(), PrSortByPlotIndex() );
@@ -3477,6 +3495,10 @@ map<int,SPath> CvPathFinder::GetMultiplePaths(const CvPlot* pStartPlot, vector<C
 			vDestPlots.erase(bounds.first);
 		}
 	}
+#if defined(VP64_SPEED_TRADE)
+	VP64TradeStore(iVP64TradeState, result, GetData());
+#endif
+#line 3480
 
 	if(!bHadLock)
 		gDLL->ReleaseGameCoreLock();
@@ -3723,6 +3745,11 @@ int TradePathLandCost(const CvAStarNode* parent, const CvAStarNode* node, const 
 	CvMap& kMap = GC.getMap();
 	CvPlot* pFromPlot = kMap.plotUnchecked(parent->m_iX, parent->m_iY);
 	CvPlot* pToPlot = kMap.plotUnchecked(node->m_iX, node->m_iY);
+#if defined(VP64_SPEED_TRADE)
+	VP64TradeTouch(pFromPlot);
+	VP64TradeTouch(pToPlot);
+#endif
+#line 3726
 
 	const TradePathCacheData* pCacheData = reinterpret_cast<const TradePathCacheData*>(finder->GetScratchBuffer());
 	FeatureTypes eFeature = pToPlot->getFeatureType();
@@ -3808,6 +3835,11 @@ int TradePathLandValid(const CvAStarNode* parent, const CvAStarNode* node, const
 
 	const TradePathCacheData* pCacheData = reinterpret_cast<const TradePathCacheData*>(finder->GetScratchBuffer());
 	CvPlot* pToPlot = GC.getMap().plotUnchecked(node->m_iX, node->m_iY);
+#if defined(VP64_SPEED_TRADE)
+	VP64TradeTouch(GC.getMap().plotUnchecked(parent->m_iX, parent->m_iY));
+	VP64TradeTouch(pToPlot);
+#endif
+#line 3811
 
 	if (!pToPlot->isRevealed(pCacheData->GetTeam()))
 	{
@@ -3852,6 +3884,10 @@ int TradePathWaterCost(const CvAStarNode*, const CvAStarNode* node, const SPathF
 	CvMap& kMap = GC.getMap();
 	const TradePathCacheData* pCacheData = reinterpret_cast<const TradePathCacheData*>(finder->GetScratchBuffer());
 	CvPlot* pToPlot = kMap.plotUnchecked( node->m_iX,  node->m_iY);
+#if defined(VP64_SPEED_TRADE)
+	VP64TradeTouch(pToPlot);
+#endif
+#line 3855
 
 	int iCost = PATH_BASE_COST;
 
@@ -3882,6 +3918,11 @@ int TradePathWaterValid(const CvAStarNode* parent, const CvAStarNode* node, cons
 
 	CvMap& kMap = GC.getMap();
 	CvPlot* pNewPlot = kMap.plotUnchecked(node->m_iX, node->m_iY);
+#if defined(VP64_SPEED_TRADE)
+	VP64TradeTouch(kMap.plotUnchecked(parent->m_iX, parent->m_iY));
+	VP64TradeTouch(pNewPlot);
+#endif
+#line 3885
 
 	if (!pNewPlot->isRevealed(pCacheData->GetTeam()))
 		return FALSE;
@@ -4377,3 +4418,8 @@ FDataStream & operator << (FDataStream & kStream, const CvPathNode & node)
 	kStream << node.m_iY;
 	return kStream;
 }
+#if defined(VP64_SPEED_TRADE) || defined(VP64_SPEED_TRADE_TR7) || defined(VP64_SPEED_TRADE_TR8)
+// the trade package (ticket 4808)
+#include "VP64SpeedTrade.inl"
+#endif
+#line 4380

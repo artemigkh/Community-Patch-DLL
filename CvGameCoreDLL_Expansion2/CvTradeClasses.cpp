@@ -486,6 +486,11 @@ void CvGameTrade::UpdateTradePathCache(PlayerTypes ePlayer1)
 		}
 	}
 
+#if defined(VP64_SPEED_TRADE)
+	// the trade package (ticket 4808): the searches of this loop may reuse their last result (core thread only)
+	VP64Trade::Begin(ePlayer1);
+#endif
+#line 489
 	int iOriginCityLoop = 0;
 	for (CvCity* pOriginCity = kPlayer1.firstCity(&iOriginCityLoop); pOriginCity != NULL; pOriginCity = kPlayer1.nextCity(&iOriginCityLoop))
 	{
@@ -538,6 +543,10 @@ void CvGameTrade::UpdateTradePathCache(PlayerTypes ePlayer1)
 			AddTradePathToCache(m_aLandPaths, iCityPlotIndex, pDestCity->plot()->GetPlotIndex(), it->second, kPlayer1, eMyTeam, bInvulnerability, aiTeamDanger);
 		}
 	}
+#if defined(VP64_SPEED_TRADE)
+	VP64Trade::End();
+#endif
+#line 541
 
 	SetTradePathsCacheUpdateCounter(ePlayer1, GC.getGame().getGameTurn());
 
@@ -5245,6 +5254,46 @@ void CvPlayerTrade::UpdateFurthestPossibleTradeRoute(DomainTypes eDomain, CvCity
 	// don't calculate trade routes for minors
 	if (m_pPlayer->isMinorCiv())
 		return;
+#if defined(VP64_SPEED_TRADE_TR7)
+	// TR7 (ticket 4808): only a destination in the origin city's row of this thread's trade-path cache can have a valid
+	// path length (GetValidTradeRoutePathLength answers from that row, which UpdateTradePathCache has just filled, and
+	// every length it returns is at most iMaxRange in normalized units, so the loop's break never skips a longer one):
+	// walk the row instead of every city of every player; the result is the longest length, whatever the order.
+	// Stock loop instead: with MOD_EVENTS_TRADE_ROUTES (CanCreateTradeRoute raises PlayerCanCreateTradeRoute for every
+	// candidate; a listener would miss the skipped raises) and with AI logging (the log lines follow the loop's order).
+	const bool bVP64Tr7Fast = !MOD_EVENTS_TRADE_ROUTES && !(GC.getLogging() && GC.getAILogging());
+	int iVP64Tr7Longest = 0;
+	if (bVP64Tr7Fast)
+	{
+		const std::map<int, STradePathInfo>& kRow = GC.getGame().GetGameTrade()->GetAllPotentialTradeRoutesFromCity(pOriginCity, eDomain == DOMAIN_SEA);
+		std::vector<int> vVP64Dest;
+		vVP64Dest.reserve(kRow.size());
+		for (std::map<int, STradePathInfo>::const_iterator itVP64 = kRow.begin(); itVP64 != kRow.end(); ++itVP64)
+			vVP64Dest.push_back(itVP64->first);
+		for (size_t iVP64 = 0; iVP64 < vVP64Dest.size(); iVP64++)
+		{
+			CvPlot* pVP64Plot = GC.getMap().plotByIndex(vVP64Dest[iVP64]);
+			CvCity* pDestCity = pVP64Plot ? pVP64Plot->getPlotCity() : NULL;
+			if (pDestCity == NULL || pDestCity->getOwner() < 0 || pDestCity->getOwner() >= MAX_CIV_PLAYERS)
+				continue;
+			if (CanCreateTradeRoute(pOriginCity, pDestCity, eDomain, TRADE_CONNECTION_INTERNATIONAL, false, false))
+			{
+				int iLength = GC.getGame().GetGameTrade()->GetValidTradeRoutePathLength(pOriginCity, pDestCity, eDomain);
+				if (iLength > iVP64Tr7Longest)
+					iVP64Tr7Longest = iLength;
+			}
+		}
+	}
+	VP64Trade::CountTR7(bVP64Tr7Fast);
+#  if !defined(VP64_SPEED_TRADE_VERIFY)
+	if (bVP64Tr7Fast)
+	{
+		pOriginCity->SetLongestPotentialTradeRoute(iVP64Tr7Longest == 0 ? iMaxRange : iVP64Tr7Longest, eDomain);
+		return;
+	}
+#  endif
+#endif
+#line 5248
 
 	int iLongestRoute = 0;
 	CvString strMsg;
@@ -5304,6 +5353,12 @@ void CvPlayerTrade::UpdateFurthestPossibleTradeRoute(DomainTypes eDomain, CvCity
 			}
 		}
 	}
+#if defined(VP64_SPEED_TRADE_TR7) && defined(VP64_SPEED_TRADE_VERIFY)
+	if (bVP64Tr7Fast)
+		VP64_SPEED_CHECK_K("TRADE_TR7", "UpdateFurthestPossibleTradeRoute", iVP64Tr7Longest, iLongestRoute, m_pPlayer->GetID(),
+			pOriginCity->GetID(), eDomain, iMaxRange);
+#endif
+#line 5307
 	pOriginCity->SetLongestPotentialTradeRoute(iLongestRoute == 0 ? iMaxRange : iLongestRoute, eDomain);
 }
 //	--------------------------------------------------------------------------------
@@ -5415,6 +5470,43 @@ int CvPlayerTrade::GetTradeRouteSpeed(DomainTypes eDomain) const
 //	--------------------------------------------------------------------------------
 int CvPlayerTrade::GetTradeRouteTurnMod(CvCity* pOriginCity) const
 {
+#if defined(VP64_SPEED_TRADE_TR8)
+	// TR8 (ticket 4808): only a building the city has adds to the sum. The stock loop takes, per building class, the
+	// city's building of that class and adds its modifiers times GetNumBuilding; a building with GetNumBuilding > 0 is
+	// always in GetAllBuildingsHere (real or free count above 0, kept by SetNumRealBuildingTimed, SetNumFreeBuilding and
+	// Read, without duplicates). So walk that list, keep a building only when it is the city's building of its class,
+	// and skip the ones whose modifiers are 0 (they add 0 in the stock loop too).
+	int iVP64Tr8 = 0;
+	{
+		int iVP64Loop = 0;
+		for (CvCity* pLoopCity = m_pPlayer->firstCity(&iVP64Loop); pLoopCity != NULL; pLoopCity = m_pPlayer->nextCity(&iVP64Loop))
+		{
+			const bool bSameCity = (pLoopCity == pOriginCity);
+			const std::vector<BuildingTypes>& vHere = pLoopCity->GetCityBuildings()->GetAllBuildingsHere();
+			for (size_t iVP64 = 0; iVP64 < vHere.size(); iVP64++)
+			{
+				const BuildingTypes eBuilding = vHere[iVP64];
+				CvBuildingEntry* pkBuildingInfo = GC.getBuildingInfo(eBuilding);
+				if (!pkBuildingInfo)
+					continue;
+				const int iGlobal = pkBuildingInfo->GetTRTurnModGlobal();
+				const int iLocal = bSameCity ? pkBuildingInfo->GetTRTurnModLocal() : 0;
+				if (iGlobal == 0 && iLocal == 0)
+					continue;
+				if (pLoopCity->GetBuildingTypeFromClass(pkBuildingInfo->GetBuildingClassType()) != eBuilding)
+					continue;
+				const int iNumBuilding = pLoopCity->GetCityBuildings()->GetNumBuilding(eBuilding);
+				iVP64Tr8 += iGlobal * iNumBuilding;
+				iVP64Tr8 += iLocal * iNumBuilding;
+			}
+		}
+	}
+	VP64Trade::CountTR8();
+#  if !defined(VP64_SPEED_TRADE_VERIFY)
+	return iVP64Tr8;
+#  endif
+#endif
+#line 5418
 	int iTurnChange = 0;
 	int iLoop = 0;
 	for (CvCity* pLoopCity = m_pPlayer->firstCity(&iLoop); pLoopCity != NULL; pLoopCity = m_pPlayer->nextCity(&iLoop))
@@ -5442,6 +5534,11 @@ int CvPlayerTrade::GetTradeRouteTurnMod(CvCity* pOriginCity) const
 	}
 
 	// Can be lower than -100; should be handled on caller side
+#if defined(VP64_SPEED_TRADE_TR8) && defined(VP64_SPEED_TRADE_VERIFY)
+	VP64_SPEED_CHECK_K("TRADE_TR8", "GetTradeRouteTurnMod", iVP64Tr8, iTurnChange, m_pPlayer->GetID(),
+		pOriginCity ? pOriginCity->GetID() : -1, 0, 0);
+#endif
+#line 5445
 	return iTurnChange;
 }
 

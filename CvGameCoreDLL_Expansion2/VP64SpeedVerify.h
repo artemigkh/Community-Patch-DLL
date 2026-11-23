@@ -209,6 +209,33 @@ namespace vp64speed
 #if defined(VP64_SPEED_DANGER_DG7_SPOIL_EVERY)
 			fprintf(f, "define VP64_SPEED_DANGER_DG7_SPOIL_EVERY=%d\n", (int)(VP64_SPEED_DANGER_DG7_SPOIL_EVERY));
 #endif
+#if defined(VP64_SPEED_TRADE) || defined(VP64_SPEED_TRADE_TR7) || defined(VP64_SPEED_TRADE_TR8)
+#  if defined(VP64_SPEED_TRADE)
+			fprintf(f, "define VP64_SPEED_TRADE\n");
+#  endif
+#  if defined(VP64_SPEED_TRADE_TR4)
+			fprintf(f, "define VP64_SPEED_TRADE_TR4\n");
+#  endif
+#  if defined(VP64_SPEED_TRADE_TR7)
+			fprintf(f, "define VP64_SPEED_TRADE_TR7\n");
+#  endif
+#  if defined(VP64_SPEED_TRADE_TR8)
+			fprintf(f, "define VP64_SPEED_TRADE_TR8\n");
+#  endif
+#  if defined(VP64_SPEED_TRADE_VERIFY)
+			fprintf(f, "define VP64_SPEED_TRADE_VERIFY\n");
+#  endif
+#  if defined(VP64_SPEED_TRADE_STATS)
+			fprintf(f, "define VP64_SPEED_TRADE_STATS\n");
+#  endif
+#  if defined(VP64_SPEED_TRADE_SPOIL)
+			fprintf(f, "define VP64_SPEED_TRADE_SPOIL=%d\n", (int)(VP64_SPEED_TRADE_SPOIL));
+#  endif
+#  if defined(VP64_SPEED_TRADE_SPOIL_EVERY)
+			fprintf(f, "define VP64_SPEED_TRADE_SPOIL_EVERY=%d\n", (int)(VP64_SPEED_TRADE_SPOIL_EVERY));
+#  endif
+#endif
+#line 212
 			// A package adds its own three lines here, in its own #if blocks.
 			fclose(f);
 		}

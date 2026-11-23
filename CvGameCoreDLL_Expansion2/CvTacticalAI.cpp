@@ -12425,6 +12425,10 @@ vector<STacticalAssignment> TacticalAIHelpers::FindBestUnitAssignments(
 		//be a good citizen and let the UI run in between ... stupid design
 		if (iOldPauseCount!=iNewPauseCount && gDLL->HasGameCoreLock())
 		{
+#if defined(VP64_SPEED_TRADE)
+			VP64Trade::LockYield(); // the trade package (ticket 4808): the ui thread may change game state here
+#endif
+#line 12428
 			gDLL->ReleaseGameCoreLock();
 			Sleep(1);
 			gDLL->GetGameCoreLock();
@@ -12864,6 +12868,10 @@ bool TacticalAIHelpers::AddSupportMoves(CvTacticalPosition& positionAfterCombatM
 		//be a good citizen and let the UI run in between ... stupid design
 		if (iOldPauseCount != iNewPauseCount && gDLL->HasGameCoreLock())
 		{
+#if defined(VP64_SPEED_TRADE)
+			VP64Trade::LockYield(); // the trade package (ticket 4808): the ui thread may change game state here
+#endif
+#line 12867
 			gDLL->ReleaseGameCoreLock();
 			Sleep(1);
 			gDLL->GetGameCoreLock();

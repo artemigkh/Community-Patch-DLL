@@ -254,6 +254,10 @@ typedef wchar_t          wchar;
 #if defined(VP64_HIDDEN_EMBARK)
 #include "VP64HiddenEmbark.h"
 #endif
+#if defined(VP64_SPEED_TRADE) || defined(VP64_SPEED_TRADE_TR7) || defined(VP64_SPEED_TRADE_TR8)
+#include "VP64SpeedTrade.h"
+#endif
+#line 257
 
 using namespace fastdelegate;
 
