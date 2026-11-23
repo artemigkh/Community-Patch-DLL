@@ -11647,6 +11647,9 @@ PlotVisibilityChangeResult CvPlot::changeVisibilityCount(TeamTypes eTeam, int iC
 	if (!bOldVisibility && isVisible(eTeam))
 	{
 		eResult = VISIBILITY_CHANGE_TO_VISIBLE;
+#if defined(VP64_HIDDEN_EMBARK)
+		VP64HiddenEmbark::OnPlotVisible(this);
+#endif
 
 		if (setRevealed(eTeam, true, pUnit)) // Change to revealed, returns true if the visibility was changed
 		{
