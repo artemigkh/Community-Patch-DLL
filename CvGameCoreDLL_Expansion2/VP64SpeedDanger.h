@@ -91,3 +91,4 @@ namespace VP64Danger
 }
 
 #endif
+// Ticket 0639: a hotfix probe for the validation tiers (a DLL change as a carry-series row). Never shipped.
