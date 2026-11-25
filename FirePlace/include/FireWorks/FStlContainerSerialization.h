@@ -41,6 +41,19 @@
 #include <unordered_map>
 #include "CvStructs.h"
 
+// Container element counts are 32-bit in the save format. size_t is 8 bytes on x64, so the x64
+// build narrows them here, so that its saves are byte for byte those of the x86 build. On x86 size_t is
+// already unsigned int and the expression is left untouched.
+#if defined(_WIN64)
+inline unsigned int FStlSerializedCount(size_t count)
+{
+	FAssertMsg(count <= 0xFFFFFFFFu, "container too large for its 32-bit save count");
+	return static_cast<unsigned int>(count);
+}
+#else
+#define FStlSerializedCount(count) (count)
+#endif
+
 template<typename FirstType, typename SecondType>
 FDataStream & operator<<(FDataStream & saveTo, const std::pair<FirstType, SecondType> & readFrom)
 {
@@ -68,7 +81,7 @@ struct SerializeFromSequenceContainer
 	m_saveTo(saveTo)
 	, m_container(container)
 	{
-		m_saveTo << container.size();
+		m_saveTo << FStlSerializedCount(container.size());
 	}
 
 	void operator() (ElementType & i)
@@ -83,7 +96,7 @@ template<typename ElementType, typename ContainerType>
 void SerializeToSequenceContainer(FDataStream & loadFrom, ContainerType & container)
 {
 	container.clear();
-	typename ContainerType::size_type count = 0;
+	unsigned int count = 0; // 32-bit in the save format, see FStlSerializedCount
 	loadFrom >> count;
 	
 	//failsafe - may be pointless but let's try
@@ -129,7 +142,7 @@ struct SerializeFromAssociativeContainer
 	m_saveTo(saveTo)
 	, m_container(container)
 	{
-		size_t count = container.size();
+		unsigned int count = FStlSerializedCount(container.size());
 		m_saveTo << count;
 	}
 
@@ -146,7 +159,7 @@ template<typename ElementType, typename ContainerType>
 void SerializeToAssociativeContainer(FDataStream & loadFrom, ContainerType & container)
 {
 	container.clear();
-	size_t count = 0;
+	unsigned int count = 0; // 32-bit in the save format, see FStlSerializedCount
 	loadFrom >> count;
 
 	//failsafe - may be pointless but let's try

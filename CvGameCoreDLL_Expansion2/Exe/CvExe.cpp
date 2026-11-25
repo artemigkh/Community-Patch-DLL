@@ -1,8 +1,10 @@
 #include "CvGameCoreDLLPCH.h"
 #include "CvExe.h"
+#if !defined(VP_OUT_OF_PROCESS)
 #include "CvExeApi.h"
 #include "CvExeBuild.h"
 #include "CvExeSymbols.h"
+#endif
 #include "CvGameCoreUtils.h"
 
 #include <string.h>
@@ -30,6 +32,18 @@ const char* const REASON_NAMES[Exe::NUM_REASONS] =
 	"busy",
 };
 
+Exe::Reason Refuse(const char* szWhat, Exe::Reason eReason)
+{
+	CUSTOMLOG("Exe: %s refused: %s (%s EXE)",
+		szWhat,
+		Exe::GetReasonName(eReason),
+		Exe::GetBuildName()
+	);
+
+	return eReason;
+}
+
+#if !defined(VP_OUT_OF_PROCESS)
 // The symbols each feature uses
 const ExeSymbol RESYNC_SYMBOLS[] =
 {
@@ -138,17 +152,6 @@ bool HasSymbols(const ExeSymbol* aSymbols, unsigned int uiCount)
 	}
 
 	return true;
-}
-
-Exe::Reason Refuse(const char* szWhat, Exe::Reason eReason)
-{
-	CUSTOMLOG("Exe: %s refused: %s (%s EXE)",
-		szWhat,
-		Exe::GetReasonName(eReason),
-		Exe::GetBuildName()
-	);
-
-	return eReason;
 }
 
 //! True if [p, p + uiSize) is committed, readable memory in one region.
@@ -267,6 +270,7 @@ void AnnounceTuner()
 		NO_PLAYER
 	);
 }
+#endif // !VP_OUT_OF_PROCESS
 } // namespace
 
 //------------------------------------------------------------------------------
@@ -280,6 +284,98 @@ const char* Exe::GetReasonName(Reason eReason)
 	return REASON_NAMES[eReason];
 }
 
+#if defined(VP_OUT_OF_PROCESS)
+//------------------------------------------------------------------------------
+// Out of process no Civ V EXE hosts the DLL. Every feature answers as for an
+// unknown EXE, and nothing reads or writes another module's memory.
+const char* Exe::GetBuildName()
+{
+	return "Unknown";
+}
+
+Exe::Reason Exe::CanScheduleResync()
+{
+	return MOD_BIN_HOOKS ? REASON_UNSUPPORTED_EXE : REASON_BIN_HOOKS_OFF;
+}
+
+Exe::Reason Exe::TryScheduleResync()
+{
+	return Refuse("TryScheduleResync", CanScheduleResync());
+}
+
+Exe::Reason Exe::CanDisableEngineYieldIconManager()
+{
+	return MOD_BIN_HOOKS ? REASON_UNSUPPORTED_EXE : REASON_BIN_HOOKS_OFF;
+}
+
+Exe::Reason Exe::TryDisableEngineYieldIconManager()
+{
+	return Refuse("TryDisableEngineYieldIconManager", CanDisableEngineYieldIconManager());
+}
+
+Exe::Reason Exe::CanRepairCityArt()
+{
+	return MOD_BIN_HOOKS ? REASON_UNSUPPORTED_EXE : REASON_BIN_HOOKS_OFF;
+}
+
+Exe::Reason Exe::TryRepairCityArt(const CvCity& kCity)
+{
+	(void)kCity;
+	return Refuse("TryRepairCityArt", CanRepairCityArt());
+}
+
+Exe::Reason Exe::CanGrowUICommandStream()
+{
+	return MOD_BIN_HOOKS ? REASON_UNSUPPORTED_EXE : REASON_BIN_HOOKS_OFF;
+}
+
+Exe::Reason Exe::TryGrowUICommandStream()
+{
+	return Refuse("TryGrowUICommandStream", CanGrowUICommandStream());
+}
+
+Exe::Reason Exe::CanGetUICommandStreamUsage()
+{
+	return REASON_UNSUPPORTED_EXE;
+}
+
+Exe::Reason Exe::TryGetUICommandStreamUsage(
+	unsigned int& uiUsed,
+	unsigned int& uiCapacity
+)
+{
+	(void)uiUsed;
+	(void)uiCapacity;
+	return Refuse("TryGetUICommandStreamUsage", CanGetUICommandStreamUsage());
+}
+
+Exe::Reason Exe::TryReadLocalMachineEventStreamStats(
+	LocalMachineEventStreamStats& kStats
+)
+{
+	(void)kStats;
+	return MOD_BIN_HOOKS ? REASON_UNSUPPORTED_EXE : REASON_BIN_HOOKS_OFF;
+}
+
+Exe::Reason Exe::CanEnableTunerInMultiplayer()
+{
+	return MOD_BIN_HOOKS ? REASON_UNSUPPORTED_EXE : REASON_BIN_HOOKS_OFF;
+}
+
+Exe::Reason Exe::TryEnableTunerInMultiplayer()
+{
+	return Refuse("TryEnableTunerInMultiplayer", CanEnableTunerInMultiplayer());
+}
+
+// The tuner is never enabled, so there is nothing to announce after a load
+void Exe::OnGameLoaded()
+{
+}
+
+void Exe::AnnounceTunerAfterLoad()
+{
+}
+#else
 const char* Exe::GetBuildName()
 {
 	return ExeBuild::GetName(ExeBuild::GetType());
@@ -1131,3 +1227,4 @@ Exe::Reason Exe::TryReadLocalMachineEventStreamStats(
 
 	return REASON_OK;
 }
+#endif // VP_OUT_OF_PROCESS
