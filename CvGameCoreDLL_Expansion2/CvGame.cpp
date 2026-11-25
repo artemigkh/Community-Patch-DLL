@@ -1102,6 +1102,9 @@ void CvGame::DoGameStarted()
 //	--------------------------------------------------------------------------------
 void CvGame::uninit()
 {
+#if defined(VP64_HIDDEN_EMBARK)
+	VP64HiddenEmbark::Clear();
+#endif
 	CvGoodyHuts::Uninit();
 	CvBarbarians::Uninit();
 
@@ -8543,6 +8546,9 @@ void CvGame::doTurn()
 	incrementGameTurn();
 	incrementElapsedGameTurns();
 	gDLL->PublishNewGameTurn(getGameTurn());
+#if defined(VP64_SPEED_DANGER)
+	VP64Danger::TurnStart(getGameTurn());
+#endif
 
 	// After disengagement ends, bump any units out of tiles where they shouldn't be
 	// Don't iterate through all tiles *and* all players, that's expensive - only check any teams where disengagement just ended

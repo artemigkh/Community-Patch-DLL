@@ -1176,6 +1176,9 @@ CvPlot** CvMap::getNeighborsShuffled(const CvPlot* pPlot)
 //	--------------------------------------------------------------------------------
 void CvMap::uninit()
 {
+#if defined(VP64_SPEED_DANGER)
+	VP64Danger::GameReset();
+#endif
 	m_paiNumResource.uninit();
 	m_paiNumResourceOnLand.uninit();
 
@@ -3026,6 +3029,10 @@ void CvMap::recalculateLandmasses()
 		if (pPlot->getArea() >= 0 && pPlot->getLandmass() >= 0)
 			pPlot->landmass()->addArea(pPlot->getArea());
 	}
+#if defined(VP64_SPEED_DANGER_DG7)
+	// every landmass id and water flag may have changed: the kept DG7 tiles read them
+	VP64Danger::LandmassEvent();
+#endif
 }
 
 //	--------------------------------------------------------------------------------

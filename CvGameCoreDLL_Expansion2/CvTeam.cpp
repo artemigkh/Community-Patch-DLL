@@ -3893,6 +3893,9 @@ void CvTeam::changeBorderObstacleCount(int iChange)
 	if(iChange != 0)
 	{
 		m_iBorderObstacleCount = (m_iBorderObstacleCount + iChange);
+#if defined(VP64_SPEED_DANGER)
+		VP64Danger::TeamPlotsEvent(GetID());
+#endif
 		ASSERT(getBorderObstacleCount() >= 0);
 	}
 }
@@ -4249,6 +4252,10 @@ void CvTeam::makeHasMet(TeamTypes eIndex, bool bSuppressMessages)
 	if (!GET_TEAM(eIndex).isHasMet(GetID()))
 		LogDiplomacyEventTeams(GetID(), eIndex, "MET");
 
+#if defined(VP64_SPEED_DANGER)
+	VP64Danger::TeamScope kVP64DangerA(GetID());
+	VP64Danger::TeamScope kVP64DangerB(eIndex);
+#endif
 	SetTurnTeamMet(eIndex, GC.getGame().getGameTurn());
 
 	updateTechShare();
@@ -4530,7 +4537,14 @@ void CvTeam::setAtWar(TeamTypes eIndex, bool bNewValue, bool bAggressorPacifier)
 	}
 
 	m_abAggressorPacifier[eIndex] = bAggressorPacifier;
+#if defined(VP64_SPEED_DANGER)
+	const bool bVP64WarChange = (m_abAtWar[eIndex] != bNewValue);
 	m_abAtWar[eIndex] = bNewValue;
+	VP64Danger::TeamScope kVP64DangerA(bVP64WarChange ? (int)GetID() : -1);
+	VP64Danger::TeamScope kVP64DangerB(bVP64WarChange ? (int)eIndex : -1);
+#else
+	m_abAtWar[eIndex] = bNewValue;
+#endif
 
 	if (bNewValue)
 	{
@@ -5026,6 +5040,10 @@ void CvTeam::SetAllowsOpenBordersToTeam(TeamTypes eIndex, bool bNewValue)
 	{
 		m_abOpenBorders[eIndex] = bNewValue;
 		LogDiplomacyEventTeams(GetID(), eIndex, bNewValue ? "OPENED_BORDERS" : "CLOSED_BORDERS");
+#if defined(VP64_SPEED_DANGER)
+		VP64Danger::TeamScope kVP64DangerA(GetID());
+		VP64Danger::TeamScope kVP64DangerB(eIndex);
+#endif
 
 		for (int iPlayerLoop = 0; iPlayerLoop < MAX_PLAYERS; iPlayerLoop++)
 		{
@@ -6352,6 +6370,10 @@ void CvTeam::setHasTech(TechTypes eIndex, bool bNewValue, PlayerTypes ePlayer, b
 	int iChange = (bNewValue) ? 1 : -1;
 	if(GetTeamTechs()->HasTech(eIndex) != bNewValue)
 	{
+#if defined(VP64_SPEED_DANGER)
+		// processTech changes the team's movement counters, impassability and traits: at the start and every exit
+		VP64Danger::TeamScope kVP64DangerScope(GetID());
+#endif
 		if (MOD_ENABLE_ACHIEVEMENTS)
 		{
 			CvPlayerAI& kResearchingPlayer = GET_PLAYER(ePlayer);
@@ -9619,6 +9641,10 @@ void CvTeam::setVassal(TeamTypes eIndex, bool bNewValue, bool bVoluntary)
 
 	m_eMaster = bNewValue ? eIndex : NO_TEAM;
 	m_bIsVoluntaryVassal = bNewValue ? bVoluntary : false;
+#if defined(VP64_SPEED_DANGER)
+	VP64Danger::TeamEvent(GetID());
+	VP64Danger::TeamEvent(eIndex);
+#endif
 }
 
 //	-----------------------------------------------------------------------------------------------

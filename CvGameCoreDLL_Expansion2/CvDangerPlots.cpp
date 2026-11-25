@@ -70,8 +70,26 @@ bool CvDangerPlots::UpdateDangerSingleUnit(const CvUnit* pLoopUnit, bool bIgnore
 	else
 		iFlags |= CvUnit::MOVEFLAG_IGNORE_ZOC;
 
+#if defined(VP64_SPEED_DANGER)
+	ReachablePlots reachablePlots = VP64Danger::Reach(pLoopUnit,iFlags,plotsToIgnoreForZOC);
+#else
 	ReachablePlots reachablePlots = TacticalAIHelpers::GetAllPlotsInReachThisTurn(pLoopUnit,pLoopUnit->plot(),iFlags,0,pLoopUnit->maxMoves(),plotsToIgnoreForZOC);
+#endif
 
+#if defined(VP64_SPEED_DANGER_DG7)
+	// DG7: the attack and capture tiles of this unit, kept beside its kept reach (false: derive as stock below)
+	{
+		std::vector<int> vAttack, vCapture;
+		if (VP64Danger::Tiles(pLoopUnit, reachablePlots, vAttack, vCapture))
+		{
+			for (std::vector<int>::const_iterator it = vAttack.begin(); it != vAttack.end(); ++it)
+				AssignUnitDangerValue(pLoopUnit, GC.getMap().plotByIndexUnchecked(*it));
+			for (std::vector<int>::const_iterator it = vCapture.begin(); it != vCapture.end(); ++it)
+				m_DangerPlots[*it].m_apCaptureUnits.push_back(make_pair(pLoopUnit->getOwner(), pLoopUnit->GetID()));
+			return true;
+		}
+	}
+#endif
 	if (pLoopUnit->IsCanAttackRanged())
 	{
 		//for ranged every tile we can enter with movement left is a base for attack
@@ -1016,3 +1034,7 @@ std::vector<CvUnit*> CvDangerPlotContents::GetPossibleAttackers(TeamTypes eTeamF
 
 	return vResult;
 }
+#if defined(VP64_SPEED_DANGER)
+// the danger package of the speedup epic (ticket 4807): VP64SpeedDanger.h
+#include "VP64SpeedDanger.inl"
+#endif

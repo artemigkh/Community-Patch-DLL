@@ -4391,6 +4391,10 @@ void CvPlayerTraits::SetIsReligious()
 /// Store off data on bonuses from traits
 void CvPlayerTraits::InitPlayerTraits()
 {
+#if defined(VP64_SPEED_DANGER)
+	// hand-over 4.6 item 2: traits re-initialised outside a tech or policy change (setLeaderType, religion)
+	VP64Danger::PlayerScope kVP64DangerScope(m_pPlayer ? (int)m_pPlayer->GetID() : -1);
+#endif
 	// Reset all values to prevent accumulation on multiple calls
 	Reset();
 
