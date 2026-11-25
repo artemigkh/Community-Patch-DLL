@@ -153,7 +153,13 @@ bool CvDllUnit::CanMoveImpassable() const
 //------------------------------------------------------------------------------
 DirectionTypes CvDllUnit::GetFacingDirection(bool checkLineOfSightProperty) const
 {
+#if defined(VP64_HIDDEN_EMBARK)
+	if (checkLineOfSightProperty)
+		return m_pUnit->getFacingDirection(true);
+	return (DirectionTypes)VP64HiddenEmbark::VisualFacing(m_pUnit, m_pUnit->getFacingDirection(false));
+#else
 	return m_pUnit->getFacingDirection(checkLineOfSightProperty);
+#endif
 }
 //------------------------------------------------------------------------------
 ICvPlot1* CvDllUnit::GetPlot() const
