@@ -33747,6 +33747,9 @@ void CvPlayer::changeBorderObstacleCount(int iChange)
 	if(iChange != 0)
 	{
 		m_iBorderObstacleCount = (m_iBorderObstacleCount + iChange);
+#if defined(VP64_SPEED_DANGER)
+		VP64Danger::PlayerPlotsEvent(GetID());
+#endif
 		ASSERT(getBorderObstacleCount() >= 0);
 	}
 }
@@ -44430,6 +44433,10 @@ void CvPlayer::processPolicies(PolicyTypes ePolicy, int iChange)
 
 	if (iChange == 0)
 		return;
+#if defined(VP64_SPEED_DANGER)
+	// hand-over 4.6 item 2a: a policy's effects come and go here (setHasPolicy and SetPolicyBranchBlocked)
+	VP64Danger::PlayerScope kVP64DangerScope(GetID());
+#endif
 
 	CvPolicyEntry* pkPolicyInfo = GC.getPolicyInfo(ePolicy);
 	ASSERT(pkPolicyInfo);

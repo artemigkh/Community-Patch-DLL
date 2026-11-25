@@ -6364,6 +6364,10 @@ void CvPlot::setNEOfRiver(bool bNewValue, FlowDirectionTypes eRiverDir)
 	}
 
 	m_eRiverSWFlowDirection = eRiverDir;
+#if defined(VP64_SPEED_DANGER)
+	// hand-over 4.6 item 5: a river crossing is read from this plot and its neighbours
+	VP64Danger::PlotAndAdjacentEvent(this);
+#endif
 }
 
 
@@ -6412,6 +6416,9 @@ void CvPlot::setWOfRiver(bool bNewValue, FlowDirectionTypes eRiverDir)
 	}
 
 	m_eRiverEFlowDirection = eRiverDir;
+#if defined(VP64_SPEED_DANGER)
+	VP64Danger::PlotAndAdjacentEvent(this);
+#endif
 }
 
 
@@ -6460,6 +6467,9 @@ void CvPlot::setNWOfRiver(bool bNewValue, FlowDirectionTypes eRiverDir)
 	}
 
 	m_eRiverSEFlowDirection = eRiverDir;
+#if defined(VP64_SPEED_DANGER)
+	VP64Danger::PlotAndAdjacentEvent(this);
+#endif
 }
 
 
@@ -6647,6 +6657,9 @@ void CvPlot::setOwner(PlayerTypes eNewValue, int iAcquiringCityID, bool bCheckUn
 	// Remove effects for old owner before changing the member
 	if(getOwner() != eNewValue)
 	{
+#if defined(VP64_SPEED_DANGER)
+		VP64Danger::PlotScope kVP64DangerScope(this);
+#endif
 		PlayerTypes eOldOwner = getOwner();
 		TeamTypes eOldTeam = getTeam();
 		PlayerTypes eBuilder = GetPlayerThatBuiltImprovement();
@@ -6896,6 +6909,15 @@ void CvPlot::setOwner(PlayerTypes eNewValue, int iAcquiringCityID, bool bCheckUn
 		// ACTUALLY CHANGE OWNERSHIP HERE
 		setOwningCity(eNewValue, iAcquiringCityID);
 		m_eOwner = eNewValue;
+#if defined(VP64_SPEED_DANGER)
+		VP64Danger::PlotEvent(this);
+		if (isCity())
+		{
+			// airlift targets are the owner's cities
+			VP64Danger::PlayerEvent(eOldOwner);
+			VP64Danger::PlayerEvent(eNewValue);
+		}
+#endif
 
 		if (MOD_EVENTS_TILE_IMPROVEMENTS) {
 			GAMEEVENTINVOKE_HOOK(GAMEEVENT_TileOwnershipChanged, getX(), getY(), getOwner(), eOldOwner);
@@ -7299,6 +7321,9 @@ void CvPlot::setPlotType(PlotTypes eNewValue, bool bRecalculate, bool bRebuildGr
 	}
 
 	m_ePlotType = eNewValue;
+#if defined(VP64_SPEED_DANGER)
+	VP64Danger::PlotScope kVP64DangerScope(this);
+#endif
 
 	eTerrain = isHills() ? TERRAIN_HILL : (isMountain() ? TERRAIN_MOUNTAIN : NO_TERRAIN);
 	if (eTerrain != NO_TERRAIN)
@@ -7533,6 +7558,9 @@ void CvPlot::setTerrainType(TerrainTypes eNewValue, bool bRecalculate, bool bReb
 			GAMEEVENTINVOKE_HOOK(GAMEEVENT_TerraformingPlot, TERRAFORMINGEVENT_TERRAIN, m_iX, m_iY, 0, eNewValue, m_eTerrainType, -1, -1);
 
 		m_eTerrainType = eNewValue;
+#if defined(VP64_SPEED_DANGER)
+		VP64Danger::PlotScope kVP64DangerScope(this);
+#endif
 
 		updateYield();
 		updateImpassable();
@@ -7656,6 +7684,9 @@ void CvPlot::setFeatureType(FeatureTypes eNewValue)
 		}
 
 		m_eFeatureType = eNewValue;
+#if defined(VP64_SPEED_DANGER)
+		VP64Danger::PlotScope kVP64DangerScope(this);
+#endif
 		CvCity* pOwningCity = getEffectiveOwningCity();
 		if(pOwningCity != NULL)
 		{
@@ -8225,6 +8256,10 @@ void CvPlot::setIsCity(bool bValue, int iCityID, int iWorkRange)
 	}
 
 	m_bIsCity = bValue;
+#if defined(VP64_SPEED_DANGER)
+	VP64Danger::PlotScope kVP64DangerScope(this);
+	VP64Danger::PlayerEvent(getOwner());
+#endif
 	updateYield();
 }
 
@@ -8265,6 +8300,9 @@ void CvPlot::setImprovementType(ImprovementTypes eNewValue, PlayerTypes eBuilder
 
 	if (eOldImprovement != eNewValue)
 	{
+#if defined(VP64_SPEED_DANGER)
+		VP64Danger::PlotScope kVP64DangerScope(this);
+#endif
 		PlayerTypes eOldBuilder = GetPlayerThatBuiltImprovement();
 
 		// If old improvement was a gift, it ignored our tech limits, so be sure to remove resources properly
@@ -8554,6 +8592,9 @@ void CvPlot::setImprovementType(ImprovementTypes eNewValue, PlayerTypes eBuilder
 		}
 
 		m_eImprovementType = eNewValue;
+#if defined(VP64_SPEED_DANGER)
+		VP64Danger::PlotEvent(this);
+#endif
 		if (MOD_GLOBAL_STACKING_RULES)
 		{
 			calculateAdditionalUnitsFromImprovement();
@@ -9193,6 +9234,9 @@ void CvPlot::SetImprovementPillaged(bool bPillaged, bool bEvents)
 	if (bPillaged != bWasPillaged)
 	{
 		m_bImprovementPillaged = bPillaged;
+#if defined(VP64_SPEED_DANGER)
+		VP64Danger::PlotScope kVP64DangerScope(this);
+#endif
 
 		calculateAdditionalUnitsFromImprovement();
 
@@ -9438,6 +9482,9 @@ void CvPlot::setRouteType(RouteTypes eNewValue, PlayerTypes eBuilder)
 
 		// Route switch here!
 		m_eRouteType = eNewValue;
+#if defined(VP64_SPEED_DANGER)
+		VP64Danger::PlotScope kVP64DangerScope(this);
+#endif
 
 		// Apply new effects (maintenance and resource usage)
 		if(eNewValue != NO_ROUTE && !isCity())
@@ -9505,6 +9552,9 @@ void CvPlot::SetRoutePillaged(bool bPillaged, bool bEvents)
 
 	//city connections will be recalculated on turn start for each player!
 	m_bRoutePillaged = bPillaged;
+#if defined(VP64_SPEED_DANGER)
+	VP64Danger::PlotScope kVP64DangerScope(this);
+#endif
 
 	if (bEvents && MOD_EVENTS_TILE_IMPROVEMENTS)
 		GAMEEVENTINVOKE_HOOK(GAMEEVENT_TileRouteChanged, getX(), getY(), getOwner(), getRouteType(), getRouteType(), IsRoutePillaged());
@@ -9862,6 +9912,9 @@ void CvPlot::setOwningCity(PlayerTypes ePlayer, int iCityID)
 	CvCity* pNewCity = ::GetPlayerCity(IDInfo(ePlayer, iCityID));
 
 	m_owningCity = IDInfo(ePlayer, iCityID);
+#if defined(VP64_SPEED_DANGER)
+	VP64Danger::PlotScope kVP64DangerScope(this);
+#endif
 	
 	// change improvement ownership
 	ImprovementTypes eImprovement = getImprovementType();
@@ -10058,6 +10111,10 @@ int CvPlot::getReconCount() const
 void CvPlot::changeReconCount(int iChange)
 {
 	m_iReconCount = (m_iReconCount + iChange);
+#if defined(VP64_SPEED_DANGER_DG7)
+	// seeFromLevel reads the recon count: the kept DG7 tiles' line of sight
+	VP64Danger::PlotEvent(this);
+#endif
 	ASSERT(getReconCount() >= 0);
 }
 
@@ -11605,7 +11662,15 @@ void CvPlot::flipVisibility(TeamTypes eTeam)
 	//flip visibility
 	if (m_aiVisibilityCountThisTurnMax[eTeam] != m_aiVisibilityCount[eTeam])
 	{
+#if defined(VP64_SPEED_DANGER)
+		// with MOD_CORE_DELAYED_VISIBILITY isVisible() reads this maximum: a plot seen earlier this turn goes dark here
+		const bool bVP64WasVisible = (m_aiVisibilityCountThisTurnMax[eTeam] > 0);
 		m_aiVisibilityCountThisTurnMax[eTeam] = m_aiVisibilityCount[eTeam];
+		if (bVP64WasVisible != (m_aiVisibilityCount[eTeam] > 0))
+			VP64Danger::TeamPlotEvent(this, eTeam);
+#else
+		m_aiVisibilityCountThisTurnMax[eTeam] = m_aiVisibilityCount[eTeam];
+#endif
 		if (m_aiVisibilityCount[eTeam] == 0) //in case it's now invisible
 			updateFog();
 	}
@@ -11663,6 +11728,11 @@ PlotVisibilityChangeResult CvPlot::changeVisibilityCount(TeamTypes eTeam, int iC
 
 	// Remember the maximum
 	m_aiVisibilityCountThisTurnMax[eTeam] = max(m_aiVisibilityCountThisTurnMax[eTeam], m_aiVisibilityCount[eTeam]);
+#if defined(VP64_SPEED_DANGER)
+	// isVisible() reads the turn's maximum when MOD_CORE_DELAYED_VISIBILITY is on (VP), the count otherwise: both
+	if (bOldVisibility != (m_aiVisibilityCount[eTeam] > 0) || bOldMaxVisibility != (getVisibilityCount(eTeam) > 0))
+		VP64Danger::TeamPlotEvent(this, eTeam);
+#endif
 
 	if (eSeeInvisible != NO_INVISIBLE)
 	{
@@ -11898,6 +11968,9 @@ bool CvPlot::setRevealedOwner(TeamTypes eTeam, PlayerTypes eNewValue)
 	if(getRevealedOwner(eTeam, false) != eNewValue)
 	{
 		m_aiRevealedOwner[eTeam] = eNewValue;
+#if defined(VP64_SPEED_DANGER)
+		VP64Danger::TeamPlotEvent(this, eTeam);
+#endif
 
 		// Let the team know we've found someone (if eNewValue IS someone)
 		if(eNewValue != NO_PLAYER)
@@ -12166,6 +12239,9 @@ bool CvPlot::setRevealed(TeamTypes eTeam, bool bNewValue, CvUnit* pUnit, bool bT
 	{
 		bVisibilityUpdated = true;
 		m_bfRevealed.ToggleBit(eTeam);
+#if defined(VP64_SPEED_DANGER)
+		VP64Danger::TeamPlotEvent(this, eTeam);
+#endif
 		bool bEligibleForAchievement = MOD_ENABLE_ACHIEVEMENTS ? GET_PLAYER(GC.getGame().getActivePlayer()).isHuman(ISHUMAN_ACHIEVEMENTS) && !GC.getGame().isGameMultiPlayer() : false;
 
 		kTeam.ChangeNumRevealedPlots(bNewValue ? 1 : -1);
@@ -12670,6 +12746,9 @@ bool CvPlot::setRevealedImprovementType(TeamTypes eTeam, ImprovementTypes eNewVa
 	if(eOldImprovementType != eNewValue)
 	{
 		m_aeRevealedImprovementType[eTeam] = eNewValue;
+#if defined(VP64_SPEED_DANGER)
+		VP64Danger::TeamPlotEvent(this, eTeam);
+#endif
 		if(eTeam == GC.getGame().getActiveTeam())
 		{
 			updateSymbols();
@@ -12731,6 +12810,9 @@ bool CvPlot::setRevealedRouteType(TeamTypes eTeam, RouteTypes eNewValue)
 			setLayoutDirty(true);
 		}
 		m_aeRevealedRouteType[eTeam] = eNewValue;
+#if defined(VP64_SPEED_DANGER)
+		VP64Danger::TeamPlotEvent(this, eTeam);
+#endif
 		return true;
 	}
 	return false;
@@ -13170,6 +13252,10 @@ void CvPlot::changeInvisibleVisibilityCountUnit(TeamTypes eTeam, int iChange)
 		//--------
 
 		bNewInvisibleVisible = isInvisibleVisibleUnit(eTeam);
+#if defined(VP64_SPEED_DANGER)
+		if (bOldInvisibleVisible != bNewInvisibleVisible)
+			VP64Danger::TeamPlotEvent(this, eTeam);
+#endif
 		if (bOldInvisibleVisible != bNewInvisibleVisible)
 		{
 			TeamTypes activeTeam = GC.getGame().getActiveTeam();
@@ -13265,6 +13351,10 @@ void CvPlot::changeInvisibleVisibilityCount(TeamTypes eTeam, InvisibleTypes eInv
 		//--------
 
 		bNewInvisibleVisible = isInvisibleVisible(eTeam, eInvisible);
+#if defined(VP64_SPEED_DANGER)
+		if (bOldInvisibleVisible != bNewInvisibleVisible)
+			VP64Danger::TeamPlotEvent(this, eTeam);
+#endif
 
 		if (bOldInvisibleVisible != bNewInvisibleVisible)
 		{
@@ -13498,6 +13588,10 @@ void CvPlot::addUnit(CvUnit* pUnit, bool bUpdate)
 	PRECONDITION(pUnit, "pUnit is expected to be non-NULL");
 	if(pUnit == NULL)
 		return;
+#if defined(VP64_SPEED_DANGER)
+	// every change of the plot's unit list (setXY, the EXE's plot interface, Validate's repair): hand-over 4.6 item 4
+	VP64Danger::PlotScope kVP64DangerScope(this);
+#endif
 
 	PRECONDITION(pUnit->at(getX(), getY()), "pUnit is expected to be at getX_INLINE and getY_INLINE");
 
@@ -13547,6 +13641,9 @@ void CvPlot::addUnit(CvUnit* pUnit, bool bUpdate)
 // bExpectAtPlot false: the unit may already have other coordinates (see CvDllPlot::RemoveUnit)
 void CvPlot::removeUnit(CvUnit* pUnit, bool bUpdate, bool bExpectAtPlot)
 {
+#if defined(VP64_SPEED_DANGER)
+	VP64Danger::PlotScope kVP64DangerScope(this);
+#endif
 	IDInfo* pUnitNode = headUnitNode();
 	bool bFound = false;
 
@@ -14734,6 +14831,10 @@ int CvPlot::Validate(CvMap& kParentMap)
 				pUnitNode = nextUnitNode(pUnitNode);
 		}
 	}
+#if defined(VP64_SPEED_DANGER)
+	if (iError != 0)
+		VP64Danger::PlotEvent(this);
+#endif
 
 	return iError;
 }
