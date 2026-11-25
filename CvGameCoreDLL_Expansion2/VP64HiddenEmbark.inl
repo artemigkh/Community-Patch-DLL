@@ -13,7 +13,7 @@
 // calls the wrapper, so neither mode changes the game.
 //
 // Threads: the hooks run on the game-core thread; the EXE may call GetFacingDirection from its own thread (the 64-bit
-// server serves it on another thread). One critical section guards the tables; the override lookup takes it only when
+// host serves it on another thread). One critical section guards the tables; the override lookup takes it only when
 // an override exists.
 #if defined(VP64_HIDDEN_EMBARK)
 #include <map>
@@ -421,7 +421,7 @@ namespace VP64HiddenEmbark
 extern "C" __declspec(dllexport) int VP64HiddenEmbarkControl(int iSet, VP64HiddenEmbarkStats* pOut)
 {
 	using namespace VP64HiddenEmbark;
-	// TryEnter: the server reads the counters while it writes its report, which may be on a crash path where the game
+	// TryEnter: the host reads the counters while it writes its report, which may be on a crash path where the game
 	// thread stopped inside a hook; then nothing is filled (iSize 0) rather than waiting forever
 	if (!TryEnterCriticalSection(&s_lock.cs))
 	{

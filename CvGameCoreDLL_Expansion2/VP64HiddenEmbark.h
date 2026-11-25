@@ -11,7 +11,7 @@
 // only decides which calls go to the EXE, is never read by game logic and is never saved.
 //
 // Run-time switch, first match wins:
-//   1. VP64HiddenEmbarkControl(set = 0 or 1, ...), the export below (the 64-bit server calls it from its options file);
+//   1. VP64HiddenEmbarkControl(set = 0 or 1, ...), the export below (the 64-bit host calls it from its options file);
 //   2. the environment variable VP64_HIDDEN_EMBARK = 0/off or 1/on (hosts that call no export);
 //   3. VP64_HIDDEN_EMBARK_DEFAULT (0 unless the build defines it).
 // Tests: VP64_HIDDEN_EMBARK_DIR = a folder for the per-turn counters (HiddenEmbark.csv) and, with
