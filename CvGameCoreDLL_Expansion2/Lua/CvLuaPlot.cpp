@@ -26,6 +26,13 @@
 //safety measure against illegal pointers passed from lua
 #define CHECK_PLOT_VALID(p) if (!p || !GC.getMap().isPlot(p->getX(), p->getY()) || (p < GC.getMap().plotByIndexUnchecked(0)) || (p > GC.getMap().plotByIndexUnchecked(GC.getMap().numPlots() - 1))) return 0;
 
+//An improvement index passed from Lua names an improvement only inside [0, number of improvements).
+//NO_IMPROVEMENT (-1) and other out-of-range values must not reach GC.getImprovementInfo(), whose precondition stops the game.
+static bool IsValidImprovementIndex(int iImprovement)
+{
+	return iImprovement >= 0 && iImprovement < GC.getNumImprovementInfos();
+}
+
 //------------------------------------------------------------------------------
 void CvLuaPlot::CreateFunctable(lua_State* L)
 {
@@ -679,6 +686,11 @@ int CvLuaPlot::lCanHaveImprovement(lua_State* L)
 {
 	CvPlot* pkPlot = GetInstance(L); CHECK_PLOT_VALID(pkPlot);
 	const ImprovementTypes eImprovement = (ImprovementTypes)lua_tointeger(L, 2);
+	if (!IsValidImprovementIndex(eImprovement))
+	{
+		lua_pushboolean(L, false);
+		return 1;
+	}
 	const PlayerTypes ePlayer = (PlayerTypes)luaL_optint(L, 3, -1); // this is a hack; in vanilla BNW, Lua uses a TeamType; we use it as a PlayerType
 	const bool bCheckAdjacency = luaL_optbool(L, 4, false); // in vanilla BNW this function has parameter bOnlyTestVisible in this position, but it is never used by either the vanilla CvPlot::canHaveImprovement() or in Lua, so we just replace it
 	const bool bTestXAdjacent = luaL_optbool(L, 5, false);
@@ -1324,6 +1336,11 @@ int CvLuaPlot::lGetUpgradeProgress(lua_State* L)
 //int getUpgradeTimeLeft(ImprovementTypes eImprovement, PlayerTypes ePlayer);
 int CvLuaPlot::lGetUpgradeTimeLeft(lua_State* L)
 {
+	if (!IsValidImprovementIndex((int)lua_tointeger(L, 2)))
+	{
+		lua_pushinteger(L, 0);
+		return 1;
+	}
 	return BasicLuaMethod(L, &CvPlot::getUpgradeTimeLeft);
 }
 
@@ -1566,6 +1583,8 @@ int CvLuaPlot::lGetNumResourcePostModifiers(lua_State* L)
 	{
 		PlayerTypes ePlayer = (PlayerTypes)lua_tointeger(L, 2);
 		ImprovementTypes eImprovement = lua_gettop(L) >= 3 ? (ImprovementTypes)lua_tointeger(L, 3) : pkPlot->getImprovementType();
+		if (!IsValidImprovementIndex(eImprovement))
+			eImprovement = NO_IMPROVEMENT;
 		int iResult = pkPlot->GetNumResourcePostModifiers(ePlayer, eImprovement);
 		lua_pushinteger(L, iResult);
 		return 1;
@@ -1587,6 +1606,10 @@ int CvLuaPlot::lGetImprovementType(lua_State* L)
 //void setImprovementType(ImprovementTypes eNewValue);
 int CvLuaPlot::lSetImprovementType(lua_State* L)
 {
+	//NO_IMPROVEMENT removes the improvement; any other value outside the improvements is ignored, as CvPlot::setImprovementType intends
+	const int iImprovement = (int)lua_tointeger(L, 2);
+	if (iImprovement != NO_IMPROVEMENT && !IsValidImprovementIndex(iImprovement))
+		return 0;
 	return BasicLuaMethod(L, &CvPlot::setImprovementType);
 }
 //------------------------------------------------------------------------------
@@ -1746,6 +1769,11 @@ int CvLuaPlot::lCalculateImprovementYieldChange(lua_State* L)
 {
 	CvPlot* pkPlot = GetInstance(L); CHECK_PLOT_VALID(pkPlot);
 	const ImprovementTypes eImprovement = (ImprovementTypes)lua_tointeger(L, 2);
+	if (!IsValidImprovementIndex(eImprovement))
+	{
+		lua_pushinteger(L, 0);
+		return 1;
+	}
 	const YieldTypes eYield = (YieldTypes)lua_tointeger(L,3);
 	const PlayerTypes ePlayer = (PlayerTypes)lua_tointeger(L, 4);
 	const bool bOptimal = luaL_optbool(L, 5, false);
@@ -2187,7 +2215,7 @@ int CvLuaPlot::lIsResourceConnectedByImprovement(lua_State* L)
 	bool bResult = false;
 	CvPlot* kPlot = GetInstance(L);
 	const ImprovementTypes eImprovement = (ImprovementTypes) lua_tointeger(L, 2);
-	CvImprovementEntry* pkImprovementInfo = GC.getImprovementInfo(eImprovement);
+	CvImprovementEntry* pkImprovementInfo = IsValidImprovementIndex(eImprovement) ? GC.getImprovementInfo(eImprovement) : NULL;
 	if(pkImprovementInfo)
 	{
 		ResourceTypes eResource = kPlot->getResourceType(GC.getGame().getActiveTeam());

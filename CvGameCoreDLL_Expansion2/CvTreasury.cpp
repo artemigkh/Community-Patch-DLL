@@ -70,6 +70,9 @@ void CvTreasury::Uninit()
 /// Update treasury for a turn
 void CvTreasury::DoGold()
 {
+	// saved, no longer read by the game (GetExpensePerTurnUnitMaintenance computes it); set here, at a fixed point of
+	// the turn, so that the save does not depend on who last read the gold rate (bug 0116)
+	m_iExpensePerTurnUnitMaintenance = CalculateUnitCost();
 	int iGoldChange = CalculateBaseNetGoldTimes100();
 	int iGoldAfterThisTurn = iGoldChange + GetGoldTimes100();
 	bool bGoldChangeForTurnUpdated = false;
@@ -445,7 +448,7 @@ int CvTreasury::CalculateBaseNetGoldTimes100()
 }
 
 /// Compute unit maintenance cost for the turn
-int CvTreasury::CalculateUnitCost(int iUnits)
+int CvTreasury::CalculateUnitCost(int iUnits) const
 {
 	// If player has 0 Cities then no Unit cost
 	if (m_pPlayer->getNumCities() == 0)
@@ -587,12 +590,19 @@ int CvTreasury::CalculateUnitCost(int iUnits)
 	return std::max(0, int(dFinalCost));
 }
 
+/// Unit maintenance for the turn, computed from the current state on each call. It used to return the value the
+/// last CalculateTotalCosts() stored, so a read of the gold rate (UI Lua such as the top panel or the civ ribbon, or a
+/// headless host's per-turn checkpoint) changed what the AI read later in the turn: unit production, vassal
+/// maintenance, the economic AI (bug 0116, one-off 9044).
+int CvTreasury::GetExpensePerTurnUnitMaintenance() const
+{
+	return CalculateUnitCost();
+}
+
 /// Calculate total maintenance costs
 int CvTreasury::CalculateTotalCosts()
 {
-	m_iExpensePerTurnUnitMaintenance = CalculateUnitCost();
-
-	int iTotalCosts = m_iExpensePerTurnUnitMaintenance;
+	int iTotalCosts = CalculateUnitCost();
 	iTotalCosts += GetBuildingGoldMaintenance();
 	iTotalCosts += GetImprovementGoldMaintenance();
 	iTotalCosts += GetVassalGoldMaintenance();

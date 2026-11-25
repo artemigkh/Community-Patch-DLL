@@ -3983,6 +3983,12 @@ CvCity* CvPlayer::acquireCity(CvCity* pCity, bool bConquest, bool bGift, bool bO
 	// needed for Rome's UA
 	bool bOriginalMinorCapital = GET_PLAYER(eOriginalOwner).isMinorCiv() && pCity->IsOriginalCapitalForPlayer(eOriginalOwner);
 
+	// From here until the new city is complete, the plot's city is inconsistent:
+	// population 0, then deleted, then rebuilt. Lua hooks release the game core
+	// lock and let UI scripts read it (crash in CvCity::GetStaticYield), so
+	// they are queued and run just before CityCaptureComplete.
+	LuaSupport::DeferredHookScope kDeferHooks;
+
 	// Prepare the city to be destroyed
 	pCity->PreKill();
 	CvInterfacePtr<ICvCity1> pkDllOldCity(new CvDllCity(pCity));
@@ -4345,6 +4351,7 @@ CvCity* CvPlayer::acquireCity(CvCity* pCity, bool bConquest, bool bGift, bool bO
 	}
 
 	// Update events
+	kDeferHooks.Flush();
 	ICvEngineScriptSystem1* pkScriptSystem = gDLL->GetScriptSystem();
 	if (pkScriptSystem)
 	{
@@ -43065,7 +43072,101 @@ void CvPlayer::setReplayDataValue(const CvString& strDataset, unsigned int uiTur
 		it = m_ReplayData.find(strDataset);
 	}
 
-	it->second[uiTurn] = iValue;
+	it->second.set(uiTurn, iValue);
+}
+
+//	--------------------------------------------------------------------------------
+// Index of the first entry whose turn is not less than uiTurn.
+CvReplayTurnData::size_type CvReplayTurnData::lowerBound(unsigned int uiTurn) const
+{
+	size_type uiFirst = 0;
+	size_type uiLast = m_entries.size();
+	while (uiFirst < uiLast)
+	{
+		size_type uiMid = uiFirst + (uiLast - uiFirst) / 2;
+		if (m_entries[uiMid].first < uiTurn)
+			uiFirst = uiMid + 1;
+		else
+			uiLast = uiMid;
+	}
+	return uiFirst;
+}
+
+CvReplayTurnData::const_iterator CvReplayTurnData::find(unsigned int uiTurn) const
+{
+	size_type uiIndex = lowerBound(uiTurn);
+	if (uiIndex < m_entries.size() && m_entries[uiIndex].first == uiTurn)
+		return m_entries.begin() + uiIndex;
+	return m_entries.end();
+}
+
+void CvReplayTurnData::set(unsigned int uiTurn, int iValue)
+{
+	if (m_entries.empty() || m_entries.back().first < uiTurn)
+	{
+		m_entries.push_back(value_type(uiTurn, iValue));
+		return;
+	}
+
+	size_type uiIndex = lowerBound(uiTurn);
+	if (uiIndex < m_entries.size() && m_entries[uiIndex].first == uiTurn)
+		m_entries[uiIndex].second = iValue;
+	else
+		m_entries.insert(m_entries.begin() + uiIndex, value_type(uiTurn, iValue));
+}
+
+void CvReplayTurnData::insert(unsigned int uiTurn, int iValue)
+{
+	if (m_entries.empty() || m_entries.back().first < uiTurn)
+	{
+		m_entries.push_back(value_type(uiTurn, iValue));
+		return;
+	}
+
+	size_type uiIndex = lowerBound(uiTurn);
+	if (uiIndex == m_entries.size() || m_entries[uiIndex].first != uiTurn)
+		m_entries.insert(m_entries.begin() + uiIndex, value_type(uiTurn, iValue));
+}
+
+// Same bytes as the std::map<unsigned int, int> this type replaced (FStlContainerSerialization.h):
+// the entry count as a 32-bit unsigned int, then turn and value of each entry in ascending turn order.
+FDataStream& operator<<(FDataStream& saveTo, const CvReplayTurnData& readFrom)
+{
+	// The count is 32 bits in the save format, whatever the width of size_t
+	unsigned int count = static_cast<unsigned int>(readFrom.m_entries.size());
+	saveTo << count;
+	for (CvReplayTurnData::const_iterator it = readFrom.m_entries.begin(); it != readFrom.m_entries.end(); ++it)
+	{
+		saveTo << it->first;
+		saveTo << it->second;
+	}
+	return saveTo;
+}
+
+// Loads like std::map<unsigned int, int>: the first entry for a turn wins, entries end up sorted.
+FDataStream& operator>>(FDataStream& loadFrom, CvReplayTurnData& writeTo)
+{
+	writeTo.m_entries.clear();
+	unsigned int count = 0;
+	loadFrom >> count;
+
+	//failsafe - may be pointless but let's try
+	if (count == 0xFFFFFFFF)
+		return loadFrom;
+
+	// one block for the usual case; a corrupt count must not turn into a huge allocation
+	if (count <= 0x10000)
+		writeTo.m_entries.reserve(count);
+
+	for (unsigned int i = 0; i < count; ++i)
+	{
+		unsigned int uiTurn = 0;
+		int iValue = 0;
+		loadFrom >> uiTurn;
+		loadFrom >> iValue;
+		writeTo.insert(uiTurn, iValue);
+	}
+	return loadFrom;
 }
 
 int CvPlayer::getYieldPerTurnHistory(YieldTypes eYield, int iNumTurns, bool bIgnoreInstant) const

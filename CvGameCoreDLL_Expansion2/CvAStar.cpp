@@ -140,6 +140,7 @@ void CvAStar::DeInit()
 {
 	m_openNodes.clear();
 	m_closedNodes.clear();
+	m_childNodes.clear();
 
 	if(m_ppaaNodes != NULL)
 	{
@@ -251,6 +252,7 @@ void CvAStar::Reset()
 		(*it)->clear();
 	m_openNodes.clear();
 	m_closedNodes.clear();
+	m_childNodes.clear();
 
 	//debug helpers
 	m_iProcessedNodes = 0;
@@ -353,7 +355,7 @@ bool CvAStar::FindPathWithCurrentConfiguration(int iXstart, int iYstart, int iXd
 
 	//this is the version number for the node cache
 	m_iCurrentGenerationID++;
-	if (m_iCurrentGenerationID==0xFFFF)
+	if (m_iCurrentGenerationID==0) //32 bits: wraps only after four billion searches; 0 is the stamp of a cleared node
 		m_iCurrentGenerationID = 1;
 
 	m_iXdest = iXdest;
@@ -601,6 +603,8 @@ void LogNodeAction(CvAStarNode* node, int iRound, NodeState state)
 		g_svPathLog.push_back(SLogNode(state, iRound, node->m_iX, node->m_iY, node->m_iKnownCost, node->m_iHeuristicCost, node->m_iTurns, node->m_iMoves));
 }
 
+void UpdateNodeCacheData(CvAStarNode* node, const CvUnit* pUnit, const CvAStar* finder);
+
 //	--------------------------------------------------------------------------------
 /// Creates children for the node
 void CvAStar::CreateChildren(CvAStarNode* node)
@@ -654,6 +658,14 @@ void CvAStar::CreateChildren(CvAStarNode* node)
 			else if (node->m_kCostCacheData.bCanChangePortFromPlot)
 				SetChangePortCitiesChecked(true);
 		}
+
+		//NodeAddedToPath updated the cache only for the extra children found when this node was added. the set can be
+		//different now (eg airlifts need full or zero moves), so update the cache of a unit path's extra children here,
+		//otherwise PathValid and PathCost may read data left over from an earlier search (possibly for another unit)
+		const CvUnit* pUnit = NULL;
+		if (!extraChildren.empty() && udGetExtraChildrenFunc == UnitPathGetExtraChildren)
+			pUnit = GET_PLAYER(m_sData.ePlayer).getUnit(m_sData.iUnitID);
+
 		for(size_t i = 0; i < extraChildren.size(); i++)
 		{
 			int x = extraChildren[i].first;
@@ -665,6 +677,8 @@ void CvAStar::CreateChildren(CvAStarNode* node)
 				ASSERT(check != NULL, "GetNodeMutable returned null after isValid check");
 				if (check == node->m_pParent)
 					continue;
+
+				UpdateNodeCacheData(check, pUnit, this); //does nothing if pUnit is null or the data is current
 
 				if (udFunc(udValid, node, check, m_sData))
 				{
@@ -715,8 +729,22 @@ NodeState CvAStar::LinkChild(CvAStarNode* node, CvAStarNode* check)
 	if (node->m_pParent && node->m_pParent->m_iX == check->m_iX && node->m_pParent->m_iY == check->m_iY)
 		return NS_OBSOLETE;
 
-	//remember the connection
-	node->m_apChildren.push_back(check);
+	//remember the connection. a node's children are kept contiguous in m_childNodes;
+	//they are normally all added in one go, otherwise move the existing ones to the end first
+	if (node->m_iNumChildren == 0)
+		node->m_iFirstChild = static_cast<unsigned int>(m_childNodes.size());
+	else if (node->m_iFirstChild + node->m_iNumChildren != m_childNodes.size())
+	{
+		unsigned int iNewFirst = static_cast<unsigned int>(m_childNodes.size());
+		for (unsigned int i = 0; i < node->m_iNumChildren; i++)
+		{
+			CvAStarNode* pChild = m_childNodes[node->m_iFirstChild + i]; //copy first, push_back may reallocate
+			m_childNodes.push_back(pChild);
+		}
+		node->m_iFirstChild = iNewFirst;
+	}
+	m_childNodes.push_back(check);
+	node->m_iNumChildren++;
 
 	//is the new node already on the open list? update it
 	if(check->m_bIsOpen)
@@ -786,9 +814,9 @@ void CvAStar::UpdateDownstreamNodes(CvAStarNode* node)
 	CvAStarNode* parent = node;
 	while(parent != NULL)
 	{
-		for(size_t i = 0; i < parent->m_apChildren.size(); i++)
+		for(unsigned int i = 0; i < parent->m_iNumChildren; i++)
 		{
-			CvAStarNode* kid = parent->m_apChildren[i];
+			CvAStarNode* kid = m_childNodes[parent->m_iFirstChild + i];
 
 			int iKnownCost = (parent->m_iKnownCost + udFunc(udCost, parent, kid, m_sData));
 
@@ -3110,8 +3138,14 @@ bool CvTwoLayerPathFinder::CommonNeighborIsPassable(const CvAStarNode * a, const
 	{
 		CvAStarNode* check = a->m_apNeighbors[i];
 		if (check && plotDistance(check->m_iX, check->m_iY, b->m_iX, b->m_iY) == 1)
+		{
+			//the common neighbor can be two steps away from the node being expanded (PathCost checks the destination
+			//before NodeAddedToPath updates the neighbors of the new node), so its cache data may be left over from an
+			//earlier search. update it first (does nothing if it is current)
+			UpdateNodeCacheData(check, reinterpret_cast<const UnitPathCacheData*>(GetScratchBuffer())->pUnit, this);
 			if (check->m_kCostCacheData.bCanEnterTerrainIntermediate && check->m_kCostCacheData.bCanEnterTerritoryIntermediate)
 				return true;
+		}
 	}
 
 	return false;

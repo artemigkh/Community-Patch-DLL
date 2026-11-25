@@ -101,7 +101,7 @@ struct CvPathNodeCacheData
 	short plotMovementCostAdder;
 
 	//tell us when to update the cache ...
-	unsigned short iGenerationID;
+	unsigned int iGenerationID;
 
 	//end turn danger for the current search, computed on first use
 	//mutable because the cost functions get this struct as const
@@ -142,7 +142,8 @@ public:
 	CvAStarNode* m_pParent;						// Parent in current path
 
 	CvAStarNode** m_apNeighbors; 				// For faster neighbor lookup (potential children) - always 6 - not affected by clear()
-	std::vector<CvAStarNode*> m_apChildren;		// Nodes we could reach from this node - maybe be more than 6 because of "extrachildren"
+	unsigned int m_iFirstChild;					// Nodes we could reach from this node - maybe be more than 6 because of "extrachildren"
+	unsigned int m_iNumChildren;				// stored contiguously in the pathfinder's child list, see CvAStar::LinkChild
 
 	CvPathNodeCacheData m_kCostCacheData;		// some things we want to calculate only once
 };

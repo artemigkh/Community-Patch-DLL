@@ -1373,6 +1373,7 @@ protected:
 
 	virtual void wipeDerived()
 	{
+		vector<CvTacticalPosition*>().swap(childPositions);
 		tactPlotLookup.wipe();
 		tactPlots.wipe();
 		pRootTactPlotSlots = NULL;
@@ -1493,6 +1494,7 @@ protected:
 
 	virtual void wipeDerived()
 	{
+		vector<CvSupportPosition*>().swap(childPositions);
 		finalCombatPositionUnits.wipe();
 	}
 

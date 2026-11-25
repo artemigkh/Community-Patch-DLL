@@ -2569,13 +2569,23 @@ void CvCityCitizens::DoAlterWorkingPlot(int iIndex)
 			//do not call isCanWorkWithOverride()
 			else if (pPlot->getOwner() == GetOwner() && !pPlot->isBlockaded(GetOwner()))
 			{
+				// NULL if the plot has no owning city (see CvPlot::setImprovementType)
 				CvCity* pOC = pPlot->getOwningCity();
 
 				// Can't take away plots from cities which were just conquered
-				if (pOC->IsResistance() || pOC->IsIgnoreCityForHappiness())
+				if (pOC && (pOC->IsResistance() || pOC->IsIgnoreCityForHappiness()))
 					return;
 
-				pPlot->setOwningCityOverride(GetCity());
+				if (pOC)
+					pPlot->setOwningCityOverride(GetCity());
+				else
+				{
+					// No owning city: make this city the owner rather than overriding. The override bookkeeping assumes an
+					// owning city, and would count the plot's improvement twice once the plot got one.
+					pPlot->setOwningCity(GetOwner(), GetCity()->GetID());
+					pPlot->updateYield();
+					GC.GetEngineUserInterface()->setDirty(ColoredPlots_DIRTY_BIT, true);
+				}
 				// check if the city governor wants to work the new tile
 				DoReallocateCitizens(true);
 				// a plot pulled into a puppet by hand stays there, its owner won't take it back (see IsCanWorkWithOverride)

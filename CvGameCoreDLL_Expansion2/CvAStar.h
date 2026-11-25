@@ -135,7 +135,7 @@ public:
 		return isValid(m_iXdest,m_iYdest);
 	}
 
-	inline unsigned short GetCurrentGenerationID() const
+	inline unsigned int GetCurrentGenerationID() const
 	{
 		return m_iCurrentGenerationID;
 	}
@@ -247,7 +247,7 @@ protected:
 	CvAEnd udUninitializeFunc;					// Called at the end to uninitialize any run specific data
 
 	SPathFinderUserData m_sData;				// Data passed back to functions
-	unsigned short m_iCurrentGenerationID;		// the cache in each node is tagged with a generation ID which is incremented for each call
+	unsigned int m_iCurrentGenerationID;		// the cache in each node is tagged with a generation ID which is incremented for each call
 
 	int m_iColumns;	
 	int m_iRows;
@@ -263,6 +263,10 @@ protected:
 	//vector performance is better than lists! open nodes form a binary heap with the best node first
 	std::vector<CvAStarNode*> m_openNodes;
 	std::vector<CvAStarNode*> m_closedNodes;
+
+	//children of all nodes in the current search, each node's children stored contiguously
+	//(one buffer per pathfinder instead of one heap block per node)
+	std::vector<CvAStarNode*> m_childNodes;
 
 	// The best node - just popped from open nodes. walking backwards from here gives the current path
 	CvAStarNode* m_pBest;
@@ -374,7 +378,7 @@ ReachablePlots GetPlotsInReachSimple(const CvPlot* pStartPlot, const SPathFinder
 int CityConnectionLandValid(const CvAStarNode* parent, const CvAStarNode* node, const SPathFinderUserData& data, const CvAStar* finder);
 int CityConnectionGetExtraChildren(const CvAStarNode* node, const CvAStar* finder, vector<pair<int,int>>& out);
 int CityConnectionLandGetExtraChildren(const CvAStarNode* node, const CvAStar* finder, vector<pair<int, int>>& out);
-int UnitPathGetExtraChildren(const CvAStarNode* node, CvAStar* finder, vector<pair<int, int>>& out);
+int UnitPathGetExtraChildren(const CvAStarNode* node, const CvAStar* finder, vector<pair<int, int>>& out);
 int CityConnectionWaterValid(const CvAStarNode* parent, const CvAStarNode* node, const SPathFinderUserData& data, const CvAStar* finder);
 
 int AreaValid(const CvAStarNode* parent, const CvAStarNode* node, const SPathFinderUserData& data, const CvAStar* finder);
