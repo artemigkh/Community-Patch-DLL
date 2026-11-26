@@ -12,25 +12,23 @@ namespace VP64DeferAIDiplomacy
 	static int s_iSource = 0;
 	static VP64DeferAIDiplomacyStats s_tot;
 
-	// Tests: VP64_DEFER_AI_DIPLOMACY_DIR = a folder; the DLL writes DeferAIDiplomacy.txt there when it unloads (the
-	// switch, its source and the counters), so a host that calls no export still shows what the switch did
+	// Tests: VP64_DEFER_AI_DIPLOMACY_DIR = a folder; the DLL (re)writes DeferAIDiplomacy.txt there when it first reads
+	// the switch and at every counted event (the switch, its source and the counters), so a host that calls no export
+	// and ends without unloading the DLL still shows what the switch did. Events are rare (a queued contact, a skipped
+	// wait), so the file is opened each time.
 	static std::string s_dir;
-	struct ReportAtUnload
+	static void WriteReport()
 	{
-		~ReportAtUnload()
-		{
-			if (s_dir.empty())
-				return;
-			FILE* f = fopen((s_dir + "\\DeferAIDiplomacy.txt").c_str(), "w");
-			if (!f)
-				return;
-			fprintf(f, "version=%d\nenabled=%d\nsource=%d\nqueued=%lld\nshown=%lld\nwithdrawn=%lld\nshown_as_stock=%lld\nblocks_skipped=%lld\nhandovers_skipped=%lld\n",
-				VP64_DEFER_AI_DIPLOMACY_VERSION, s_bOn ? 1 : 0, s_iSource, s_tot.iQueued, s_tot.iShown, s_tot.iWithdrawn,
-				s_tot.iShownAsStock, s_tot.iBlocksSkipped, s_tot.iHandoversSkipped);
-			fclose(f);
-		}
-	};
-	static ReportAtUnload s_reportAtUnload;
+		if (s_dir.empty())
+			return;
+		FILE* f = fopen((s_dir + "\\DeferAIDiplomacy.txt").c_str(), "w");
+		if (!f)
+			return;
+		fprintf(f, "version=%d\nenabled=%d\nsource=%d\nqueued=%lld\nshown=%lld\nwithdrawn=%lld\nshown_as_stock=%lld\nblocks_skipped=%lld\nhandovers_skipped=%lld\n",
+			VP64_DEFER_AI_DIPLOMACY_VERSION, s_bOn ? 1 : 0, s_iSource, s_tot.iQueued, s_tot.iShown, s_tot.iWithdrawn,
+			s_tot.iShownAsStock, s_tot.iBlocksSkipped, s_tot.iHandoversSkipped);
+		fclose(f);
+	}
 
 	static bool EnvValue(const char* szName, std::string& out)
 	{
@@ -48,19 +46,21 @@ namespace VP64DeferAIDiplomacy
 			return;
 		s_bInit = true;
 		EnvValue("VP64_DEFER_AI_DIPLOMACY_DIR", s_dir);
-		if (s_iSource == 1)
-			return;
-		std::string v;
-		if (EnvValue("VP64_DEFER_AI_DIPLOMACY", v))
+		if (s_iSource != 1)
 		{
-			s_bOn = (v == "1" || v == "on");
-			s_iSource = 2;
+			std::string v;
+			if (EnvValue("VP64_DEFER_AI_DIPLOMACY", v))
+			{
+				s_bOn = (v == "1" || v == "on");
+				s_iSource = 2;
+			}
+			else
+			{
+				s_bOn = (VP64_DEFER_AI_DIPLOMACY_DEFAULT != 0);
+				s_iSource = 3;
+			}
 		}
-		else
-		{
-			s_bOn = (VP64_DEFER_AI_DIPLOMACY_DEFAULT != 0);
-			s_iSource = 3;
-		}
+		WriteReport();
 	}
 
 	bool IsOn()
@@ -112,6 +112,7 @@ namespace VP64DeferAIDiplomacy
 		}
 		pkRequests->Add(eFrom, eDiploType, pszMessage, eAnimationType, iExtraGameData);
 		s_tot.iQueued++;
+		WriteReport();
 	}
 
 	void LeaderMessage(PlayerTypes eFrom, PlayerTypes eTo, DiploUIStateTypes eDiploType, const char* pszMessage, LeaderheadAnimationTypes eAnimationType, int iExtraGameData)
@@ -144,6 +145,7 @@ namespace VP64DeferAIDiplomacy
 		if (!IsDeferred())
 			return false;
 		s_tot.iBlocksSkipped++;
+		WriteReport();
 		return true;
 	}
 
@@ -152,6 +154,7 @@ namespace VP64DeferAIDiplomacy
 		if (!IsDeferred())
 			return false;
 		s_tot.iHandoversSkipped++;
+		WriteReport();
 		return true;
 	}
 
@@ -160,6 +163,7 @@ namespace VP64DeferAIDiplomacy
 		s_tot.iShown += iShown;
 		s_tot.iWithdrawn += iWithdrawn;
 		s_tot.iShownAsStock += iShownAsStock;
+		WriteReport();
 	}
 
 	static bool IsTradeState(DiploUIStateTypes eState)
