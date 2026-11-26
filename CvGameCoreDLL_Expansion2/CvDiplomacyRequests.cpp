@@ -147,6 +147,10 @@ void CvDiplomacyRequests::Update(void)
 	}
 	else
 	{
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+		// the stock code below, and the deferred queue's turn-start drain (VP64DeferAIDiplomacy.inl)
+		VP64Drain();
+#else
 		PlayerTypes eActivePlayer = GC.getGame().getActivePlayer();
 		// If we are active, send out the requests
 		if(!m_aRequests.empty() && m_ePlayer == eActivePlayer && GET_PLAYER(eActivePlayer).isTurnActive())
@@ -160,6 +164,7 @@ void CvDiplomacyRequests::Update(void)
 			}
 			m_aRequests.pop_front();
 		}
+#endif
 	}
 }
 //	----------------------------------------------------------------------------
@@ -169,6 +174,10 @@ void CvDiplomacyRequests::BeginTurn(void)
 	if (!m_aRequests.empty())
 	{
 		// JdH: change requests to notifications
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+		// (not for the deferred queue: it opens by itself at the turn start)
+		if (!VP64DeferAIDiplomacy::IsDeferred())
+#endif
 		{
 			CvPlayer& kTo = GET_PLAYER(m_ePlayer);
 			CvNotifications* pNotifications = kTo.GetNotifications();
@@ -506,6 +515,13 @@ void CvDiplomacyRequests::ClearAllRequests() {
 // static
 void CvDiplomacyRequests::SendRequest(PlayerTypes eFromPlayer, PlayerTypes eToPlayer, DiploUIStateTypes eDiploType, const char* pszMessage, LeaderheadAnimationTypes eAnimationType, int iExtraGameData /*= -1*/)
 {
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+	if (VP64DeferAIDiplomacy::QueueFor(eFromPlayer, eToPlayer))
+	{
+		VP64DeferAIDiplomacy::Queue(eFromPlayer, eToPlayer, NULL, eDiploType, pszMessage, eAnimationType, iExtraGameData);
+		return;
+	}
+#endif
 	if(GC.getGame().isReallyNetworkMultiPlayer() && MOD_ACTIVE_DIPLOMACY)
 	{
 		CvPlayer& kPlayer = GET_PLAYER(eToPlayer);
@@ -547,6 +563,13 @@ void CvDiplomacyRequests::SendDealRequest(PlayerTypes eFromPlayer, PlayerTypes e
 	if (pkDeal->GetNumItems() <= 0)
 		return;
 
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+	if (VP64DeferAIDiplomacy::QueueFor(eFromPlayer, eToPlayer))
+	{
+		VP64DeferAIDiplomacy::Queue(eFromPlayer, eToPlayer, pkDeal, eDiploType, pszMessage, eAnimationType, -1);
+		return;
+	}
+#endif
 	if(GC.getGame().isReallyNetworkMultiPlayer() && MOD_ACTIVE_DIPLOMACY)
 	{
 		PRECONDITION(eFromPlayer != NO_PLAYER);
@@ -682,3 +705,6 @@ bool CvDiplomacyRequests::HasActiveDiploRequestWithHuman(PlayerTypes eSourcePlay
 	return false;
 }
 
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+#include "VP64DeferAIDiplomacy.inl"
+#endif

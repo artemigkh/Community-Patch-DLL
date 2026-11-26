@@ -1815,7 +1815,12 @@ void CvGame::CheckPlayerTurnDeactivate()
 							}
 							else
 							{
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+								// deferred AI diplomacy: no turn handover waits on a leader screen
+								if(!GC.GetEngineUserInterface()->isDiploActive() || VP64DeferAIDiplomacy::SkipHandover())
+#else
 								if(!GC.GetEngineUserInterface()->isDiploActive())
+#endif
 								{
 									if(!isHotSeat() || kPlayer.isAlive() || !kPlayer.isHuman())		// If it is a hotseat game and the player is human and is dead, don't advance the player, we want them to get the defeat screen
 									{
@@ -8468,7 +8473,12 @@ void CvGame::doTurn()
 
 #if defined(MOD_ACTIVE_DIPLOMACY)
 	// Dodgy business to cleanup all the completed requests from last turn. Any still here should just be ones that were processed on other clients anyway.
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+	// (not with deferred AI diplomacy: the queue holds the AIs' contacts until the humans' turns start)
+	if (MOD_ACTIVE_DIPLOMACY && !VP64DeferAIDiplomacy::IsDeferred())
+#else
 	if (MOD_ACTIVE_DIPLOMACY)
+#endif
 	{
 		bool isNetworkMultiPlayer = GC.getGame().isNetworkMultiPlayer();
 		for (int iI = 0; iI < MAX_MAJOR_CIVS; iI++)
@@ -9299,7 +9309,12 @@ void CvGame::updateTimers() const
 #if defined(MOD_ACTIVE_DIPLOMACY)
 	if(!GC.getGame().isReallyNetworkMultiPlayer() || !MOD_ACTIVE_DIPLOMACY)
 	{
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+		// (not with deferred AI diplomacy: the AIs talk to the humans in their own turns)
+		if(isHotSeat() && !VP64DeferAIDiplomacy::IsDeferred())
+#else
 		if(isHotSeat())
+#endif
 		{
 			// For Hot Seat, all the AIs will get a chance to do diplomacy with the active human player
 			PlayerTypes eActivePlayer = getActivePlayer();

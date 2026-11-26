@@ -10333,7 +10333,12 @@ void CvPlayer::doTurn()
 		}
 		else
 		{
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+			// deferred AI diplomacy: an AI's contacts toward the humans are queued in its own turn
+			if (GC.getGame().isHotSeat() && !isHuman(ISHUMAN_AI_DIPLOMACY) && !VP64DeferAIDiplomacy::IsDeferred())
+#else
 			if (GC.getGame().isHotSeat() && !isHuman(ISHUMAN_AI_DIPLOMACY))
+#endif
 			{
 				// In Hotseat, AIs only do their diplomacy pass for other AIs on their turn
 				// Diplomacy toward a human is done at the beginning of the humans turn.
@@ -10359,7 +10364,12 @@ void CvPlayer::doTurn()
 	if(isHuman(ISHUMAN_ACHIEVEMENTS) && !GC.getGame().isGameMultiPlayer())
 		checkArmySizeAchievement();
 
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+	// deferred AI diplomacy: an AI turn never waits on a leader screen
+	if( (bHasActiveDiploRequest || GC.GetEngineUserInterface()->isDiploActive()) && !GC.getGame().isGameMultiPlayer() && !isHuman(ISHUMAN_AI_DIPLOMACY) && !VP64DeferAIDiplomacy::SkipBlock())
+#else
 	if( (bHasActiveDiploRequest || GC.GetEngineUserInterface()->isDiploActive()) && !GC.getGame().isGameMultiPlayer() && !isHuman(ISHUMAN_AI_DIPLOMACY))
+#endif
 	{
 		GC.getGame().SetWaitingForBlockingInput(m_eID);
 	}

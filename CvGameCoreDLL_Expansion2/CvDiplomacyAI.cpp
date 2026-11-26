@@ -9354,6 +9354,13 @@ void CvDiplomacyAI::DoTurn(DiplomacyMode eDiploMode, PlayerTypes ePlayer)
 		{
 			GC.getGame().GetGameDeals().DoCancelAllProposedMPDealsWithPlayer(GetID(), DIPLO_AI_PLAYERS);
 		}
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+		else if (VP64DeferAIDiplomacy::IsDeferred())
+		{
+			// deferred AI diplomacy: the deals offered to humans wait with their requests
+			VP64DeferAIDiplomacy::CancelProposedDealsWithAIs(GetID());
+		}
+#endif
 		else
 		{
 			GC.getGame().GetGameDeals().DoCancelAllProposedDealsWithPlayer(GetID()); // Proposed deals with AI players are purely transitional.
@@ -27745,10 +27752,18 @@ bool CvDiplomacyAI::DeclareWar(PlayerTypes ePlayer)
 			}
 			else
 			{
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+				if((!CvPreGame::isNetworkMultiplayerGame() && GC.getGame().getActivePlayer() == ePlayer) || VP64DeferAIDiplomacy::QueueFor(GetID(), ePlayer))
+#else
 				if(!CvPreGame::isNetworkMultiplayerGame() && GC.getGame().getActivePlayer() == ePlayer)
+#endif
 				{
 					const char* strText = GetDiploStringForMessage(DIPLO_MESSAGE_DOW_ROOT, ePlayer);
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+					VP64DeferAIDiplomacy::LeaderMessage(GetID(), ePlayer, DIPLO_UI_STATE_AI_DECLARED_WAR, strText, LEADERHEAD_ANIM_DECLARE_WAR);
+#else
 					gDLL->GameplayDiplomacyAILeaderMessage(GetID(), DIPLO_UI_STATE_AI_DECLARED_WAR, strText, LEADERHEAD_ANIM_DECLARE_WAR);
+#endif
 				}
 			}
 		}
@@ -27995,10 +28010,18 @@ void CvDiplomacyAI::DoAttackedCityStateStatement(PlayerTypes ePlayer, DiploState
 		{
 			GetPlayer()->GetMilitaryAI()->RequestCityAttack(ePlayer, 1);
 
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+			if (GC.getGame().getActivePlayer() == ePlayer || VP64DeferAIDiplomacy::QueueFor(GetID(), ePlayer))
+#else
 			if (GC.getGame().getActivePlayer() == ePlayer)
+#endif
 			{
 				const char* strText = GetDiploStringForMessage(DIPLO_MESSAGE_ATTACKED_WARMONGER);
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+				VP64DeferAIDiplomacy::LeaderMessage(GetID(), ePlayer, DIPLO_UI_STATE_BLANK_DISCUSSION, strText, LEADERHEAD_ANIM_HATE_NEGATIVE);
+#else
 				gDLL->GameplayDiplomacyAILeaderMessage(GetID(), DIPLO_UI_STATE_BLANK_DISCUSSION, strText, LEADERHEAD_ANIM_HATE_NEGATIVE);
+#endif
 			}
 
 			// Flag the statement as sent, to stop this from firing every turn
@@ -28109,10 +28132,18 @@ void CvDiplomacyAI::DoBulliedCityStateStatement(PlayerTypes ePlayer, DiploStatem
 		{
 			GetPlayer()->GetMilitaryAI()->RequestCityAttack(ePlayer, 1);
 
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+			if (GC.getGame().getActivePlayer() == ePlayer || VP64DeferAIDiplomacy::QueueFor(GetID(), ePlayer))
+#else
 			if (GC.getGame().getActivePlayer() == ePlayer)
+#endif
 			{
 				const char* strText = GetDiploStringForMessage(DIPLO_MESSAGE_ATTACKED_WARMONGER);
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+				VP64DeferAIDiplomacy::LeaderMessage(GetID(), ePlayer, DIPLO_UI_STATE_BLANK_DISCUSSION, strText, LEADERHEAD_ANIM_HATE_NEGATIVE);
+#else
 				gDLL->GameplayDiplomacyAILeaderMessage(GetID(), DIPLO_UI_STATE_BLANK_DISCUSSION, strText, LEADERHEAD_ANIM_HATE_NEGATIVE);
+#endif
 			}
 		}
 
@@ -34116,7 +34147,11 @@ void CvDiplomacyAI::DoSendStatementToPlayer(PlayerTypes ePlayer, DiploStatementT
 					}
 					else
 					{
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+						if(eTarget == GC.getGame().getActivePlayer() || VP64DeferAIDiplomacy::QueueFor(ePlayer, eTarget))
+#else
 						if(eTarget == GC.getGame().getActivePlayer())
+#endif
 						{
 							szText = GetDiploStringForMessage(DIPLO_MESSAGE_WORK_AGAINST_SOMEONE, eTarget);
 							CvDiplomacyRequests::SendRequest(ePlayer, eTarget, DIPLO_UI_STATE_BLANK_DISCUSSION_MEAN_AI, szText, LEADERHEAD_ANIM_HATE_NEGATIVE);
@@ -42956,7 +42991,12 @@ void CvDiplomacyAI::DoWarnCoopWarTarget(PlayerTypes eAskingPlayer, PlayerTypes e
 		// If human was target, send message
 		if (GET_PLAYER(eLoopPlayer).isHuman(ISHUMAN_AI_DIPLOMACY))
 		{
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+			const bool bVP64Queue = VP64DeferAIDiplomacy::QueueFor(GetID(), eLoopPlayer);
+			if (GET_PLAYER(eLoopPlayer).getTeam() == eTargetTeam && ((!CvPreGame::isNetworkMultiplayerGame() && GC.getGame().getActivePlayer() == eLoopPlayer) || bVP64Queue) && !MOD_DIPLOAI_SHUT_UP)
+#else
 			if (GET_PLAYER(eLoopPlayer).getTeam() == eTargetTeam && !CvPreGame::isNetworkMultiplayerGame() && GC.getGame().getActivePlayer() == eLoopPlayer && !MOD_DIPLOAI_SHUT_UP)
+#endif
 			{
 				const char* szPlayerName = NULL;
 				if (GC.getGame().isGameMultiPlayer() && GET_PLAYER(eAskingPlayer).isHuman(ISHUMAN_UI))
@@ -42968,9 +43008,20 @@ void CvDiplomacyAI::DoWarnCoopWarTarget(PlayerTypes eAskingPlayer, PlayerTypes e
 					szPlayerName = GET_PLAYER(eAskingPlayer).getNameKey();
 				}
 
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+				const char* strText = GetDiploStringForMessage(DIPLO_MESSAGE_COOP_WAR_WARNING, NO_PLAYER, szPlayerName);
+				if (bVP64Queue)
+					VP64DeferAIDiplomacy::Queue(GetID(), eLoopPlayer, NULL, DIPLO_UI_STATE_BLANK_DISCUSSION, strText, LEADERHEAD_ANIM_POSITIVE, -1);
+				else
+				{
+					DLLUI->SetForceDiscussionModeQuitOnBack(true);		// Set force quit so that when discuss mode pops up the Back button won't go to leader root
+					gDLL->GameplayDiplomacyAILeaderMessage(GetID(), DIPLO_UI_STATE_BLANK_DISCUSSION, strText, LEADERHEAD_ANIM_POSITIVE);
+				}
+#else
 				DLLUI->SetForceDiscussionModeQuitOnBack(true);		// Set force quit so that when discuss mode pops up the Back button won't go to leader root
 				const char* strText = GetDiploStringForMessage(DIPLO_MESSAGE_COOP_WAR_WARNING, NO_PLAYER, szPlayerName);
 				gDLL->GameplayDiplomacyAILeaderMessage(GetID(), DIPLO_UI_STATE_BLANK_DISCUSSION, strText, LEADERHEAD_ANIM_POSITIVE);
+#endif
 			}
 			continue;
 		}
@@ -58066,7 +58117,11 @@ void CvDiplomacyAI::DoLiberatedFromVassalage(TeamTypes eTeam, bool bSkipPopup)
 		if (bSkipPopup)
 			continue;
 
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+		if ((GC.getGame().isReallyNetworkMultiPlayer() && MOD_ACTIVE_DIPLOMACY) || VP64DeferAIDiplomacy::QueueFor(GetID(), eMasterPlayer))
+#else
 		if (GC.getGame().isReallyNetworkMultiPlayer() && MOD_ACTIVE_DIPLOMACY)
+#endif
 		{
 			if (CvPreGame::isHuman(eMasterPlayer))
 			{
