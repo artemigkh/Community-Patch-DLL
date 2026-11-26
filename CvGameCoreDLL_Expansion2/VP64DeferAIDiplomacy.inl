@@ -260,6 +260,7 @@ void CvDiplomacyRequests::VP64Drain()
 extern "C" __declspec(dllexport) int VP64DeferAIDiplomacyControl(int iSet, VP64DeferAIDiplomacyStats* pOut)
 {
 	using namespace VP64DeferAIDiplomacy;
+	Init(); // the environment and the default first, so a read-only call reports what is in effect
 	if (iSet == 0 || iSet == 1)
 	{
 		s_bOn = (iSet == 1);
