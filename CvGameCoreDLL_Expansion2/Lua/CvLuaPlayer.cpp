@@ -12277,10 +12277,19 @@ int CvLuaPlayer::lDoForceDenounce(lua_State* L)
 	pkPlayer->GetDiplomacyAI()->DoDenouncePlayer(eOtherPlayer);
 
 	// Show leader if active player is being denounced
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+	if(GC.getGame().getActivePlayer() == eOtherPlayer || VP64DeferAIDiplomacy::QueueFor(pkPlayer->GetID(), eOtherPlayer))
+#else
 	if(GC.getGame().getActivePlayer() == eOtherPlayer)
+#endif
 	{
 		const char* strText = pkPlayer->GetDiplomacyAI()->GetDiploStringForMessage(DIPLO_MESSAGE_REPEAT_NO);
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+		// queued when an AI turn is running (a script's denouncement), shown at once in the human's turn
+		VP64DeferAIDiplomacy::LeaderMessage(pkPlayer->GetID(), eOtherPlayer, DIPLO_UI_STATE_BLANK_DISCUSSION_MEAN_AI, strText, LEADERHEAD_ANIM_NEGATIVE);
+#else
 		gDLL->GameplayDiplomacyAILeaderMessage(pkPlayer->GetID(), DIPLO_UI_STATE_BLANK_DISCUSSION_MEAN_AI, strText, LEADERHEAD_ANIM_NEGATIVE);
+#endif
 	}
 
 	return 1;

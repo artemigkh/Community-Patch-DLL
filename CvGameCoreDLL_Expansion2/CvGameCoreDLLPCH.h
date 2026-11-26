@@ -251,6 +251,9 @@ typedef wchar_t          wchar;
 #if defined(VP64_HIDDEN_EMBARK)
 #include "VP64HiddenEmbark.h"
 #endif
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+#include "VP64DeferAIDiplomacy.h"
+#endif
 
 using namespace fastdelegate;
 

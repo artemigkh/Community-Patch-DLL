@@ -88,6 +88,9 @@ protected:
 #if defined(MOD_ACTIVE_DIPLOMACY)
 	void ActivateNext();
 #endif
+#if defined(VP64_DEFER_AI_DIPLOMACY)
+	void VP64Drain();
+#endif
 	void Send(PlayerTypes eFromPlayer, DiploUIStateTypes eDiploType, const char* pszMessage, LeaderheadAnimationTypes eAnimationType, int iExtraGameData = -1);
 
 	PlayerTypes m_ePlayer;
