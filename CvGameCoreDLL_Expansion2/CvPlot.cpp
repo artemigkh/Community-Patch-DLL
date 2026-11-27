@@ -26,6 +26,9 @@
 #include "CvNotifications.h"
 #include "CvMinorCivAI.h"
 #include "CvUnitCombat.h"
+#if defined(VP64_RENDER_EVENTS)
+#include "VP64RenderEvents.h"
+#endif
 #include "CvDLLUtilDefines.h"
 #include "CvInfosSerializationHelper.h"
 #include "CvBarbarians.h"
@@ -7297,6 +7300,11 @@ void CvPlot::setPlotType(PlotTypes eNewValue, bool bRecalculate, bool bRebuildGr
 	if (eNewValue <= NO_PLOT || eNewValue >= NUM_PLOT_TYPES)
 		return;
 
+#if defined(VP64_RENDER_EVENTS)
+	const PlotTypes eVp64OldPlot = getPlotType();
+	const TerrainTypes eVp64OldTerrain = getTerrainType();
+#endif
+
 	if (getPlotType() == PLOT_OCEAN || eNewValue == PLOT_OCEAN)
 	{
 		erase(bEraseUnitsIfWater);
@@ -7530,6 +7538,13 @@ void CvPlot::setPlotType(PlotTypes eNewValue, bool bRecalculate, bool bRebuildGr
 		// Update terrain graphics
 		setLayoutDirty(true);
 	}
+#if defined(VP64_RENDER_EVENTS)
+	// The layout update above reports the plot to the host; a change without it is reported here.
+	if (!bRebuildGraphics && GC.IsGraphicsInitialized())
+	{
+		VP64_RENDER_EVENT(VP64_RENDER_EVENT_PLOT_CHANGED, GetPlotIndex(), getPlotType(), getTerrainType(), eVp64OldPlot, eVp64OldTerrain);
+	}
+#endif
 }
 
 //	--------------------------------------------------------------------------------
@@ -7544,6 +7559,9 @@ void CvPlot::setTerrainType(TerrainTypes eNewValue, bool bRecalculate, bool bReb
 
 	if(eOldValue != eNewValue)
 	{
+#if defined(VP64_RENDER_EVENTS)
+		const PlotTypes eVp64OldPlot = getPlotType();
+#endif
 		bUpdateSight = (getTerrainType() != NO_TERRAIN) &&
 		        (eNewValue != NO_TERRAIN) &&
 		        ((GC.getTerrainInfo(getTerrainType())->getSeeFromLevel() != GC.getTerrainInfo(eNewValue)->getSeeFromLevel()) ||
@@ -7648,6 +7666,13 @@ void CvPlot::setTerrainType(TerrainTypes eNewValue, bool bRecalculate, bool bReb
 				GET_PLAYER(getOwner()).ChangeTerrainPlotCount(eNewValue, 1);
 			}
 		}
+#if defined(VP64_RENDER_EVENTS)
+		// No layout update follows a terrain change: report it to the host.
+		if (GC.IsGraphicsInitialized())
+		{
+			VP64_RENDER_EVENT(VP64_RENDER_EVENT_PLOT_CHANGED, GetPlotIndex(), getPlotType(), getTerrainType(), eVp64OldPlot, eOldValue);
+		}
+#endif
 	}
 }
 
