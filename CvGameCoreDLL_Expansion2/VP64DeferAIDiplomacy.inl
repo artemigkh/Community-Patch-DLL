@@ -269,6 +269,7 @@ extern "C" __declspec(dllexport) int VP64DeferAIDiplomacyControl(int iSet, VP64D
 	{
 		s_bOn = (iSet == 1);
 		s_iSource = 1;
+		WriteReport(); // the report shows the switch the host set, not the one Init read first
 	}
 	if (pOut != NULL && pOut->iSize > 0)
 	{
