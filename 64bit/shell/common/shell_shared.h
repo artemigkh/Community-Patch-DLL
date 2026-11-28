@@ -645,7 +645,8 @@ struct VPShellOverlaySlot
 	uint32_t width, height, mips, dxgiFormat;   // of the EXE's target (2048, 2048, 12, R8G8B8A8_TYPELESS)
 	float overlayProj[VPSHELL_OVERLAY_MAX_VIEWS][16];   // 0xDA1690 + 0x40 v, row-major as stored, same frame as the texels
 	uint32_t texEpoch;           // changes whenever the DLL (re)created this slot's shared texture: a reader re-opens it then
-	uint32_t reserved[7];
+	uint32_t ntHandle;           // that texture's NT handle value in the EXE (vp_shared_tex.h; from reserved[0], 0 = open by name)
+	uint32_t reserved[6];
 };
 #pragma pack(pop)
 
@@ -661,6 +662,7 @@ static_assert(sizeof(VPShellOverlayTap) == 112, "layout");
 static_assert(offsetof(VPShellOverlaySlot, presentCount) == 16, "layout");
 static_assert(offsetof(VPShellOverlaySlot, overlayProj) == 48, "layout");
 static_assert(offsetof(VPShellOverlaySlot, texEpoch) == 304, "layout");
+static_assert(offsetof(VPShellOverlaySlot, ntHandle) == 308, "layout");
 static_assert(sizeof(VPShellOverlaySlot) == 336, "layout");
 #endif
 #define VPSHELL_OVERLAYTAP(hdrPtr) ((VPShellOverlayTap*)((char*)(hdrPtr) + VPSHELL_OVERLAYTAP_OFFSET))

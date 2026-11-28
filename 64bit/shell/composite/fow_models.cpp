@@ -7,6 +7,7 @@
 #include "exe_camera.h"   // VPCAM_OK (the camera block's status)
 #include "shell_exe.h"    // the EXE build table (epic 0590, ticket 4965)
 #include "shell_fowmask.h"
+#include "vp_shared_tex.h"
 #include <d3d11_1.h>
 #include <math.h>
 #include <stdio.h>
@@ -783,9 +784,11 @@ static void PollCopy(ID3D11DeviceContext* ctx)
 	InterlockedExchange((volatile LONG*)&g_sec->inUseSlot, (LONG)VPSHELL_FOWMASK_NONE);
 }
 
-static ID3D11Texture2D* SlotTexture(ID3D11Device* dev, uint32_t i, uint32_t epoch)
+static ID3D11Texture2D* SlotTexture(ID3D11Device* dev, uint32_t i, const VPShellFowMaskSlot& rec, bool& stale)
 {
 	FmSlotTex& s = g_slotTex[i];
+	stale = false;
+	const uint32_t epoch = rec.texEpoch;
 	if (s.tex && s.epoch == epoch) return s.tex;
 	Rel(s.tex);
 	ID3D11Device1* d1 = nullptr;
@@ -793,9 +796,24 @@ static ID3D11Texture2D* SlotTexture(ID3D11Device* dev, uint32_t i, uint32_t epoc
 	wchar_t name[96];
 	_snwprintf_s(name, _TRUNCATE, VPSHELL_FOWMASK_TEXTURE_FMT, g_sec->exePid, epoch, i);
 	ID3D11Texture2D* t = nullptr;
-	const HRESULT hr = d1->OpenSharedResourceByName(name, DXGI_SHARED_RESOURCE_READ, __uuidof(ID3D11Texture2D), (void**)&t);
+	VPSharedOpen how;
+	const HRESULT hr = VPOpenSharedTexture(d1, g_sec->serverPid, rec.ntHandle, name, DXGI_SHARED_RESOURCE_READ, &t, &how);
 	d1->Release();
-	if (FAILED(hr) || !t) { FLOG("fow_models: OpenSharedResourceByName('%S') failed 0x%08X", name, hr); return nullptr; }
+	if (FAILED(hr) || !t)
+	{
+		char why[400];
+		FLOG("fow_models: %s", VPSharedFailText(why, sizeof(why), how, name, g_sec->serverPid, rec.ntHandle));
+		return nullptr;
+	}
+	VPShellFowMaskSlot again;
+	if (how.via == VPSHARED_HANDLE && (!SnapSlot(i, again) || again.texEpoch != epoch || again.ntHandle != rec.ntHandle))
+	{
+		// the server made its slot textures again while we opened this one: the value may name another texture now. Not a
+		// fault: the next Present takes the next published mask
+		t->Release();
+		stale = true;
+		return nullptr;
+	}
 	s.tex = t; s.epoch = epoch;
 	return t;
 }
@@ -1587,8 +1605,14 @@ static void Run(const FowModelsEnv& env, double now)
 	// ticket 0407: the first copy's steps timed on the render thread (the open, the local textures with the resample pass's
 	// set-up, the copy and the first move), for the stall 0404 measured after a huge load
 	const double tOpen = NowMs();
-	ID3D11Texture2D* t = SlotTexture(env.dev, newest, s.texEpoch);
+	bool stale = false;
+	ID3D11Texture2D* t = SlotTexture(env.dev, newest, s, stale);
 	const double tOpened = NowMs();
+	if (!t && stale)
+	{
+		InterlockedExchange((volatile LONG*)&g_sec->inUseSlot, (LONG)VPSHELL_FOWMASK_NONE);
+		return;
+	}
 	if (!t)
 	{
 		Fail(VPFMCF_TEXTURE, "the slot %u texture (epoch %u) could not be opened", newest, s.texEpoch);

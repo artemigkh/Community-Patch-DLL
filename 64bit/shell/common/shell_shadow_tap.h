@@ -131,7 +131,8 @@ struct VPShellShadowSlot   // VPSHELL_SHADOW_SLOTS of them at VPSHELL_SHADOW_SLO
 	// ticket 4785: ShadowRaw's size at that Present (= the back buffer's, the size the server draws its units' mask at before
 	// the resample; at quality 1 the slot's own width and height); 0 from an older producer
 	uint32_t rawWidth, rawHeight;
-	uint32_t reserved[5];
+	uint32_t ntHandle;           // the slot texture's NT handle value in the EXE (vp_shared_tex.h; from reserved[0], 0 = by name)
+	uint32_t reserved[4];
 };
 #pragma pack(pop)
 
@@ -147,6 +148,7 @@ static_assert(offsetof(VPShellShadowSlot, shadowMatrix0) == 64, "layout");
 static_assert(offsetof(VPShellShadowSlot, verifyHash) == 320, "layout");
 static_assert(offsetof(VPShellShadowSlot, rawWidth) == 340, "layout");   // ticket 4785: was reserved[0]
 static_assert(offsetof(VPShellShadowSlot, rawHeight) == 344, "layout");
+static_assert(offsetof(VPShellShadowSlot, ntHandle) == 348, "layout");
 static_assert(sizeof(VPShellShadowSlot) == 368, "layout (x86 and x64 alike)");
 static_assert(VPSHELL_SHADOW_SLOT_OFFSET + VPSHELL_SHADOW_SLOTS * sizeof(VPShellShadowSlot) <= VPSHELL_SHADOWTAP_SECTION_BYTES,
               "slots past the section");

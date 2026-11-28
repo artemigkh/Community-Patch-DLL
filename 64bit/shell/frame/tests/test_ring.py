@@ -342,7 +342,8 @@ def test_unopened_texture_names(run):
     finally:
         fake.close()
     assert r["none"] == 40 and r["open_failures"] >= 1, r
-    assert re.search(r"OpenSharedResourceByName\(Local\\VPFrameT_\d+_\d+\.Ring\.%d\.4242\.0\.C\) failed 0x" % os.getpid(), text(co)), text(co)
+    # the fake server publishes no handles (0): the source opens by name, as an older server's ring
+    assert re.search(r"OpenSharedResourceByName\('Local\\VPFrameT_\d+_\d+\.Ring\.%d\.4242\.0\.C'\) failed 0x" % os.getpid(), text(co)), text(co)
     assert text(co).count("OpenSharedResourceByName(") == 1   # logged once
 
 

@@ -1,5 +1,5 @@
 // ring_source.cpp - the ring source (issue 3302, epic 3300): consumer side of shell/common/vp_frame.h, x86 (builds on
-// x64 too, for tests). Opens the ring's slot textures by name, claims a slot by the Dekker handshake of vp_frame.h,
+// x64 too, for tests). Opens the ring's slot textures by the server's handles (by name without them), claims a slot by the Dekker handshake of vp_frame.h,
 // queues ID3D11DeviceContext4::Wait on the server's fence (VPSYNC_FENCE) or nothing (VPSYNC_CPU), samples the slot
 // directly (no copy), and gives the slot back when an event query issued after the draw completes (polled, never
 // waited on). Never blocks except waitFor(), which ends at its deadline (high-resolution waitable timer + spin).
@@ -9,6 +9,7 @@
 #include "ring_source.h"
 #include <d3d11_4.h>
 #include <dxgi1_2.h>
+#include "vp_shared_tex.h"
 
 namespace vpframe {
 
@@ -41,7 +42,7 @@ bool RingSource::open(ID3D11Device* dev, ID3D11DeviceContext* ctx, const wchar_t
 	if (!dev || !ctx || !baseName || !*baseName || wcslen(baseName) >= _countof(m_base) - 32) return false;
 	if (FAILED(dev->QueryInterface(__uuidof(ID3D11Device1), (void**)&m_dev1)))
 	{
-		m_log("ring source: the device has no ID3D11Device1 (OpenSharedResourceByName): refused");
+		m_log("ring source: the device has no ID3D11Device1 (OpenSharedResource1): refused");
 		return false;
 	}
 	m_dev = dev; m_ctx = ctx;
@@ -50,6 +51,13 @@ bool RingSource::open(ID3D11Device* dev, ID3D11DeviceContext* ctx, const wchar_t
 	{
 		SafeRelease(m_dev5); SafeRelease(m_ctx4);
 		m_log("ring source: no ID3D11Device5/ID3D11DeviceContext4: CPU sync requested");
+	}
+	if (m_wantSync == VPSYNC_FENCE && ring::UnderWine())
+	{
+		// Wine (Proton 11 and before) cannot import a fence another process shared: OpenSharedFence ends the EXE inside
+		// vkImportSemaphoreWin32HandleKHR ("d3d12 fence from other process"), so this cannot be tried and caught
+		m_wantSync = VPSYNC_CPU;
+		m_log("ring source: running under Wine: CPU sync requested (Wine cannot open a fence shared by another process)");
 	}
 	IDXGIDevice* xd = nullptr; IDXGIAdapter* ad = nullptr;
 	if (SUCCEEDED(dev->QueryInterface(__uuidof(IDXGIDevice), (void**)&xd)) && SUCCEEDED(xd->GetAdapter(&ad)))
@@ -211,13 +219,15 @@ bool RingSource::ensureRing()
 		{
 			ID3D11Texture2D*& tex = k ? m_depTex[s] : m_colTex[s];
 			ok = ring::TexName(n, 256, m_base, pid, rg.generation, s, k ? L'D' : L'C');
-			HRESULT hr = ok ? m_dev1->OpenSharedResourceByName(n, DXGI_SHARED_RESOURCE_READ, __uuidof(ID3D11Texture2D), (void**)&tex) : E_FAIL;
+			VPSharedOpen how;
+			HRESULT hr = ok ? VPOpenSharedTexture(m_dev1, pid, rg.slotHandle[s][k], n, DXGI_SHARED_RESOURCE_READ, &tex, &how) : E_FAIL;
 			if (FAILED(hr))
 			{
 				tex = nullptr; ok = false;
-				if (!(m_logged & kLogNames)) { m_logged |= kLogNames; m_log("ring source: OpenSharedResourceByName(%ls) failed 0x%08lX", n, hr); }
+				if (!(m_logged & kLogNames)) { m_logged |= kLogNames; char t[400]; m_log("ring source: %s", VPSharedFailText(t, sizeof(t), how, n, pid, rg.slotHandle[s][k])); }
 				break;
 			}
+			if (s == 0 && k == 0) m_openedVia = how.via;
 			D3D11_TEXTURE2D_DESC td; tex->GetDesc(&td);
 			if (td.Width != rg.width || td.Height != rg.height || td.Format != (k ? DXGI_FORMAT_R32_FLOAT : DXGI_FORMAT_B8G8R8A8_UNORM))
 			{
@@ -228,6 +238,13 @@ bool RingSource::ensureRing()
 			ID3D11ShaderResourceView*& srv2 = k ? m_depSrv[s] : m_colSrv[s];
 			ok = SUCCEEDED(m_dev->CreateShaderResourceView(tex, nullptr, &srv2));
 		}
+	}
+	if (ok && VPFRAME_RING(m_sec)->seq != seq)
+	{
+		// The server began a new generation while we opened this one: the handle values may name its new textures (or
+		// nothing). Not a failure of this generation: drop it and open the next one (which brings its own fence handle).
+		dropRing();
+		return false;
 	}
 	if (!ok)
 	{
@@ -241,8 +258,8 @@ bool RingSource::ensureRing()
 	m_gen = rg.generation; m_genPid = pid; m_ringSeq = seq; m_ringSync = rg.sync; m_slotCount = rg.slotCount;
 	m_w = rg.width; m_h = rg.height;
 	m_stats.generations++;
-	m_log("ring source: generation %u of pid %u opened: %u slots %ux%u sync %s", m_gen, pid, m_slotCount, m_w, m_h,
-		m_ringSync == VPSYNC_FENCE ? "fence" : "cpu");
+	m_log("ring source: generation %u of pid %u opened: %u slots %ux%u sync %s, textures %s", m_gen, pid, m_slotCount, m_w, m_h,
+		m_ringSync == VPSYNC_FENCE ? "fence" : "cpu", m_openedVia == VPSHARED_HANDLE ? "by handle" : "by name");
 	return true;
 }
 

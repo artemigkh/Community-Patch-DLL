@@ -241,14 +241,17 @@ bool RingSink::regenerate(uint32_t slots, uint32_t w, uint32_t h, uint32_t sync,
 		ok = ring::TexName(n, 256, m_base, pid, gen, s, L'C') && MakeShared(m_dev, td, n, m_slots[s].colour, m_slots[s].hColour, m_log);
 		if (ok) ok = SUCCEEDED(m_dev->CreateRenderTargetView(m_slots[s].colour, nullptr, &m_slots[s].rtv));
 		td.Format = DXGI_FORMAT_R32_FLOAT;
-		td.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		// also a render target: end()'s CopyResource from the D32 depth is a draw in DXVK (Wine, Proton), which needs a
+		// colour attachment, and DXVK cannot add that usage to a shared image later (the copy then does nothing)
+		td.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
 		if (ok) ok = ring::TexName(n, 256, m_base, pid, gen, s, L'D') && MakeShared(m_dev, td, n, m_slots[s].depth, m_slots[s].hDepth, m_log);
 	}
 	if (ok)
 	{
 		D3D11_TEXTURE2D_DESC dd = {};
 		dd.Width = w; dd.Height = h; dd.MipLevels = 1; dd.ArraySize = 1; dd.SampleDesc.Count = 1;
-		dd.Format = DXGI_FORMAT_R32_TYPELESS; dd.Usage = D3D11_USAGE_DEFAULT; dd.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+		// a shader resource too: the source of that copy, sampled by DXVK's draw (without it DXVK makes the image again)
+		dd.Format = DXGI_FORMAT_R32_TYPELESS; dd.Usage = D3D11_USAGE_DEFAULT; dd.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 		ok = SUCCEEDED(m_dev->CreateTexture2D(&dd, nullptr, &m_privDepth));
 		D3D11_DEPTH_STENCIL_VIEW_DESC dv = {};
 		dv.Format = DXGI_FORMAT_D32_FLOAT; dv.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
@@ -280,6 +283,12 @@ bool RingSink::regenerate(uint32_t slots, uint32_t w, uint32_t h, uint32_t sync,
 	rg->adapterLuid = m_cfg.adapterLuid;
 	rg->srvFenceHandleInExe = handleInExe;
 	rg->exePidForHandle = handleInExe ? exePid : 0;
+	// the textures' NT handles in this process, kept open until releaseTextures(): the composite duplicates them from here
+	for (uint32_t s = 0; s < VPFRAME_MAX_SLOTS; ++s)
+	{
+		rg->slotHandle[s][0] = s < slots ? (uint32_t)(uintptr_t)m_slots[s].hColour : 0;
+		rg->slotHandle[s][1] = s < slots ? (uint32_t)(uintptr_t)m_slots[s].hDepth : 0;
+	}
 	SeqEnd(&rg->seq);
 	m_haveRing = true;
 	m_log("ring sink: generation %u: %u slots %ux%u sync %s (fence handle 0x%x in pid %u), answers request %u", gen, slots, w, h,

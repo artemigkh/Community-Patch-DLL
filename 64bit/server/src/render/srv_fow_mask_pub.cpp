@@ -166,6 +166,7 @@ bool FowMaskPublisher::makeSlots(ID3D11Device* dev, const D3D11_TEXTURE2D_DESC& 
 		MemoryBarrier();
 		m->valid = 0;
 		m->texEpoch = m_epoch;
+		m->ntHandle = (uint32_t)(uintptr_t)s.nt;   // the consumer duplicates it from this process (vp_shared_tex.h)
 		m->width = src.Width;
 		m->height = src.Height;
 		m->mips = src.MipLevels;
@@ -194,6 +195,7 @@ void FowMaskPublisher::dropSlots()
 			InterlockedIncrement((volatile LONG*)&m->seq);
 			MemoryBarrier();
 			m->valid = 0;
+			m->ntHandle = 0;   // closed below
 			MemoryBarrier();
 			InterlockedIncrement((volatile LONG*)&m->seq);
 		}
@@ -209,7 +211,7 @@ void FowMaskPublisher::dropSlots()
 	}
 	m_inflight = -1;
 	m_newest = VPSHELL_FOWMASK_NONE;
-	// a new epoch for the next textures: a consumer re-opens them by name
+	// a new epoch for the next textures: a consumer re-opens them
 	m_epoch += 2;
 	if(m_sec)
 		m_sec->epoch = m_epoch;
@@ -239,6 +241,7 @@ void FowMaskPublisher::pollInflight(ID3D11DeviceContext* ctx)
 	m->valid = 1;
 	m->generation = ++m_gen;
 	m->texEpoch = m_epoch;
+	m->ntHandle = (uint32_t)(uintptr_t)s.nt;
 	m->numViews = s.meta.numViews;
 	m->pairGeneration = s.meta.pairGeneration;
 	m->pairPresentCount = s.meta.pairPresentCount;

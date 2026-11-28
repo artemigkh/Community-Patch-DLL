@@ -28,8 +28,12 @@
 //                         thread drains the feed and polls the taps on it, before the next frame's <base>.Cam.
 //   The events are created-or-opened by both sides (CreateEventW with bManualReset FALSE).
 //   Ring textures: VPFRAME_RING_TEX_FMT (base, server pid, ring generation, slot, 'C' colour / 'D' depth), created by the
-//   server with D3D11_RESOURCE_MISC_SHARED_NTHANDLE | D3D11_RESOURCE_MISC_SHARED (NO keyed mutex), opened by the
-//   composite with ID3D11Device1::OpenSharedResourceByName.
+//   server with D3D11_RESOURCE_MISC_SHARED_NTHANDLE | D3D11_RESOURCE_MISC_SHARED (NO keyed mutex). The server publishes
+//   each texture's NT handle value in its own process (VPFrameRing::slotHandle); the composite duplicates it from the
+//   server and opens it with OpenSharedResource1, and by name only when no handle is published or the handle path
+//   fails (vp_shared_tex.h: DXVK, the D3D 11 of Wine and Proton, has no OpenSharedResourceByName).
+//   The depth textures are also render targets: DXVK copies the private D32 depth into them with a draw, which needs a
+//   colour attachment, and a shared image cannot be given that usage after it was made.
 //   Server fence (VPSYNC_FENCE only): an ID3D11Fence created by the server with D3D11_FENCE_FLAG_SHARED; D3D11 cannot
 //   open a fence by name, so the SERVER duplicates its NT handle into the EXE process (OpenProcess(PROCESS_DUP_HANDLE,
 //   exePid) + DuplicateHandle) and publishes the handle value valid in the EXE (VPFrameRing::srvFenceHandleInExe). The
@@ -243,7 +247,7 @@ struct VPFramePublish
 // ---- ring block (writer: server) --------------------------------------------------------------------------------------
 struct VPFrameRing
 {
-	volatile uint32_t seq;          // seqlock over generation .. srvFenceHandleInExe
+	volatile uint32_t seq;          // seqlock over generation .. srvFenceHandleInExe, and slotHandle
 	uint32_t generation;            // +1 whenever the textures are recreated (size, slot count, sync, device rebuilt)
 	uint32_t slotCount;             // VPFRAME_MIN_SLOTS..VPFRAME_MAX_SLOTS; 0 = no ring yet
 	uint32_t width, height;         // every slot texture's size (= the request it answers)
@@ -259,7 +263,10 @@ struct VPFrameRing
 	volatile int64_t latestFrameId; // newest READY frame (written after its slot record; 0 none)
 	volatile int32_t latestSlot;    // its slot (-1 none)
 	uint32_t pad0;
-	uint32_t reserved[16];
+	// ---- under seq again, written with generation .. srvFenceHandleInExe (from reserved[0..7]; layout and VPFRAME_VERSION
+	// unchanged: a server before it leaves 0, and the composite opens by name) ----
+	uint32_t slotHandle[VPFRAME_MAX_SLOTS][2];   // per slot: the 'C' and 'D' textures' NT handle values in the server
+	uint32_t reserved[8];
 };
 
 // ---- slot records (writer: server), VPFRAME_MAX_SLOTS of them at VPFRAME_SLOTS_OFFSET ---------------------------------
@@ -319,6 +326,7 @@ static_assert(offsetof(VPFrameRing, adapterLuid) == 40, "layout");
 static_assert(offsetof(VPFrameRing, srvFenceHandleInExe) == 48, "layout");
 static_assert(offsetof(VPFrameRing, latestFrameId) == 56, "layout");
 static_assert(offsetof(VPFrameRing, latestSlot) == 64, "layout");
+static_assert(offsetof(VPFrameRing, slotHandle) == 72, "layout");
 static_assert(sizeof(VPFrameRing) == 136, "layout");
 static_assert(offsetof(VPFrameSlot, frameId) == 8, "layout");
 static_assert(offsetof(VPFrameSlot, fenceValue) == 16, "layout");

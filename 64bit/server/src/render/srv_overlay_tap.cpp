@@ -12,6 +12,7 @@
 #include <dxgi1_2.h>
 #include <math.h>
 #include <stdarg.h>
+#include "vp_shared_tex.h"
 
 namespace srvrender {
 
@@ -265,7 +266,7 @@ bool OverlayTapReader::acquire(OverlayFrame& out)
 	{
 		im.dev1 = nullptr;
 		m_failReason = VPOVLF_SHARED;
-		m_lastWhy = "the server's device has no ID3D11Device1 (OpenSharedResourceByName)";
+		m_lastWhy = "the server's device has no ID3D11Device1 (OpenSharedResource1)";
 		m_state = State::Failed;
 		RNote("overlay: LOUD: %s", m_lastWhy.c_str());
 		release();
@@ -394,9 +395,22 @@ bool OverlayTapReader::acquire(OverlayFrame& out)
 		wchar_t name[80];
 		_snwprintf_s(name, _TRUNCATE, VPSHELL_OVERLAY_TEXTURE_FMT, tb.exePid, s);
 		ID3D11Texture2D* t = nullptr;
-		HRESULT hr = im.dev1->OpenSharedResourceByName(name, DXGI_SHARED_RESOURCE_READ, __uuidof(ID3D11Texture2D), (void**)&t);
+		VPSharedOpen how;
+		HRESULT hr = VPOpenSharedTexture(im.dev1, tb.exePid, sl.ntHandle, name, DXGI_SHARED_RESOURCE_READ, &t, &how);
 		if(FAILED(hr) || !t)
-			return refuse(Fmt("OpenSharedResourceByName('%ls') failed 0x%08X", name, (unsigned)hr));
+		{
+			char why[400];
+			return refuse(VPSharedFailText(why, sizeof(why), how, name, tb.exePid, sl.ntHandle));
+		}
+		VPShellOverlaySlot again;
+		if(how.via == VPSHARED_HANDLE &&
+		   (!SnapSlot(ls, again) || again.texEpoch != sl.texEpoch || again.ntHandle != sl.ntHandle))
+		{
+			// the DLL made the slot's texture again while we opened it: the value may name the new one; next frame
+			t->Release();
+			InterlockedExchange((volatile LONG*)&live->inUseSlot, (LONG)(im.haveBound ? im.bound.slot : 0xFFFFFFFFu));
+			return keepOld(false);
+		}
 		D3D11_TEXTURE2D_DESC d;
 		t->GetDesc(&d);
 		if(d.Width != 2048 || d.Height != 2048 || d.MipLevels != 12 || d.ArraySize != 1 || d.SampleDesc.Count != 1 ||
@@ -423,7 +437,8 @@ bool OverlayTapReader::acquire(OverlayFrame& out)
 		tx.srv = v;
 		tx.epoch = sl.texEpoch;
 		tx.pid = tb.exePid;
-		RNote("overlay: slot %u texture '%ls' opened (epoch %u, format %u, 12 mips)", s, name, sl.texEpoch, (unsigned)d.Format);
+		RNote("overlay: slot %u texture '%ls' opened %s (epoch %u, format %u, 12 mips)", s, name, VPSharedViaText(how), sl.texEpoch,
+		      (unsigned)d.Format);
 	}
 	// bound: ack
 	InterlockedExchange((volatile LONG*)&live->ackServerPid, (LONG)GetCurrentProcessId());

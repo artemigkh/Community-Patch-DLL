@@ -106,6 +106,7 @@ private:
 	int64_t m_claimSeq = 0;            // the value of the newest claim (slotInUse); reset with the claims at open()
 	uint32_t m_poisonGen = 0;          // the generation whose fence was found completed to UINT64_MAX
 	uint32_t m_logged = 0;             // one bit per refusal kind logged once
+	int m_openedVia = 0;               // VPSharedVia of the open generation's first texture (its log line)
 };
 
 }  // namespace vpframe

@@ -476,7 +476,7 @@ static void ReleaseSlots()
 		{
 			VPShellShadowSlot* m = SecSlot(i);
 			InterlockedIncrement((volatile LONG*)&m->seq); MemoryBarrier();
-			m->valid = 0;
+			m->valid = 0; m->ntHandle = 0;   // closed below
 			MemoryBarrier(); InterlockedIncrement((volatile LONG*)&m->seq);
 		}
 		if (s.q) s.q->Release();
@@ -542,7 +542,7 @@ static bool MakeSlots(ID3D11Device* dev, const D3D11_TEXTURE2D_DESC& src)
 		if (FAILED(dev->CreateQuery(&qd, &s.q))) { SLOG("shadow_tap: slot %u: CreateQuery failed", i); s.q = nullptr; ReleaseSlots(); return false; }
 		VPShellShadowSlot* m = SecSlot(i);
 		InterlockedIncrement((volatile LONG*)&m->seq); MemoryBarrier();
-		m->valid = 0; m->texEpoch = s.epoch;
+		m->valid = 0; m->texEpoch = s.epoch; m->ntHandle = (uint32_t)(uintptr_t)s.nt;
 		m->width = src.Width; m->height = src.Height; m->mips = src.MipLevels; m->dxgiFormat = src.Format;
 		MemoryBarrier(); InterlockedIncrement((volatile LONG*)&m->seq);
 	}
@@ -829,7 +829,7 @@ static void TargetProblem(uint32_t reason, const char* why, bool fault)
 // ShadowRaw's size (the back buffer's) of this Present, and the flag VPSHD_SLOT_UNIT_MASK_DROPPED when the unit filter's
 // latch dropped the EXE's unit mask draws of the frame copied here (this runs before UnitFilter_OnPresent re-latches).
 static void Describe(VPShellShadowSlot* m, const FrameVals& f, int64_t pc, uint32_t w, uint32_t h, uint32_t fmt, uint32_t flags, uint32_t epoch,
-                     uint32_t rawW, uint32_t rawH)
+                     uint32_t rawW, uint32_t rawH, HANDLE nt)
 {
 	if (UnitFilter_UnitMaskDropLatched()) flags |= VPSHD_SLOT_UNIT_MASK_DROPPED;
 	m->rawWidth = rawW; m->rawHeight = rawH;
@@ -840,6 +840,7 @@ static void Describe(VPShellShadowSlot* m, const FrameVals& f, int64_t pc, uint3
 	LARGE_INTEGER q; QueryPerformanceCounter(&q); m->copiedQpc = q.QuadPart;
 	m->width = w; m->height = h; m->mips = w ? 1 : 0; m->dxgiFormat = fmt;
 	m->quality = f.quality; m->strength = f.strength; m->flags = flags; m->texEpoch = epoch;
+	m->ntHandle = (uint32_t)(uintptr_t)nt;   // the server duplicates it (vp_shared_tex.h)
 	m->verifyHash = 0; m->verifyBytes = 0; m->loadSeq = g_loadSeq;
 	MemoryBarrier();
 	InterlockedIncrement((volatile LONG*)&m->seq);   // even, valid 0
@@ -921,7 +922,7 @@ static void Work(const ShadowTapEnv& env)
 		int s = ClaimSlot();
 		if (s < 0) { Missed("no free slot"); return; }
 		VPShellShadowSlot* m = SecSlot((uint32_t)s);
-		Describe(m, f, pc, 0, 0, 0, VPSHD_SLOT_NO_TEXTURE, g_slot[s].epoch, env.bbWidth, env.bbHeight);
+		Describe(m, f, pc, 0, 0, 0, VPSHD_SLOT_NO_TEXTURE, g_slot[s].epoch, env.bbWidth, env.bbHeight, g_slot[s].nt);
 		InterlockedIncrement((volatile LONG*)&m->seq); MemoryBarrier();
 		m->valid = 1; m->generation = ++g_gen;
 		MemoryBarrier(); InterlockedIncrement((volatile LONG*)&m->seq);
@@ -961,7 +962,7 @@ static void Work(const ShadowTapEnv& env)
 	if (s < 0) { Missed("no free slot"); return; }
 	g_unresolved = 0;
 	VPShellShadowSlot* m = SecSlot((uint32_t)s);
-	Describe(m, f, pc, g_srcDesc.Width, g_srcDesc.Height, g_srcDesc.Format, 0, g_slot[s].epoch, env.bbWidth, env.bbHeight);
+	Describe(m, f, pc, g_srcDesc.Width, g_srcDesc.Height, g_srcDesc.Format, 0, g_slot[s].epoch, env.bbWidth, env.bbHeight, g_slot[s].nt);
 	double t0 = NowMs();
 	env.ctx->CopyResource(g_slot[s].tex, g_src);
 	env.ctx->End(g_slot[s].q);

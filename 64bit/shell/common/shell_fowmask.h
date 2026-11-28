@@ -82,7 +82,9 @@ struct VPShellFowMaskSlot
 	int64_t builtQpc;               // QPC of the server's copy (CPU submit)
 	float fowAnim[4];               // (k, k, -2 T, 0) of the server frame the mask was built in
 	float overlayProj[VPSHELL_FOWMASK_MAX_VIEWS][16];
-	uint32_t reserved[8];
+	uint32_t ntHandle;              // the slot texture's NT handle value in the server (vp_shared_tex.h; from reserved[0],
+	                                // 0 = open by name)
+	uint32_t reserved[7];
 };
 
 struct VPShellFowMaskSection
@@ -152,6 +154,7 @@ static_assert(sizeof(VPShellFowMaskSection) <= VPSHELL_FOWMASK_SLOTS_OFFSET, "th
 static_assert(offsetof(VPShellFowMaskSlot, pairPresentCount) == 40, "layout");
 static_assert(offsetof(VPShellFowMaskSlot, builtQpc) == 56, "layout");
 static_assert(offsetof(VPShellFowMaskSlot, overlayProj) == 80, "layout");
+static_assert(offsetof(VPShellFowMaskSlot, ntHandle) == 336, "layout");
 static_assert(sizeof(VPShellFowMaskSlot) == 368, "layout");
 static_assert(VPSHELL_FOWMASK_SLOTS_OFFSET + VPSHELL_FOWMASK_SLOTS * sizeof(VPShellFowMaskSlot) <= VPSHELL_FOWMASK_SECTION_BYTES,
               "slots past the section");

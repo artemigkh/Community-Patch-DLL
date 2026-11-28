@@ -12,6 +12,7 @@
 #include <math.h>
 #include <stdarg.h>
 #include <vector>
+#include "vp_shared_tex.h"
 
 namespace srvrender {
 
@@ -289,7 +290,7 @@ bool ShadowTapReader::acquire(ShadowFrame& out)
 	{
 		im.dev1 = nullptr;
 		m_failReason = VPSHDF_SHARED;
-		m_lastWhy = "the server's device has no ID3D11Device1 (OpenSharedResourceByName)";
+		m_lastWhy = "the server's device has no ID3D11Device1 (OpenSharedResource1)";
 		m_state = State::Failed;
 		RNote("shadow: LOUD: %s", m_lastWhy.c_str());
 		release();
@@ -406,9 +407,22 @@ bool ShadowTapReader::acquire(ShadowFrame& out)
 			wchar_t name[96];
 			_snwprintf_s(name, _countof(name), _TRUNCATE, VPSHELL_SHADOW_TEXTURE_FMT, tb.exePid, s, sl.texEpoch);
 			ID3D11Texture2D* t = nullptr;
-			HRESULT hr = im.dev1->OpenSharedResourceByName(name, DXGI_SHARED_RESOURCE_READ, __uuidof(ID3D11Texture2D), (void**)&t);
+			VPSharedOpen how;
+			HRESULT hr = VPOpenSharedTexture(im.dev1, tb.exePid, sl.ntHandle, name, DXGI_SHARED_RESOURCE_READ, &t, &how);
 			if(FAILED(hr) || !t)
-				return refuse(Fmt("OpenSharedResourceByName('%ls') failed 0x%08X", name, (unsigned)hr));
+			{
+				char why[400];
+				return refuse(VPSharedFailText(why, sizeof(why), how, name, tb.exePid, sl.ntHandle));
+			}
+			VPShellShadowSlot again;
+			if(how.via == VPSHARED_HANDLE && (!SnapSlot(VPSHELL_SHADOWSLOT(im.sec, s), again) || again.texEpoch != sl.texEpoch ||
+			                                  again.ntHandle != sl.ntHandle))
+			{
+				// the DLL made the slot's texture again while we opened it: the value may name the new one; next frame
+				t->Release();
+				InterlockedExchange((volatile LONG*)&live->inUseSlot, (LONG)(im.haveBound ? im.bound.slot : VPSHELL_SHADOW_NO_SLOT));
+				return keepBound();
+			}
 			D3D11_TEXTURE2D_DESC d;
 			t->GetDesc(&d);
 			if(d.Width != sl.width || d.Height != sl.height || d.MipLevels != 1 || d.ArraySize != 1 || d.SampleDesc.Count != 1 ||
@@ -432,8 +446,8 @@ bool ShadowTapReader::acquire(ShadowFrame& out)
 			tx.epoch = sl.texEpoch;
 			tx.pid = tb.exePid;
 			reopened++;
-			RNote("shadow: slot %u texture '%ls' opened (%u x %u, format %u, quality %u)", s, name, d.Width, d.Height,
-			      (unsigned)d.Format, sl.quality);
+			RNote("shadow: slot %u texture '%ls' opened %s (%u x %u, format %u, quality %u)", s, name, VPSharedViaText(how), d.Width,
+			      d.Height, (unsigned)d.Format, sl.quality);
 		}
 		srv = tx.srv;
 		// verify (diagnostic): the EXE texture's hash at the copy's Present against this device's read of the shared copy

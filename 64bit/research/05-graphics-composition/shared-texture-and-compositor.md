@@ -1342,3 +1342,33 @@ lay.py product layout with the branch's builds, not an installer take; acceptanc
 come with the beta 5 take).
 Afterwards the ini came back by hash (f1d9cf01...), `lay.py restore` ok, the save copy removed, `provision.py verify --quick`
 ok, c5h-55-c released (18:0x).
+
+## 17. Linux and Proton: textures by handle, CPU sync, depth slots as render targets (2026-11-28)
+
+Three things stopped the product path under Proton (Proton 11.0, DXVK v2.7.1-504, Wine 10; the same in Experimental,
+Hotfix and DXVK master as of 2026-11-25) [L]:
+
+1. DXVK has no `OpenSharedResourceByName` (E_NOTIMPL, 0x80004001). The overlay and shadow readers refused every slot,
+   the fog never got its overlay pair, and the server ended the game (0.1b5 on VP 5.5: `FAILED: fog of war: no overlay
+   pair yet` after 10 s). Fixed: every creator publishes its own NT handle value next to the name (`VPFrameRing::slotHandle`,
+   `VPShellOverlaySlot::ntHandle`, `VPShellShadowSlot::ntHandle`, `VPShellFowMaskSlot::ntHandle`, all from reserved words,
+   no layout or version change), and the reader duplicates it from the creator (`shell/common/vp_shared_tex.h`) and opens
+   it with `OpenSharedResource1`. By name stays the fallback. The v3 hand-over and the bake tap (both off in the shipped
+   ini) still open by name.
+2. Wine cannot import a fence another process shared: `OpenSharedFence` ends the EXE inside
+   `vkImportSemaphoreWin32HandleKHR` (0xC0000028 with old WoW64, an access violation in win32u with new WoW64), so it
+   cannot be tried and caught. The ring source asks for `VPSYNC_CPU` when ntdll exports `wine_get_version`.
+3. DXVK copies the private D32 depth into the slot's R32_FLOAT texture with a draw, which needs the destination to be a
+   colour attachment, and a shared image cannot be re-created with that usage: the copy did nothing (`copyImageFb:
+   Unsupported images`, every frame; 648 to 2,290 lines a run on beta 4). The ring's depth textures are now also render
+   targets, the private depth also a shader resource.
+
+Checked 2026-11-28 on Proton 11.0 (RTX 3050 Laptop, NVIDIA 615.78.08), Steam build 26577625, VP 5.5 with EUI, windowed on a
+nested X server: a new Tiny Continents game, 10 turns with new WoW64 and 30 with old WoW64, server `result: passed`,
+the ring, overlay and shadow opened by handle, 0 `copyImageFb` lines [L]. The ring stand-ins under Proton 11's DXVK:
+every frame once, resize, close and reopen, slot holds: 0 verify failures [L stand-in].
+
+Not a patch fault, noted for stand-in runs: DXVK flushes a deferred clear of a shared image at submission only when
+the image is already in a non-default layout, so a frame that only clears the slot (`ring_producer --passes 0`) reads 0
+in the other process. With one draw pass every frame verifies. The server never publishes a clear-only frame (a frame
+without a field is held, not drawn) [C].

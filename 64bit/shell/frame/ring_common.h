@@ -33,6 +33,13 @@ struct Logger
 	}
 };
 
+// Wine (and so Proton) exports wine_get_version from its ntdll; Windows never does.
+inline bool UnderWine()
+{
+	HMODULE nt = GetModuleHandleW(L"ntdll.dll");
+	return nt && GetProcAddress(nt, "wine_get_version") != nullptr;
+}
+
 inline int64_t Qpc() { LARGE_INTEGER c; QueryPerformanceCounter(&c); return c.QuadPart; }
 inline int64_t QpcFreq() { LARGE_INTEGER f; QueryPerformanceFrequency(&f); return f.QuadPart; }
 

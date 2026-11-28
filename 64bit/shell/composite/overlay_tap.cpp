@@ -414,7 +414,7 @@ static void ReleaseAll()
 		{
 			VPShellOverlaySlot* m = SecSlot(i);
 			InterlockedIncrement((volatile LONG*)&m->seq); MemoryBarrier();
-			m->valid = 0;
+			m->valid = 0; m->ntHandle = 0;   // closed below
 			MemoryBarrier(); InterlockedIncrement((volatile LONG*)&m->seq);
 		}
 		if (s.q) s.q->Release();
@@ -482,7 +482,7 @@ static bool MakeSlots(ID3D11Device* dev, const D3D11_TEXTURE2D_DESC& src)
 		s.epoch = ++g_epoch;
 		VPShellOverlaySlot* m = SecSlot(i);
 		InterlockedIncrement((volatile LONG*)&m->seq); MemoryBarrier();
-		m->valid = 0; m->texEpoch = s.epoch;
+		m->valid = 0; m->texEpoch = s.epoch; m->ntHandle = (uint32_t)(uintptr_t)s.nt;
 		m->width = src.Width; m->height = src.Height; m->mips = src.MipLevels; m->dxgiFormat = src.Format;
 		MemoryBarrier(); InterlockedIncrement((volatile LONG*)&m->seq);
 	}
@@ -845,6 +845,7 @@ static void Work(const OverlayTapEnv& env)
 	LARGE_INTEGER q; QueryPerformanceCounter(&q); m->copiedQpc = q.QuadPart;
 	m->width = g_srcDesc.Width; m->height = g_srcDesc.Height; m->mips = g_srcDesc.MipLevels; m->dxgiFormat = g_srcDesc.Format;
 	m->texEpoch = g_slot[s].epoch;
+	m->ntHandle = (uint32_t)(uintptr_t)g_slot[s].nt;
 	MemoryBarrier();
 	InterlockedIncrement((volatile LONG*)&m->seq);   // even, valid 0
 	double t0 = NowMs();
