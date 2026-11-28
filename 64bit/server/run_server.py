@@ -55,9 +55,21 @@ _jc_spec.loader.exec_module(jobcap)
 # the toolkit folder VP_MODPACK_5_4_8_NEUTRALS, the database copy cv64-deps/testdb/vp548-cdrift-Civ5DebugDatabase.db
 # (the same bytes, bd9b8aa1..., as the descriptor's civ5-headless pinned/vp-modpack-5.4.8-cdrift/Civ5DebugDatabase.db)
 # and pinned/vp-modpack-5.4.8-cdrift/Localization-Merged.db.)
-REL = descriptor.load()
-GAME_DIR = str(REL.game_dir)
-DEFAULT_DB = str(REL.test_db)
+# Ticket 0855 (fork issue #6): the exported tree has no tools/release/releases/ (the descriptors name this repository's
+# machine folders; [unclear] in tools/export/allowlist.txt). Then, and only then (no releases folder and no $C5_RELEASE),
+# the launcher goes on without a descriptor after one warning line: --game-dir and (direct mode) --db have no default,
+# --loc-db defaults to none and --save-mods to none. A releases folder that is present but broken still fails here.
+try:
+    REL = descriptor.load()
+except descriptor.DescriptorError:
+    if descriptor.RELEASES_DIR.is_dir() or os.environ.get(descriptor.ENV_TAG, '').strip():
+        raise
+    REL = None
+    print(f'run_server: warning: no release descriptor ({Path(__file__).resolve().parents[1] / "tools" / "release" / "releases"} '
+          f'not found and {descriptor.ENV_TAG} unset); --game-dir and --db have no default, --loc-db and --save-mods '
+          'default to none', file=sys.stderr)
+GAME_DIR = str(REL.game_dir) if REL else None
+DEFAULT_DB = str(REL.test_db) if REL else None
 # Issue 1704: the localization database the 32-bit reference runs used (civ5-headless pinned set, read only; copied).
 # Issue 2001: the real game with Vox Populi activated leaves DLC_SP_Maps out of a save's DLC list (the mod blocks it).
 VP_BLOCKED_DLC = '{3F49DF54-68B6-44d1-A930-A168628FAA59}'
@@ -68,11 +80,12 @@ VP_BLOCKED_DLC = '{3F49DF54-68B6-44d1-A930-A168628FAA59}'
 # Vibrant Textures shares it but has no <SteamApp>, so it is never listed anyway.
 VP_MODPACK_DLC = '{b5932ae4-0f4f-498f-9333-e2d31b20e095}'
 DEFAULT_DLC_EXCLUDE = ','.join([VP_BLOCKED_DLC, VP_MODPACK_DLC])
-DEFAULT_LOC_DB = str(REL.loc_db)
+DEFAULT_LOC_DB = str(REL.loc_db) if REL else 'none'
 # Issue 0303 (from 0175, release-driver.md W5.11): the server writes a new game's header with an empty mod list
 # (srv_save.cpp); the real game, loading such a save while CP and VP are active, turns the mods off and aborts. A
 # direct-mode new game's saves therefore get the descriptor's mods after the server has written them.
 SAVE_MODS_RC = 5  # exit code when a new game's save header cannot be given its mods
+UNSERVED_ALLOW_DEFAULT = Path(__file__).resolve().parent / 'unserved-allowlist.txt'  # issue 9007
 
 
 def descriptor_mods() -> list:
@@ -208,11 +221,15 @@ def main():
     ap.add_argument('--turns', type=int, required=True, help='play until this game turn')
     ap.add_argument('--run', type=Path, required=True, help='run folder (created; outside the repository)')
     ap.add_argument('--bin', type=Path, required=True, help='build_server.py --out <dir>/bin')
-    ap.add_argument('--db', type=Path, default=Path(DEFAULT_DB), help="gameplay database (copied, never written; default: the release descriptor's test_db)")
+    ap.add_argument('--db', type=Path, default=Path(DEFAULT_DB) if DEFAULT_DB else None,
+                    help="gameplay database (copied, never written; default: the release descriptor's test_db; "
+                         "required without a descriptor)")
     ap.add_argument('--loc-db', default=DEFAULT_LOC_DB,
                     help='Localization-Merged.db (copied into the run folder, never written); "none": no localization, '
                          "the DLL's text lookups return the key (the server before issue 1704)")
-    ap.add_argument('--game-dir', type=Path, default=Path(GAME_DIR))
+    ap.add_argument('--game-dir', type=Path, default=Path(GAME_DIR) if GAME_DIR else None,
+                    help="the game folder, read in place (default: the release descriptor's game_dir; required "
+                         "without a descriptor)")
     ap.add_argument('--loc-attach', choices=['engine', '1', '0'],
                     help='server.cfg loc_attach (issue 2802): attach the localization database to the game database '
                          'as the EXE does. engine (the server default): what the engine attached (remote mode; the '
@@ -244,16 +261,17 @@ def main():
                     help='new games: comma-separated DLC GUIDs left out of the save header DLC list (default: '
                          'DLC_SP_Maps, which Vox Populi blocks in the real game, and the toolkit "VP Modpack" '
                          'package, which a real game does not have (issue 0197); "" for none)')
-    ap.add_argument('--save-mods', choices=['descriptor', 'none'], default='descriptor',
+    ap.add_argument('--save-mods', choices=['descriptor', 'none'], default='descriptor' if REL else 'none',
                     help="new games: the mod list of the --save-out / --save-at-start saves' header. descriptor (the "
                          "default, issue 0303): the release descriptor's mods with their versions (5.4.8: CP v151, VP "
                          "v17), filled in after the server wrote the save, so the real game with Vox Populi as mods "
                          "loads it; none: the server's empty list (the form before 0303). A loaded game keeps its "
-                         f"header's list either way. Exit {SAVE_MODS_RC} when a save's header cannot be given the mods")
+                         f"header's list either way. Exit {SAVE_MODS_RC} when a save's header cannot be given the mods. "
+                         "Without a descriptor the default is none")
     ap.add_argument('--fail-on-unserved', action='store_true',
                     help='exit 3 when the DLL called an engine method the server does not serve (a generated stub) that '
                          'is not on --unserved-allow (issue 9007)')
-    ap.add_argument('--unserved-allow', type=Path, default=Path(__file__).resolve().parent / 'unserved-allowlist.txt',
+    ap.add_argument('--unserved-allow', type=Path, default=UNSERVED_ALLOW_DEFAULT,
                     help='allow-list of unserved engine methods, one "Class::method reason" per line (default: %(default)s)')
     ap.add_argument('--remote-config', type=Path, metavar='PATH',
                     help='write the remote-mode server.cfg to PATH (run folder --run, binaries --bin) and exit')
@@ -304,6 +322,19 @@ def main():
     if not a.remote_config and (a.fail_on_unexpected or a.remote_allow):
         ap.error('--fail-on-unexpected and --remote-allow apply to --remote-config only; direct runs use '
                  '--fail-on-unserved')
+    # Ticket 0855: what the exported tree lacks is named before anything is written, never a traceback after a run.
+    if a.game_dir is None:
+        ap.error('--game-dir is required: there is no release descriptor to take it from')
+    if a.db is None and not a.remote_config:
+        ap.error('--db is required: there is no release descriptor to take it from')
+    if REL is None and a.save_mods == 'descriptor':
+        ap.error(f'--save-mods descriptor needs a release descriptor (set {descriptor.ENV_TAG} to a descriptor file); '
+                 'use --save-mods none')
+    civ5save_py = Path(__file__).resolve().parent / 'tools' / 'civ5save.py'
+    if not civ5save_py.is_file() and not a.remote_config and (
+            a.load_python or (not a.load and a.save_mods == 'descriptor' and (a.save_out or a.save_at_start))):
+        ap.error(f'{civ5save_py} not found (it is not exported): --load-python and --save-mods descriptor need it; '
+                 'use --save-mods none')
     if a.remote_config:
         write_remote_config(a)
         return
@@ -397,7 +428,13 @@ def main():
     if over:  # bug 0094: a finished game is an end, not a failure
         print(f'run_server: {over} (before the target turn {a.turns}; not a failure)')
     unserved = read_unserved(run / 'server-report.txt')
-    allow = load_allowlist(a.unserved_allow)
+    if not a.unserved_allow.is_file() and a.unserved_allow == UNSERVED_ALLOW_DEFAULT:
+        # Ticket 0855: the exported tree has no server/unserved-allowlist.txt ([unclear] in tools/export/allowlist.txt)
+        print(f'run_server: warning: {a.unserved_allow} not found; every unserved engine method counts as unexpected',
+              file=sys.stderr)
+        allow = []
+    else:
+        allow = load_allowlist(a.unserved_allow)
     unexpected = [(m, n) for m, n in unserved if not allowed(m, allow)]
     print(f'run_server: engine calls not served by the server: {len(unserved)} methods, '
           f'{len(unexpected)} outside {a.unserved_allow.name}')

@@ -775,6 +775,12 @@ def cmd_run(a):
         raise Fail(EXIT_USAGE, "--repeat must be at least 1")
     if not a.player or not Path(a.player).is_file():
         raise Fail(EXIT_USAGE, "--player must name the built sceneshot.exe (server/tools/sceneshot/build_sceneshot.py)")
+    if not a.no_record and not VISUALCHECK.is_file():
+        # Ticket 0856 (after fork issue #6): the Visual Checks store's tool is this repository's, not exported. Without it
+        # the run is --no-record: the pictures stay in OUT, and the undescribed-picture check (exit 8) is not made.
+        # (on stdout, through say(), so that it stays before the last line `scenerun: OK ...` / `FAILED ...`)
+        say("warning: %s not found; running as --no-record (the pictures stay in OUT)" % VISUALCHECK)
+        a.no_record = True
     lib = Path(a.library)
     bundles = list_bundles(lib, a.bundle, a.index)
     for bid, folder, entry in bundles:

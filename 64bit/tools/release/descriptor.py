@@ -406,6 +406,21 @@ def load(tag: str | None = None, releases_dir: Path | None = None) -> Descriptor
     return parse(_read_json(p), str(p), expect_tag=tag)
 
 
+def load_if_present(who: str, missing: str) -> Descriptor | None:
+    """load(), or None in a tree without the releases folder and with $C5_RELEASE unset: the exported `64bit/` folder,
+    where tools/release/releases/ is not exported because the descriptors name this repository's machine folders
+    (ticket 0856, after 0855's run_server.py). Then one stderr line `<who>: warning: no release descriptor (...);
+    <missing>`. A releases folder that is present but broken, or a bad $C5_RELEASE, still raises DescriptorError."""
+    try:
+        return load()
+    except DescriptorError:
+        if RELEASES_DIR.is_dir() or os.environ.get(ENV_TAG, '').strip():
+            raise
+        print(f'{who}: warning: no release descriptor ({RELEASES_DIR} not found and {ENV_TAG} unset); {missing}',
+              file=sys.stderr)
+        return None
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--tag', help='release (default: $C5_RELEASE, a tag or a descriptor file; else current.json)')

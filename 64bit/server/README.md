@@ -43,6 +43,11 @@ python server/run_server.py SPEC.json --turns N --run <run dir> --bin <dir>/bin 
 python server/run_server.py --load SAVE.Civ5Save --turns N --run <run dir> --bin <dir>/bin [--save-at-start NAME] [--save-out NAME]
 ```
 
+- Outside this repository (the published `64bit/` folder) there is no release descriptor: `tools/release/releases/`
+  names the maintainers' machine folders and is not published. `run_server.py` then prints one warning and needs
+  `--game-dir` and, for a direct run, `--db`; `--loc-db` and `--save-mods` default to none. Or set `C5_RELEASE` to a
+  descriptor file of your own (the format is in `tools/release/descriptor.py`).
+
 - Saves (issue 2001): `--load SAVE.Civ5Save` is read by the server natively (`load_save` in server.cfg; the header's
   DLC and mod lists are kept for later saves); `--load-python` unpacks it with `tools/civ5save.py` and passes the
   pregame and body files instead (the form before 2001). `--save-out NAME` (after the last turn) and

@@ -40,13 +40,17 @@ import descriptor  # noqa: E402
 # (tools/release/releases/<tag>.json; the current one, or $C5_RELEASE). (Replaced: the toolkit folder
 # VP_MODPACK_5_4_8_NEUTRALS and the copy cv64-deps/testdb/vp548-cdrift-Civ5DebugDatabase.db, the same bytes as the
 # 5.4.8 descriptor's test_db.)
-REL = descriptor.load()
-CLOSED_DIR = REL.game_dir
+# Ticket 0856 (after fork issue #6): the exported tree has no tools/release/releases/. Then, and only then (no releases
+# folder and no $C5_RELEASE), one warning line: --closed-dll and --db have no default, and the database's SHA-256 (a
+# descriptor value) is not checked. The closed DLL's SHA-256 is still checked.
+REL = descriptor.load_if_present('run_ab', '--closed-dll and --db have no default and the database SHA-256 is not '
+                                           'checked')
+CLOSED_DIR = REL.game_dir if REL else None
 CLOSED_DLL_NAME = 'CvGameDatabaseWin32Final Release.dll'
 CLOSED_DLL_SHA = 'f95637398ce10012c785b0dc952686db82613f702a8511bbc7ac822896949563'
 CLOSED_DEPS = ['lua51_Win32.dll']  # MSVCR90/MSVCP90 come from the system's WinSxS (the DLL's manifest)
-DB_MASTER = REL.test_db
-DB_SHA = REL.test_db_sha256
+DB_MASTER = REL.test_db if REL else None
+DB_SHA = REL.test_db_sha256 if REL else None
 
 # Differences that are understood (regex over one diff line, '-' = first run, '+' = second run), per comparison.
 # Each entry: (comparison, regex, explanation); see README.md.
@@ -218,10 +222,16 @@ def main():
                          f'{build_db.DEFAULT_SRC} if it is at the locked commit')
     ap.add_argument('--unlocked', action='store_true', help='allow a git --src at another commit')
     ap.add_argument('--sqlite-zip', type=Path)
-    ap.add_argument('--closed-dll', type=Path, default=CLOSED_DIR / CLOSED_DLL_NAME)
-    ap.add_argument('--db', type=Path, default=DB_MASTER)
+    ap.add_argument('--closed-dll', type=Path, default=CLOSED_DIR / CLOSED_DLL_NAME if CLOSED_DIR else None,
+                    help=f'the closed {CLOSED_DLL_NAME} (default: in the game_dir of the release descriptor; required '
+                         'without a descriptor)')
+    ap.add_argument('--db', type=Path, default=DB_MASTER,
+                    help='the gameplay database (default: the test_db of the release descriptor; required without one)')
     ap.add_argument('--skip-build', action='store_true')
     a = ap.parse_args()
+    for flag, v in (('--closed-dll', a.closed_dll), ('--db', a.db)):
+        if v is None:
+            ap.error(f'{flag} is required: there is no release descriptor to take it from')
     try:
         a.src = build_db.x64build.resolve_src(a.src, a.unlocked)['src']
     except build_db.x64build.SrcError as e:
@@ -237,10 +247,13 @@ def main():
         logf.flush()
 
     log(f'run_ab: out={out} config={a.config} src={a.src}')
-    if sha256(CFG['db']) != DB_SHA:
+    if DB_SHA is None:  # ticket 0856: no descriptor, so no expected hash
+        log(f'database {CFG["db"]} sha256 {sha256(CFG["db"])} (not checked: no release descriptor)')
+    elif sha256(CFG['db']) != DB_SHA:
         log(f'error: {CFG["db"]}: sha256 is not {DB_SHA}')
         sys.exit(2)
-    log(f'database {CFG["db"]} sha256 {DB_SHA}')
+    else:
+        log(f'database {CFG["db"]} sha256 {DB_SHA}')
     if sha256(a.closed_dll) != CLOSED_DLL_SHA:
         log(f'error: {a.closed_dll}: sha256 is not {CLOSED_DLL_SHA}')
         sys.exit(2)

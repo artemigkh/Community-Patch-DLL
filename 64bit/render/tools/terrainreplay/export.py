@@ -5,7 +5,7 @@
            [--materials 73,76,78]
 
 Origin: this repository, render/evidence/3019/terrain_export.py at commit 1234c563; 0182 made --xml-dir required,
-refuses OUTDIR / --xml-dir outside the work folders (exit 4) and a missing capture (exit 3). Exit 1: a selected draw
+refuses OUTDIR / --xml-dir outside the work folders (exit 4) and a missing capture or exporter (exit 3). Exit 1: a selected draw
 without a pixel shader. The overlay target t1 of every TerrainShader draw is exported with the rest of its SRVs: its
 file holds the target's contents at the frame's start (`"written_in_frame": true` in its .json).
 
@@ -25,9 +25,16 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO))
-_spec = importlib.util.spec_from_file_location("xml_export_3601", REPO / "shell" / "evidence" / "3600" / "3601" / "xml_export.py")
-X = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(X)
+# Ticket 0856 (after fork issue #6): 3601's exporter lives under shell/evidence/, which the export does not carry. It is
+# loaded in main() after the input checks, so --help and the checks work in an exported tree; without it: exit 3.
+XML_EXPORT = REPO / "shell" / "evidence" / "3600" / "3601" / "xml_export.py"
+
+
+def load_exporter():
+    spec = importlib.util.spec_from_file_location("xml_export_3601", XML_EXPORT)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
 
 
 def main():
@@ -47,6 +54,11 @@ def main():
     if not rdc.is_file():
         print("export.py: capture %s not found" % rdc, file=sys.stderr)
         return 3
+    if not XML_EXPORT.is_file():
+        print("export.py: %s not found (3601's exporter is kept with this repository's evidence, not in an export)"
+              % XML_EXPORT, file=sys.stderr)
+        return 3
+    X = load_exporter()
     from tools.harness import rdc as rdcmod
     xml = Path(a.xml_dir) / (rdc.stem + ".xml")
     if not xml.is_file():

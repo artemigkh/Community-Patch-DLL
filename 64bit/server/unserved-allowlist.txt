@@ -1,0 +1,123 @@
+# Engine methods the server leaves to a generated stub (answers zero / false / NULL, does nothing) that an AI-only
+# headless game may call (issue 9007). run_server.py --fail-on-unserved fails a run that hits any other unserved
+# method. One line per entry: the method as the report names it ("Class::method"; a trailing * matches a prefix),
+# then the reason. The audit behind every entry: research/03-dll-engine-boundary/server-host.md section 11.
+# A human-driven game goes through the proxy, which forwards these calls to the EXE (D21); this list is for headless.
+#
+# Renderer, sound and screen notifications: nothing to draw headless; no game state depends on them.
+ICvEngineUtility1::Gameplay*               renderer notification (units, cities, fog, effects, minimap, leader messages); no return value the DLL uses
+ICvEngineUtility3::TradeVisuals_*          trade route graphics
+ICvEngineUtility1::DoMapSetup              renderer: map size notification at map creation
+ICvEngineUtility1::DoTurn                  the engine's per-turn UI refresh
+ICvEngineUtility1::PublishActivePlayer     UI event (GameplaySetActivePlayer)
+ICvEngineUtility1::PublishEraChanges       UI event
+ICvEngineUtility1::DoClearDiplomacyTradeTable  diplomacy screen
+ICvEngineUtility1::NotifySpecificAILeaderInGame  leader scene assets
+ICvEngineUtility1::NotifyAILeadersInGame   leader scene assets
+ICvEngineUtility3::FlushTurnReminders      UI turn reminders (multiplayer)
+ICvEngineUtility1::getSecsPerTurn          animation seconds per turn slice; 0 gives combat missions no animation time (quick combat; the 32-bit reference answers 0 too)
+# Net and lobby calls without a Response* (engine-contract 6.3, 6.4: no message comes back).
+ICvEngineUtility1::sendPlayerInfo          pregame slot broadcast at closeInactiveSlots; no response
+ICvEngineUtility1::sendPlayerInitialAIProcessed  turn signalling; no response (engine-contract 6.3)
+ICvEngineUtility3::BeginSendBundle         batching marker; the loopback queue keeps the order without it
+ICvEngineUtility3::EndSendBundle           batching marker
+ICvEngineUtility1::openSlot                lobby slot (multiplayer); closeInactiveSlots calls it in a local game
+ICvEngineUtility1::closeSlot               lobby slot (multiplayer)
+ICvEngineUtility1::HasReceivedTurnComplete  network turn-complete of a player: false while AI plays (the 32-bit reference answers false)
+ICvEngineUtility1::IsPitbossHost           false is right for a local game
+ICvEngineUtility1::IsPlayerKicked          multiplayer only; false is right
+ICvEngineUtility1::IsPlayerHotJoining      multiplayer only; false is right
+ICvEngineUtility1::getAssignedNetworkID    network id of a player; none in a local game
+# Engine housekeeping and user settings.
+ICvEngineUtility1::InitGlobals             engine-side globals the server does not keep
+ICvEngineUtility1::UninitGlobals           engine-side globals the server does not keep
+ICvEngineUtility1::AutoSave                no autosave file headless; --save-out / --save-at-start write saves
+ICvEngineUtility1::stripSpecialCharacters  formats a display string in place; names stay as given (TXT keys; the 32-bit reference does the same)
+ICvEngineUtility1::IsModActivated          the DLL asks only for official scenario mod ids (CIV5_*_SCENARIO*_MODID); none is active: false is right
+ICvEngineUtility1::IsDLCValid              achievements only (CvAchievementUnlocker, CheckForSevenAncientWondersBuilt)
+ICvEngineUtility1::GetAdvisorBadAttackInterrupt  advisor interrupt user setting, off (the 32-bit reference answers false)
+ICvEngineUtility1::GetAdvisorCityAttackInterrupt  advisor interrupt user setting, off
+ICvEngineUtility1::SetAdvisorBadAttackInterrupt  advisor setting (Lua)
+ICvEngineUtility1::SetAdvisorCityAttackInterrupt  advisor setting (Lua)
+ICvEngineUtility1::GetTutorialLevel        tutorial level (Lua UI)
+ICvEngineUtility1::TunerEverConnected      FireTuner never connected
+ICvEngineUtility1::IsProcessingGameCoreMessages  Lua UI query
+ICvEngineUtility1::altKey                  keyboard state: no keys pressed
+ICvEngineUtility1::shiftKey                keyboard state: no keys pressed
+ICvEngineUtility1::ctrlKey                 keyboard state: no keys pressed
+# Steam.
+ICvEngineUtility1::UnlockAchievement       Steam achievement
+ICvEngineUtility1::IsAchievementUnlocked   Steam achievement (none unlocked); read by achievement code only
+ICvEngineUtility1::IncrementSteamStat*     Steam statistic
+ICvEngineUtility1::GetSteamStat            Steam statistic (none); read by achievement code only
+ICvEngineUtility1::SetSteamStat            Steam statistic
+ICvEngineUtility1::RecordLeaderboardScore  Steam leaderboard
+ICvEngineUtility1::RecordVictoryInformation  Steam statistic at the end of a game
+ICvEngineUtility1::saveReplay              replay file of a finished game
+# The active player's screen (ICvUserInterface): nothing is selected and no screen is open headless. The answers are
+# the 32-bit reference's (no selection, no popups); epic 1505 showed its UI emulation does not change stats.db.
+ICvUserInterface1::getSelectionPlot        no selection
+ICvUserInterface1::GetHeadSelectedUnit     no selection
+ICvUserInterface1::IsUnitSelected          no selection
+ICvUserInterface1::isCitySelected          no selection
+ICvUserInterface1::isDiploActive           no diplomacy screen open
+ICvUserInterface1::isCityScreenUp          no city screen open
+ICvUserInterface1::IsOptionNoRewardPopups  user setting, off
+ICvUserInterface1::IsPolicyNotificationSeen  UI flag; the notification shows
+ICvUserInterface1::SetPolicyNotificationSeen  UI flag
+ICvUserInterface1::IsSPAutoEndTurnEnabled  user setting, off
+ICvUserInterface1::GetLengthSelectionList  no selection
+ICvUserInterface1::RemoveFromSelectionList  unit selection of the screen
+ICvUserInterface1::InsertIntoSelectionList  unit selection of the screen
+ICvUserInterface1::ClearSelectionList      unit selection of the screen
+ICvUserInterface1::makeSelectionListDirty  unit selection of the screen
+ICvUserInterface1::clearSelectedCities     city selection of the screen
+ICvUserInterface1::selectUnit              unit selection of the screen
+ICvUserInterface1::selectGroup             unit selection of the screen
+ICvUserInterface1::selectCity              city selection of the screen
+ICvUserInterface1::selectLookAtCity        city selection of the screen
+ICvUserInterface1::addSelectedCity         city selection of the screen
+ICvUserInterface1::setLastSelectedUnit     UI selection
+ICvUserInterface1::VisuallyDeselectUnit    unit graphics
+ICvUserInterface1::setCycleSelectionCounter  unit cycle of the screen
+ICvUserInterface1::changeCycleSelectionCounter  unit cycle of the screen
+ICvUserInterface1::setNoSelectionListCycle  unit cycle of the screen
+ICvUserInterface1::AddMessage              message log of the active player's screen
+ICvUserInterface1::AddUnitMessage          message log of the active player's screen
+ICvUserInterface1::AddPlotMessage          message log of the active player's screen
+ICvUserInterface1::AddCityMessage          message log of the active player's screen
+ICvUserInterface1::AddPopup                popup of the active player's screen (none headless)
+ICvUserInterface1::AddPopupText            popup text of the active player's screen
+ICvUserInterface1::AddNotification         notification panel of the active player
+ICvUserInterface1::RemoveNotification      notification panel of the active player
+ICvUserInterface1::AddDeferredWonderCommand  wonder graphics
+ICvUserInterface1::AddHexToUIRange         range highlight
+ICvUserInterface1::Publish*                UI event
+ICvUserInterface2::Publish*                UI event
+ICvUserInterface1::setDirty                screen refresh flag
+ICvUserInterface1::SetSpecificCityInfoDirty  city banner refresh
+ICvUserInterface1::UpdateCountryBorder     border graphics
+ICvUserInterface1::UpdateAllCountryBorders  border graphics
+ICvUserInterface1::UpdateEndTurn           end-turn button
+ICvUserInterface1::SetEndTurnBlockingChanged  end-turn button
+ICvUserInterface1::setCanEndTurn           end-turn button
+ICvUserInterface1::setHasMovedUnit         end-turn button
+ICvUserInterface1::doTurn                  the screen's per-turn refresh
+ICvUserInterface1::SetDontShowPopups       popup flag
+ICvUserInterface1::setForcePopup           popup flag
+ICvUserInterface1::SetDealInTransit        diplomacy screen flag (set only for deals with a human)
+ICvUserInterface1::setInterfaceMode        interface mode of the screen
+ICvUserInterface1::setFlashing             flashing player icon
+ICvUserInterface1::lookAt*                 camera
+ICvUserInterface1::centerCamera            camera
+ICvUserInterface1::releaseLockedCamera     camera
+ICvUserInterface1::refreshYieldVisibleMode  map overlay
+ICvUserInterface1::toggle*                 map overlay
+ICvUserInterface1::updateCityScreen        city screen
+ICvUserInterface1::updateCursorType        cursor
+ICvUserInterface1::updateEndTurnTimer      turn timer display
+ICvUserInterface1::clearEventMessages      message log
+ICvUserInterface1::DebugCityRoutePlots     debug display
+ICvUserInterface1::exitingToMainMenu       front end
+ICvUserInterface1::OpenTechTree            tech tree screen
+ICvUserInterface1::OpenEndGameMenu         end-of-game screen

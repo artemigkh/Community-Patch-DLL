@@ -51,16 +51,20 @@ import descriptor  # noqa: E402
 # Issue 3502 (epic 3500): the closed libraries' game folder and the localization database come from the release
 # descriptor (tools/release/releases/<tag>.json; the current one, or $C5_RELEASE). (Replaced: the toolkit folder
 # VP_MODPACK_5_4_8_NEUTRALS and pinned/vp-modpack-5.4.8-cdrift/Localization-Merged.db, the 5.4.8 descriptor's values.)
-REL = descriptor.load()
-CLOSED_DIR = REL.game_dir
+# Ticket 0856 (after fork issue #6): the exported tree has no tools/release/releases/. Then, and only then (no releases
+# folder and no $C5_RELEASE), one warning line: --closed-dir, --locdb and --lua-root have no default, and the
+# localization database's SHA-256 (a descriptor value) is not checked. The closed DLLs' SHA-256 are still checked.
+REL = descriptor.load_if_present('run_ab', '--closed-dir, --locdb and --lua-root have no default and the localization '
+                                           'database SHA-256 is not checked')
+CLOSED_DIR = REL.game_dir if REL else None
 CLOSED = {  # file name in CLOSED_DIR -> SHA-256 (None: copied, hash only logged)
     'CvLocalizationWin32Final Release.dll': '9b783bc3828f3e56b9a117cd59fb4e8957b485da24569deb01a988db4c50eac4',
     'CvGameDatabaseWin32Final Release.dll': 'f95637398ce10012c785b0dc952686db82613f702a8511bbc7ac822896949563',
     'lua51_Win32.dll': None,
 }
 ICU_DAT = 'Locale/icudt44l.dat'
-LOCDB = REL.loc_db
-LOCDB_SHA = REL.loc_db_sha256
+LOCDB = REL.loc_db if REL else None
+LOCDB_SHA = REL.loc_db_sha256 if REL else None
 # %LOCALAPPDATA%\Temp\claude (ticket 4711: written from the environment, the same folder as before)
 TEMP = Path(os.environ.get('LOCALAPPDATA') or Path.home() / 'AppData' / 'Local') / 'Temp' / 'claude'
 # Real games (issue 1505): the x64 server wrote raw TXT_KEY values, the x86 host composed text.
@@ -447,12 +451,18 @@ def main():
     ap.add_argument('--skip-build', action='store_true', help='reuse DIR/lib-x86 and DIR/lib-x64')
     ap.add_argument('--aa', action='store_true', help='run the closed library twice and compare (A/A)')
     ap.add_argument('--evidence', type=Path, help='also write small text extracts (summaries, diffs) here')
-    ap.add_argument('--closed-dir', type=Path, default=CLOSED_DIR)
-    ap.add_argument('--locdb', type=Path, default=LOCDB)
-    ap.add_argument('--lua-root', type=Path, default=CLOSED_DIR / 'Assets')
+    ap.add_argument('--closed-dir', type=Path, default=CLOSED_DIR,
+                    help='the folder of the closed libraries (default: the game_dir of the release descriptor; required without one)')
+    ap.add_argument('--locdb', type=Path, default=LOCDB,
+                    help='the localization database (default: the loc_db of the release descriptor; required without one)')
+    ap.add_argument('--lua-root', type=Path, default=CLOSED_DIR / 'Assets' if CLOSED_DIR else None,
+                    help='default: Assets under --closed-dir; required without a descriptor')
     ap.add_argument('--stats-x64', type=Path, nargs='*', default=[p for p in STATS_X64 if p.is_file()])
     ap.add_argument('--stats-x86', type=Path, nargs='*', default=[p for p in STATS_X86 if p.is_file()])
     a = ap.parse_args()
+    for flag, v in (('--closed-dir', a.closed_dir), ('--locdb', a.locdb), ('--lua-root', a.lua_root)):
+        if v is None:
+            ap.error(f'{flag} is required: there is no release descriptor to take it from')
     try:
         a.src = build_db.x64build.resolve_src(a.src, a.unlocked)['src']
     except build_db.x64build.SrcError as e:
@@ -480,10 +490,13 @@ def main():
         log(f'closed {name} sha256 {got} copied')
     shutil.copy2(a.closed_dir / ICU_DAT, rc_dir / 'icudt44l.dat')
     log(f'ICU data {ICU_DAT} sha256 {sha256(rc_dir / "icudt44l.dat")} copied')
-    if sha256(a.locdb) != LOCDB_SHA:
+    if LOCDB_SHA is None:  # ticket 0856: no descriptor, so no expected hash
+        log(f'localization database {a.locdb} sha256 {sha256(a.locdb)} (not checked: no release descriptor)')
+    elif sha256(a.locdb) != LOCDB_SHA:
         log(f'error: {a.locdb}: sha256 is not {LOCDB_SHA}')
         sys.exit(2)
-    log(f'localization database {a.locdb} sha256 {LOCDB_SHA}')
+    else:
+        log(f'localization database {a.locdb} sha256 {LOCDB_SHA}')
     for p in a.stats_x64 + a.stats_x86:
         log(f'stats.db {p} sha256 {sha256(p)}')
 

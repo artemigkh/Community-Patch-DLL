@@ -217,6 +217,11 @@ The notes and some script headers were written for the project's own test machin
   test machine. Run the command that follows the `--` by itself. Build scripts that look for the lock print one
   warning when it is absent and go on. A few test runners under `server/tests/` still refuse to start without it
   (they print `perf/quietlock/gate.py not found`); treat those as checks you could not run.
+- The maintainers' release descriptors (`tools/release/releases/`) are not in this folder: they name the maintainers'
+  machine folders. Scripts that read one (`server/run_server.py`, the two `run_ab.py` A/B tests under
+  `tools/x64-dll/`) print one warning and then need their data flags: `run_server.py` takes `--game-dir` and, for a
+  direct run, `--db`. Or set `C5_RELEASE` to a descriptor file of your own (the format is in
+  `tools/release/descriptor.py`).
 - Placeholders such as `<t>`, `<inst>` and work folders on fixed drive letters are the project's own. Use any
   folder outside the repository.
 - Tools that start, drive and stop a hidden copy of the game, the comparers for statistics logs and saves, the

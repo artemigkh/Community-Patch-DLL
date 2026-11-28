@@ -12,6 +12,8 @@ JSON results. Exit 0 when every view ran and passed `compare_shots.py`'s geometr
 the lock refused, 4 when every view ran but at least one did not pass (the summary is written either way; auditor cycle 3
 C4, 2026-11-13: it used to exit 0 for a failed view, and a background run's notice then read as a success).
 `--allow-fail` keeps the old exit 0 for a measurement run whose numbers are read, not judged.
+In a tree without perf/quietlock/quietlock.py (the exported `64bit/` folder; ticket 0856) one warning line, then each
+terrainshot run starts directly.
 """
 from __future__ import annotations
 
@@ -25,6 +27,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[2]
 VIEWS = {"v1": "v1_city_default", "v2": "v2_city_zoomin", "v3": "v3_second_zoomin"}
+QUIETLOCK = REPO / "perf" / "quietlock" / "quietlock.py"
 
 
 def main(argv=None):
@@ -44,6 +47,10 @@ def main(argv=None):
     work.mkdir(parents=True, exist_ok=True)
     ev.mkdir(parents=True, exist_ok=True)
     env = dict(os.environ, C5_JOB_OWNER="3200", C5_QUIETLOCK_WHO="3200", C5_POOL_OWNER="3200")
+    locked = QUIETLOCK.is_file()
+    if not locked:
+        print(f"offline_all: warning: {QUIETLOCK} not found; each terrainshot run starts directly, without the lock",
+              file=sys.stderr)
     summary = []
     for m in a.maps.split(","):
         gd = Path(a.gt) / m
@@ -53,15 +60,15 @@ def main(argv=None):
             shot = gd / f"shot_{VIEWS[v]}.png"
             out = work / f"{name}_drawn.png"
             world = work / f"{name}_world.f32"
-            cmd = [sys.executable, "-I", str(REPO / "perf" / "quietlock" / "quietlock.py"), "run", "--who", "3200",
-                   "--what", f"terrainshot {name} (issue 3202)", "--", a.terrainshot, "--gt", str(gd), "--camera", str(cam),
-                   "--out", str(out), "--world", str(world), "--exe", a.exe, "--color", "normal", "--tile-plots",
-                   a.tile_plots] + (a.extra.split() if a.extra else [])
+            shot_cmd = [a.terrainshot, "--gt", str(gd), "--camera", str(cam), "--out", str(out), "--world", str(world),
+                        "--exe", a.exe, "--color", "normal", "--tile-plots", a.tile_plots] + (a.extra.split() if a.extra else [])
+            cmd = ([sys.executable, "-I", str(QUIETLOCK), "run", "--who", "3200", "--what",
+                    f"terrainshot {name} (issue 3202)", "--"] if locked else []) + shot_cmd
             print("+", " ".join(cmd), flush=True)
             r = subprocess.run(cmd, env=env, capture_output=True, text=True)
             sys.stdout.write(r.stdout)
             sys.stderr.write(r.stderr)
-            if r.returncode == 3:
+            if r.returncode == 3:   # terrainshot itself never exits 3: the lock refused
                 print("offline_all: the quiet-machine lock is held by another team (exit 3); stopping", file=sys.stderr)
                 return 3
             if r.returncode:

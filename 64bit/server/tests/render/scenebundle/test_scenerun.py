@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 import struct
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -22,6 +23,9 @@ REPO = HERE.parents[3]
 SCENERUN = REPO / "server" / "tools" / "scenerun" / "scenerun.py"
 FAKE = HERE / "scenerun_fake_player.py"
 VISUALCHECK = REPO / "tools" / "visualcheck" / "visualcheck.py"
+# Ticket 0856: the exported tree has no tools/visualcheck/ (the project's Visual Checks store); scenerun then runs as
+# --no-record, and the checks of the feed below are made only where the tool is.
+HAVE_VC = VISUALCHECK.is_file()
 
 VIEW = [1.0, 0, 0, 0, 0, 0.7071068, -0.7071068, 0, 0, 0.7071068, 0.7071068, 0, -1503.9376, 229.69894, -899.69586, 1.0]
 PROJ = [2.135113, 0, 0, 0, 0, 3.8646908, 0, 0, 0, 0, -1.0126582, -1.0, 0, 0, -50.63291, 0]
@@ -108,9 +112,9 @@ def lib(tmp_path):
 def test_run_ok_then_regression_equal(lib, tmp_path, env):
     rc, last, out = run(runargs(lib, tmp_path / "o1"), env)
     assert rc == 0, out
-    assert last.startswith("scenerun: OK 2 bundle(s), 4 shot(s), 4 picture(s) recorded"), out
+    assert last.startswith("scenerun: OK 2 bundle(s), 4 shot(s), %d picture(s) recorded" % (4 if HAVE_VC else 0)), out
     rep = json.loads((tmp_path / "o1" / "report.json").read_text())
-    assert rep["result"] == "OK" and rep["undescribed"] == []
+    assert rep["result"] == "OK" and rep["undescribed"] == ([] if HAVE_VC else None)
     shots = {(e["bundle_id"], s["name"]): s for e in rep["bundles"] for s in e["shots"]}
     assert all(s["p1"]["status"] == "within" for s in shots.values())
     assert all(s["regression"]["status"] == "new" for s in shots.values())
@@ -124,9 +128,10 @@ def test_run_ok_then_regression_equal(lib, tmp_path, env):
     assert (lib / "base" / "B1_TINY" / "baseline.json").is_file()
     assert "## B1_TINY" in (tmp_path / "o1" / "report.md").read_text()
     # every picture is in the (temporary) feed, described, DIAGNOSTIC, with the stock shot as reference where matched
-    es = [json.loads(ln) for ln in (tmp_path / "vstore" / "index.jsonl").read_text().splitlines() if ln.strip()]
-    assert len(es) == 4 and all(e["what"].startswith("DIAGNOSTIC: scenerun") and e["issue"] == "3906" for e in es)
-    assert sum(1 for e in es if e.get("reference")) == 2
+    if HAVE_VC:
+        es = [json.loads(ln) for ln in (tmp_path / "vstore" / "index.jsonl").read_text().splitlines() if ln.strip()]
+        assert len(es) == 4 and all(e["what"].startswith("DIAGNOSTIC: scenerun") and e["issue"] == "3906" for e in es)
+        assert sum(1 for e in es if e.get("reference")) == 2
     rc, last, out = run(runargs(lib, tmp_path / "o2"), env)
     assert rc == 0, out
     rep = json.loads((tmp_path / "o2" / "report.json").read_text())
@@ -201,6 +206,26 @@ def test_sha_mismatch_fails(lib, tmp_path, env):
     assert not (tmp_path / "o").exists()
 
 
+def test_without_visualcheck_runs_as_no_record(lib, tmp_path, env):
+    """Ticket 0856: scenerun.py in a tree without tools/visualcheck/ (the export) warns once and runs as --no-record."""
+    tree = tmp_path / "tree" / "server" / "tools" / "scenerun"
+    tree.mkdir(parents=True)
+    shutil.copy2(SCENERUN, tree / "scenerun.py")
+    cp = subprocess.run([sys.executable, "-I", str(tree / "scenerun.py")] + runargs(lib, tmp_path / "o"), capture_output=True,
+                        text=True, env=env, timeout=600)
+    out = cp.stdout + cp.stderr
+    assert cp.returncode == 0, out
+    assert out.count("scenerun: warning: ") == 1 and "running as --no-record" in out, out
+    assert "scenerun: OK 2 bundle(s), 4 shot(s), 0 picture(s) recorded" in out, out
+    rep = json.loads((tmp_path / "o" / "report.json").read_text())
+    assert rep["records"] == [] and rep["undescribed"] is None
+    assert not (tmp_path / "vstore" / "index.jsonl").exists()
+    if HAVE_VC:   # here the same run records, with no warning
+        rc, last, out = run(runargs(lib, tmp_path / "o2"), env)
+        assert rc == 0 and "scenerun: warning" not in out and "4 picture(s) recorded" in last, out
+
+
+@pytest.mark.skipif(not HAVE_VC, reason="tools/visualcheck/visualcheck.py not here (an export): no feed to plant into")
 def test_undescribed_picture_fails(lib, tmp_path, env):
     pic = tmp_path / "loose.png"
     Image.fromarray(np.zeros((4, 4, 3), dtype=np.uint8)).save(str(pic))
@@ -258,9 +283,10 @@ def test_stock_match_same_approximate_none(lib, tmp_path, env):
     assert f["B3_NEAR"]["ref_how"] == "approximate" and abs(f["B3_NEAR"]["camera_translation_diff"] - 0.1) < 1e-3
     assert f["B4_TURNED"]["status"] == "no stock reference"
     assert f["B5_OTHERTURN"]["ref_how"] == "approximate" and f["B5_OTHERTURN"]["stock_turn"] == 8 and f["B5_OTHERTURN"]["bundle_load_turn"] == 9
-    es = [json.loads(ln) for ln in (tmp_path / "vstore" / "index.jsonl").read_text().splitlines() if ln.strip()]
-    hows = sorted({(e.get("reference") or {}).get("how") for e in es if e.get("reference")})
-    assert hows == ["approximate", "same save and camera"], hows
+    if HAVE_VC:
+        es = [json.loads(ln) for ln in (tmp_path / "vstore" / "index.jsonl").read_text().splitlines() if ln.strip()]
+        hows = sorted({(e.get("reference") or {}).get("how") for e in es if e.get("reference")})
+        assert hows == ["approximate", "same save and camera"], hows
 
 
 def test_repeat_times(lib, tmp_path, env):
